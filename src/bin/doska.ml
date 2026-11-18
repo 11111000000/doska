@@ -8,8 +8,8 @@ open Cmdliner
 
 let db_uri =
   let doc =
-    "URI базы данных PostgreSQL. Перекрывается переменной окружения \
-     DOSKA_DATABASE_URL."
+    "URI базы данных PostgreSQL. Значение по умолчанию берётся из переменной \
+     окружения DOSKA_DATABASE_URL; явный --db-url перекрывает её."
   in
   Arg.(
     value & opt string (Db.Conn.default_uri ()) & info [ "db-url" ] ~docv:"URI" ~doc)

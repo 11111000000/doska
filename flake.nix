@@ -97,6 +97,21 @@
               o.alcotest
             ];
 
+            # Проверка пакета идёт в герметичной песочнице nix, где PostgreSQL
+            # нет. Тесты репозиториев и API требуют живую базу и без неё
+            # честно падают — так и задумано: «тест прошёл» не должен означать
+            # «тест не запустился». Поэтому в песочнице гоняются только тесты
+            # без базы (домен, идентичность), а тесты с базой CI гоняет отдельно,
+            # с сервисом postgres (шаг «Build and test»), и локально —
+            # `dune runtest`.
+            checkPhase = ''
+              runHook preCheck
+              dune build @install
+              dune exec test/domain_test.exe
+              dune exec test/identity_test.exe
+              runHook postCheck
+            '';
+
             doCheck = true;
 
             meta = {

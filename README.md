@@ -23,20 +23,33 @@
 
 ## Состояние
 
-Этап 0 (каркас) закрыт. Работает связка «мигратор → схема → `/healthz`»,
-домен покрыт тестами.
+Этапы 0 (каркас) и 1 (схема и API) закрыты. Работает связка «мигратор → схема →
+REST `/api/v1`»: задачи создаются, читаются, переводятся, комментируются,
+и всё это фиксируется в журнале активности.
 
 | Проверка | Результат |
 |---|---|
-| `dune build --root .` | без ошибок (предупреждение 8 включено как ошибка) |
-| `dune runtest --root .` | 26 тестов OK — домен 17, идентичность 9 |
-| `nix build .#doska` | успешно, checkPhase с тестами проходит |
-| `doska migrate` | `001_init.sql` применён; повторный запуск — «нечего применять» |
-| Схема в БД | 11 доменных таблиц + `schema_version`, `citext`, `pg_trgm` |
+| `dune build --root .` | без ошибок (любое включённое предупреждение — ошибка) |
+| `dune runtest --root .` | 62 теста OK — домен 17, идентичность 9, типы домена 8, репозитории 13, API 15 (живая БД) |
+| `nix build .#doska` | успешно; checkPhase гоняет тесты без БД (в песочнице nix PostgreSQL нет) |
+| `doska migrate` | применены `001_init.sql` и `002_task_ref_seq.sql`; повторный запуск — «нечего применять» |
 | `doska health` | `ok` |
 | `doska serve` → `/healthz` | 200 `{"status":"ok"}` |
 
-Этапы 1–10 — в `docs/design/doska-architecture-2026-11-16.md`.
+Живая проверка API (временная база, сервер на порту):
+
+```sh
+doska migrate --migrations-dir migrations
+doska serve --port 8500 &
+curl -s -H 'X-Doska-Actor: petr' http://[::1]:8500/api/v1/tasks
+```
+
+Ответ на `POST /api/v1/tasks` содержит `ref` вида `DSK-1`; повторное создание с
+той же парой `(source, source_ref)` возвращает ту же задачу и не плодит дубль.
+
+Этапы 2–10 — в `docs/design/doska-architecture-2026-11-16.md`. Как вести
+разработку, где мы находимся и что делать дальше — в
+[docs/development-guide.md](docs/development-guide.md).
 
 ## Сборка и запуск
 
@@ -71,7 +84,7 @@ doska serve --port 8500
 
 | Переменная | Смысл |
 |---|---|
-| `DOSKA_DATABASE_URL` | URI PostgreSQL. Перекрывает `--db-url`. Секреты в код не прошиты |
+| `DOSKA_DATABASE_URL` | URI PostgreSQL: значение по умолчанию для `--db-url`, явный флаг перекрывает переменную. Секреты в код не прошиты |
 
 ### Требования к базе
 
@@ -82,14 +95,14 @@ PostgreSQL 17 с расширениями `citext` (регистронезави
 
 ```
 src/
-├── domain/     чистый домен: статусы, правила, задачи — ни БД, ни HTTP
+├── domain/     чистый домен: статусы, правила, задачи, акторы, проекты — ни БД, ни HTTP
 ├── identity/   нормализация имён и resolve алиасов в актора
-├── db/         caqti: подключение, свой мигратор
-├── api/        dream: HTTP (сейчас /healthz, /version, /)
+├── db/         caqti: подключение, свой мигратор, репозитории (task, actor, project, evidence, activity)
+├── api/        dream: REST /api/v1 (задачи, комментарии, доказательства, активность) + healthz
 ├── version/    имя и версия
 └── bin/        cmdliner: doska serve | migrate | health | version
 migrations/     идемпотентные SQL-файлы, применяются по имени
-test/           alcotest: домен и идентичность
+test/           alcotest: домен, идентичность, репозитории, API + shell-проверки миграций и control'ов
 docs/           архитектура и разведка по estate
 ```
 
@@ -110,25 +123,56 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 4 claim'а, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 23 claim'а, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
 
-| Claim | Что утверждает | Verifier |
-|---|---|---|
-| `r1-agent-acceptance` | Агент не закрывает задачу сам: `in_review → done` доступен агенту только при `autonomy = auto` (D1) | `dune exec --root . test/domain_test.exe` |
-| `identity-resolution` | «Пётр» и его варианты — один актор; нераспознанное имя не теряется, а возвращается заглушкой (§5.2) | `dune exec --root . test/identity_test.exe` |
-| `migration-idempotent` | Повторное применение миграции не создаёт дублей таблиц и типов | `sh test/check_migration.sh idempotent` |
-| `migration-immutable` | Уже применённый файл менять нельзя: мигратор сверяет контрольную сумму и отказывается работать | `sh test/check_migration.sh immutable` |
+| Claim | Что утверждает | Verifier | Отрицательный control |
+|---|---|---|---|
+| `r1-agent-acceptance` | Агент не закрывает задачу сам: `in_review → done` доступен агенту только при `autonomy = auto` (D1) | `dune exec --root . test/domain_test.exe` | `r1_autonomy.sh` |
+| `identity-resolution` | «Пётр» и его варианты — один актор; нераспознанное имя не теряется, а возвращается заглушкой (§5.2) | `dune exec --root . test/identity_test.exe` | `identity_yo.sh` |
+| `migration-idempotent` | Повторное применение миграции не создаёт дублей таблиц и типов | `sh test/check_migration.sh idempotent` | `migration_not_idempotent.sh` |
+| `migration-immutable` | Уже применённый файл менять нельзя: мигратор сверяет контрольную сумму и отказывается работать | `sh test/check_migration.sh immutable` | `migration_no_checksum.sh` |
+| `api-transition-r1` | Запрет правила домена через API — это 403 с деталями перехода, а не 500 (§6.1, D1) | `dune exec --root . test/api_test.exe` | `api_forbidden_is_500.sh` |
+| `api-list-pagination` | Список задач отдаётся постранично: фильтры отбирают нужное, курсор приходит, пока список не кончился | `dune exec --root . test/api_test.exe` | `api_pagination_broken.sh` |
+| `api-idempotent-create` | Повторное создание с той же парой `(source, source_ref)` возвращает ту же задачу и не плодит дубль | `dune exec --root . test/api_test.exe` | `api_create_not_idempotent.sh` |
+| `repo-status-persistence` | Смена статуса сохраняется, а `version` защищает задачу от гонки | `dune exec --root . test/repo_test.exe` | `repo_status_not_saved.sh` |
+| `api-error-contract` | Ошибки API различаются по классу: 400, 401, 403, 404, 409; тело ошибки — один и тот же объект | `dune exec --root . test/api_test.exe` | `api_error_status_is_400.sh` |
+| `api-actor-required` | Без заголовка `X-Doska-Actor` — 401; неизвестный логин — тоже 401, а не анонимный доступ | `dune exec --root . test/api_test.exe` | `api_actor_error_is_403.sh` |
+| `api-view-links` | Карточка задачи отдаёт читаемые человеком ссылки: исполнитель — именем и идентификатором | `dune exec --root . test/api_test.exe` | `api_view_assignee_is_id.sh` |
+| `api-invalid-body` | Битое тело запроса — 400, а не 500: разбор тела не роняет обработчик | `dune exec --root . test/api_test.exe` | `api_invalid_body_is_500.sh` |
+| `db-value-escaping` | Значения в SQL экранируются: кавычка в тексте не ломает запрос, а значение доезжает целым | `dune exec --root . test/repo_test.exe` | `db_quote_not_escaped.sh` |
+| `db-transaction-atomicity` | Транзакция цела: сбой внутри неё не оставляет изменений — запись в журнал идёт вместе с правкой | `dune exec --root . test/repo_test.exe` | `db_transaction_commits_on_error.sh` |
+| `db-activity-filters` | Журнал выбирается по фильтрам: выборка по задаче не содержит событий другой задачи | `dune exec --root . test/repo_test.exe` | `db_activity_filter_ignored.sh` |
+| `db-actor-lookup` | Актёр находится по своему логину, а не по отображаемому имени | `dune exec --root . test/repo_test.exe` | `db_actor_by_display_name.sh` |
+| `db-project-lookup` | Проект находится по своему ключу, а не по названию | `dune exec --root . test/repo_test.exe` | `db_project_by_name.sh` |
+| `db-evidence-ownership` | Доказательство принадлежит своей задаче: в списке чужой задачи его нет | `dune exec --root . test/repo_test.exe` | `db_evidence_without_task_filter.sh` |
+| `domain-closed-types` | Домен — замкнутые типы: `to_string` и `of_string` возвращают друг друга, а чужое имя не принимается | `dune exec --root . test/domain_types_test.exe` | `domain_status_renamed.sh` |
+| `identity-alias-namespace` | Пространства имён разделяют алиасы: чужой алиас предлагается как новый, а не срабатывает | `dune exec --root . test/identity_test.exe` | `identity_alias_ignores_namespace.sh` |
+| `cli-health-and-version` | CLI объявляет версию и честно проверяет живость базы: без базы health падает, а не печатает «ok» | `sh test/check_cli.sh` | `cli_health_ping_broken.sh` |
+| `test-harness-needs-db` | Обвязка тестов не молчит: тест, которому нужна база, без базы падает, а не проходит мимо | `sh test/check_tests_need_db.sh` | `test_harness_ignores_db_url.sh` |
+| `controls-prove-verifiers` | Каждый control меняет свой предмет ровно в одном месте, применим к текущим исходникам и объявлен control'ом ровно одного claim'а: claim без control'а — не claim | `sh test/check_controls.sh` | `control_breaks_two_places.sh` |
 
-Все четыре claim'а выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 23 claim'а выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
+
+Отрицательный control не имеет права ломать сборку: он ломает **поведение**,
+иначе падение verifier'а ничего не доказывает. Это проверяет сам
+`test/check_controls.sh` — каждый control обязан менять ровно один файл и
+оставаться применимым к текущим исходникам.
 
 Зелёный verdict относится **только** к объявленным claim'ам. Файлы вне
 покрытия `mathc` печатает списком `uncovered` — их надо сообщать вместе с
 вердиктом, а не по отдельности.
+
+Проверки, которым нужна база, берут её из `DOSKA_DATABASE_URL` (по умолчанию —
+локальный сокет `postgresql:///doska`); ни один verifier не зашивает способ
+подключения. Проверка «тест падает без базы» обязана спрашивать базу у того же
+сервера, что и рабочая база, — только другое имя. Иначе в CI, где postgres
+доступен по TCP, она падала бы по любой неработающей базе и не доказывала бы
+ничего.
 
 Правила работы с методом для агентов — в [AGENTS.md](AGENTS.md), раздел
 «Слой доказательств».
@@ -138,6 +182,11 @@ verifier падает и без control'а, он не проверяет нич�
 - `docs/design/doska-architecture-2026-11-16.md` — архитектура: границы,
   принципы, полный DDL, машина состояний, идентичность, интерфейсы, этапы,
   риски, решения D1–D3. Статус: принято.
+- `docs/development-guide.md` — ведение проекта: где мы находимся, как поднять
+  с нуля, как работать со слоем доказательств, что делать на этапе 2, какие
+  вопросы открыты. Статус: живой документ.
+- `docs/decision-log.md` — журнал решений: что, кем и почему решено, что
+  осталось открытым. Статус: append-only.
 - `docs/research/estate-research-2026-11-16.md` — разведка по estate
   (Teamboard, AngaraChat, Mattermost, pm-global, `subroutine`, `agent-kanban`):
   что переиспользуем, что нет, что дублируем. Статус: заменено.
