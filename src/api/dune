@@ -1,0 +1,10 @@
+; HTTP-интерфейс: Dream.
+(library
+ (name api)
+ (package doska)
+ (modules server)
+ (libraries
+  db
+  version
+  dream
+  yojson))

@@ -1,0 +1,7 @@
+; Разрешение имён: нормализация и поиск актора по алиасам.
+; Зависит только от домена: актора — это доменная сущность.
+(library
+ (name identity)
+ (package doska)
+ (modules resolve)
+ (libraries domain))

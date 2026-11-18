@@ -1,0 +1,17 @@
+_build/
+.result
+.direnv/
+*.install
+*.cmi
+*.cmx
+*.cmo
+*.cmxs
+*.o
+*.a
+*.cmt
+*.cmti
+*.annot
+*.merlin
+.merlin
+.oca
+.om

@@ -1,0 +1,10 @@
+(executable
+ (name doska)
+ (public_name doska)
+ (package doska)
+ (libraries
+  api
+  db
+  version
+  cmdliner
+  yojson))

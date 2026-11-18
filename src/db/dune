@@ -1,0 +1,11 @@
+; Доступ к PostgreSQL и собственный мигратор.
+; Домен сюда не смотрит: направление зависимостей строго «снаружи внутрь».
+(library
+ (name db)
+ (package doska)
+ (modules conn migrate)
+ (libraries
+  lwt
+  caqti
+  caqti-lwt.unix
+  caqti-driver-postgresql))

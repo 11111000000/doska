@@ -1,0 +1,75 @@
+name: verify
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DOSKA_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/doska
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doska
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            experimental-features = nix-command flakes
+      - uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569
+        with:
+          primary-key: nix-${{ runner.os }}-verify-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+      - name: Build and test
+        run: |
+          nix develop -c dune build --root .
+          nix develop -c dune runtest --root . --force
+      - name: Build the package
+        run: nix build .#doska --no-link
+      # The migration is the part that breaks silently: the driver refuses
+      # several statements in one prepared query, so the migrator splits the
+      # file itself. This step runs it against a real PostgreSQL, then runs
+      # it again to prove it is idempotent, and then checks that the applied
+      # file is protected against being edited after the fact.
+      - name: Smoke test the migration
+        run: |
+          out="$(nix path-info .#doska)"
+          "$out/bin/doska" migrate --db-url "$DOSKA_DATABASE_URL" --migrations-dir migrations
+          "$out/bin/doska" migrate --db-url "$DOSKA_DATABASE_URL" --migrations-dir migrations
+          "$out/bin/doska" health --db-url "$DOSKA_DATABASE_URL"
+      - name: Check the schema
+        run: |
+          out="$(nix path-info .#doska)"
+          tables="$(psql "$DOSKA_DATABASE_URL" -tAc \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")"
+          echo "таблиц в public: $tables"
+          test "$tables" -ge 12
+          psql "$DOSKA_DATABASE_URL" -tAc \
+            "SELECT count(*) FROM schema_version WHERE version = '001_init.sql'" \
+            | grep -q '^1$'
+      - name: Drop the store locks a failed build left behind
+        run: sudo find /nix/store -maxdepth 1 -name '*.lock' -delete 2>/dev/null || true

@@ -1,0 +1,8 @@
+(tests
+ (names
+  domain_test
+  identity_test)
+ (libraries
+  domain
+  identity
+  alcotest))

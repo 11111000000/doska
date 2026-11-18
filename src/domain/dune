@@ -1,0 +1,6 @@
+; Чистый домен: ни БД, ни HTTP, ни сети.
+; Зависимостей нет — значит правила приёмки можно тестировать без инфраструктуры.
+(library
+ (name domain)
+ (package doska)
+ (modules status actor task rules))
