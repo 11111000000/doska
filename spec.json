@@ -16,12 +16,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
         "review": {
           "by": "Peter",
-          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
-          "at": 1794989184,
-          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+          "reason": "этап 1: документ пополнён проверенными фактами первого среза (репозитории БД и REST /api/v1) и списком незакрытого; обязательства D1-D3, правила R1-R3 и план этапов не менялись. Решение владельца 18.11.2026: доделать",
+          "at": 1795011542,
+          "previous_digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631"
         }
       },
       "kind": "acceptance",
@@ -47,12 +47,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
         "review": {
           "by": "Peter",
-          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
-          "at": 1794989184,
-          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+          "reason": "этап 1: документ пополнён проверенными фактами первого среза (репозитории БД и REST /api/v1) и списком незакрытого; обязательства D1-D3, правила R1-R3 и план этапов не менялись. Решение владельца 18.11.2026: доделать",
+          "at": 1795011542,
+          "previous_digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631"
         }
       },
       "kind": "acceptance",
@@ -81,12 +81,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
         "review": {
           "by": "Peter",
-          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
-          "at": 1794989184,
-          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+          "reason": "этап 1: документ пополнён проверенными фактами первого среза (репозитории БД и REST /api/v1) и списком незакрытого; обязательства D1-D3, правила R1-R3 и план этапов не менялись. Решение владельца 18.11.2026: доделать",
+          "at": 1795011542,
+          "previous_digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631"
         }
       },
       "kind": "acceptance",
@@ -115,12 +115,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
         "review": {
           "by": "Peter",
-          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
-          "at": 1794989184,
-          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+          "reason": "этап 1: документ пополнён проверенными фактами первого среза (репозитории БД и REST /api/v1) и списком незакрытого; обязательства D1-D3, правила R1-R3 и план этапов не менялись. Решение владельца 18.11.2026: доделать",
+          "at": 1795011542,
+          "previous_digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631"
         }
       },
       "kind": "acceptance",
