@@ -1,11 +1,22 @@
-; Доступ к PostgreSQL и собственный мигратор.
+; Доступ к PostgreSQL, собственный мигратор и репозитории.
 ; Домен сюда не смотрит: направление зависимостей строго «снаружи внутрь».
 (library
  (name db)
  (package doska)
- (modules conn migrate)
+ (modules
+  conn
+  migrate
+  row
+  repo_actor
+  repo_project
+  repo_task
+  repo_evidence
+  repo_activity)
  (libraries
   lwt
+  yojson
+  domain
+  identity
   caqti
   caqti-lwt.unix
   caqti-driver-postgresql))

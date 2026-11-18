@@ -137,6 +137,117 @@
       "register": "fact",
       "control": "sh test/break/migration_no_checksum.sh",
       "waiver": null
+    },
+    {
+      "id": "api-transition-r1",
+      "text": "Запрет правила домена через API — это 403 с деталями перехода, а не 500: клиент должен отличать «правило запрещает» от «сервер сломался» (§6.1, D1, §4.2)",
+      "scope": [
+        "src/api/tasks.ml", "src/domain/rules.ml", "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "агент вне доверенного проекта получает 200 на переход in_review → done либо API отвечает 500 вместо 403",
+      "register": "fact",
+      "control": "sh test/break/api_forbidden_is_500.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-list-pagination",
+      "text": "Список задач отдаётся постранично: фильтры отбирают нужное, курсор следующей страницы приходит, пока список не кончился (§6.1)",
+      "scope": [
+        "src/api/tasks.ml", "src/db/repo_task.ml", "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "страница возвращает больше задач, чем limit, либо next_cursor пуст, когда следующая страница есть",
+      "register": "fact",
+      "control": "sh test/break/api_pagination_broken.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-idempotent-create",
+      "text": "Повторное создание задачи с той же парой (source, source_ref) возвращает ту же задачу и не плодит дубль (§3.3, §10.2)",
+      "scope": [
+        "src/db/repo_task.ml", "migrations/002_task_ref_seq.sql",
+        "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "повторное создание возвращает новую задачу, вторую строку с тем же (source, source_ref) либо ошибку вместо той же задачи",
+      "register": "fact",
+      "control": "sh test/break/api_create_not_idempotent.sh",
+      "waiver": null
+    },
+    {
+      "id": "repo-status-persistence",
+      "text": "Смена статуса сохраняется в базе, а version защищает задачу от гонки: правка с устаревшей версией не проходит (§3.3)",
+      "scope": [ "src/db/repo_task.ml", "test/repo_test.ml" ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "после смены статуса задача читается со старым статусом либо две правки с одной и той же версией проходят",
+      "register": "fact",
+      "control": "sh test/break/repo_status_not_saved.sh",
+      "waiver": null
     }
   ]
 }

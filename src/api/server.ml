@@ -1,7 +1,7 @@
 (** HTTP-интерфейс трекера.
 
-    На этапе 0 сервер отвечает только на служебные маршруты: [/healthz]
-    и [/version]. Остальные маршруты появятся вместе с REST API (§6.1). *)
+    Служебные маршруты ([/], [/version], [/healthz]) и REST API задач
+    ([/api/v1], §6.1 архитектуры). *)
 
 (** Тело ответа — JSON-строка: Dream принимает тело строкой, сериализацию
     делаем сами через Yojson. *)
@@ -34,11 +34,48 @@ let version _req =
         ("version", `String Version.version);
       ])
 
+(** Актор обязателен для всех маршрутов [/api/v1]: сервер должен знать, чьё
+    это действие, иначе правила приёмки не к кому привязать.
+
+    Здесь проверяется только наличие заголовка; существование актора и его
+    права проверяет обработчик ([Auth.actor_of]) — так заголовок не подменяет
+    проверку личности.
+
+    Идентификация этапа 1 — заголовок [X-Doska-Actor] (см. [Auth]); это не
+    аутентификация, её заменит этап 2. *)
+let require_actor (handler : Dream.handler) : Dream.handler =
+ fun req ->
+  match Dream.headers req Auth.header with
+  | [] ->
+      Errors.respond
+        (Errors.make Errors.Unauthorized
+           "не указан актор: пришлите заголовок X-Doska-Actor (временный механизм \
+            до этапа 2 — bearer-токены)")
+  | _handle :: _ -> handler req
+
+let api_routes =
+  [
+    Dream.get "/tasks" Tasks.list;
+    Dream.post "/tasks" Tasks.create;
+    Dream.get "/tasks/:ref" Tasks.get;
+    Dream.patch "/tasks/:ref" Tasks.patch;
+    Dream.post "/tasks/:ref/transition" Tasks.transition;
+    Dream.post "/tasks/:ref/assign" Tasks.assign;
+    Dream.post "/tasks/:ref/comment" Tasks.comment;
+    Dream.post "/tasks/:ref/evidence" Tasks.evidence;
+    Dream.get "/activity" Tasks.activity;
+    Dream.get "/actors" Tasks.actors;
+  ]
+
 let routes =
   [
     Dream.get "/" version;
     Dream.get "/version" version;
     Dream.get "/healthz" healthz;
+    (* [/api/v1/healthz] — вне области с актором: проверка живости сервера
+       не должна требовать заголовка. *)
+    Dream.get "/api/v1/healthz" healthz;
+    Dream.scope "/api/v1" [ require_actor ] api_routes;
   ]
 
 let handler = Dream.router routes

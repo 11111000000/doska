@@ -25,6 +25,8 @@ type t = {
   (** Человекочитаемый номер: [DSK-142]. Не переиспользуется. *)
   ref_ : string;
   project_id : string option;
+  (** Ключ проекта — денормализовано: человек читает «doska», а не uuid. *)
+  project_key : string option;
   parent_id : string option;
   kind : kind;
   status : Status.t;
@@ -32,14 +34,24 @@ type t = {
   title : string;
   description : string;
   assignee_id : string option;
+  assignee_name : string option;
   (** Заявитель: тот, кому важен результат. Он же принимает приёмку. *)
   requester_id : string option;
   reporter_id : string option;
+  created_by_id : string option;
   due_at : string option;
+  blocked_reason : string option;
   labels : string list;
+  (** Происхождение: [mattermost | teamboard | pm-global | api | agent]. *)
+  source : string option;
+  (** Обратная ссылка: post_id, json-путь. По паре (source, source_ref)
+      импорт не плодит дубли. *)
+  source_ref : string option;
   version : int;
   created_at : string;
   updated_at : string;
+  started_at : string option;
+  completed_at : string option;
 }
 
 let kind_to_string : kind -> string = function

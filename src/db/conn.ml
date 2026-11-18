@@ -86,3 +86,76 @@ let quote (s : string) : string =
     s;
   Buffer.add_char b '\'';
   Buffer.contents b
+
+(** Канонический UUID: 36 символов, дефисы на позициях 8, 13, 18, 23. *)
+let is_uuid (s : string) : bool =
+  let n = String.length s in
+  if n <> 36 then false
+  else
+    let ok = ref true in
+    String.iteri
+      (fun i c ->
+        match i with
+        | 8 | 13 | 18 | 23 -> if c <> '-' then ok := false
+        | _ ->
+            let code = Char.code c in
+            let digit = code >= 48 && code <= 57 in
+            let hex = (code >= 97 && code <= 102) || (code >= 65 && code <= 70) in
+            if not (digit || hex) then ok := false)
+      s;
+    !ok
+
+(** Литерал UUID для SQL.
+
+    Неверная форма — не ошибка драйвера, а «такого актора нет»: опечатка в
+    идентификаторе не должна выглядеть как поломка базы. *)
+let uuid_literal (s : string) : string option =
+  if is_uuid s then Some (Printf.sprintf "'%s'::uuid" s) else None
+
+(** Транзакция: файл применяется целиком, изменения задачи и журнала активности
+    тоже должны попасть в базу вместе или не попасть вовсе. *)
+let with_transaction conn (f : unit -> ('a, string) result Lwt.t) :
+    ('a, string) result Lwt.t =
+  let ( let* ) t g = Lwt.bind t g in
+  let* begun = exec_sql conn "BEGIN" in
+  match begun with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok () ->
+      let* outcome = f () in
+      (match outcome with
+      | Error e ->
+          let* _ = exec_sql conn "ROLLBACK" in
+          Lwt_result.lift (Error e)
+      | Ok value ->
+          let* committed = exec_sql conn "COMMIT" in
+          (match committed with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok () -> Lwt_result.lift (Ok value)))
+
+(** Строки результата как JSON.
+
+    Репозитории читают строки через [row_to_json]: состав полей задаётся
+    запросом, а разбор приходит в одном месте — здесь.
+
+    Порядок строк сохраняется: список задач отсортирован запросом, и
+    разворот списка сдвинул бы курсор пагинации не туда. *)
+let query_json_rows conn sql : (Yojson.Safe.t list, string) result Lwt.t =
+  Lwt.bind (query_strings conn sql) (fun outcome ->
+      match outcome with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok rows ->
+          let parsed =
+            List.fold_left
+              (fun acc row ->
+                match acc with
+                | Error e -> Error e
+                | Ok acc -> (
+                    match Yojson.Safe.from_string row with
+                    | json -> Ok (json :: acc)
+                    | exception Yojson.Json_error e -> Error e))
+              (Ok []) rows
+          in
+          match parsed with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok reversed -> Lwt_result.lift (Ok (List.rev reversed)))
+

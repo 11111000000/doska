@@ -2,9 +2,18 @@
 (library
  (name api)
  (package doska)
- (modules server)
+ (modules
+  errors
+  params
+  auth
+  view
+  tasks
+  server)
  (libraries
   db
+  domain
+  identity
+  lwt
   version
   dream
   yojson))

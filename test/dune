@@ -1,8 +1,34 @@
+; Тесты, которым нужна живая база, берут её из DOSKA_DATABASE_URL, а каталог
+; миграций находят сами: тест применяет миграции к своей базе и не зависит от
+; того, что кто-то запускал мигратор заранее.
+
+; Общая обвязка: подключение, фикстуры, уборка за собой.
+(library
+ (name support)
+ (modules support)
+ (libraries
+  db
+  domain))
+
 (tests
  (names
   domain_test
-  identity_test)
+  identity_test
+  repo_test
+  api_test)
+ (modules
+  domain_test
+  identity_test
+  repo_test
+  api_test)
  (libraries
+  support
+  db
   domain
   identity
-  alcotest))
+  api
+  alcotest
+  lwt
+  yojson
+  dream
+  unix))
