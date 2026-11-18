@@ -2,7 +2,11 @@
   "schema_version": 5,
   "goal": {
     "text": "Каждое обязательство из принятой архитектуры doska связано с проверяемым доказательством",
-    "scope": [ "src/", "test/", "migrations/" ],
+    "scope": [
+      "src/",
+      "test/",
+      "migrations/"
+    ],
     "by": "Peter",
     "at": 1794988308,
     "reason": null
@@ -11,7 +15,10 @@
     {
       "id": "r1-agent-acceptance",
       "text": "Агент не закрывает задачу сам: переход in_review → done доступен агенту только в проекте с autonomy = auto (решение D1, §4.2)",
-      "scope": [ "src/domain/rules.ml", "test/domain_test.ml" ],
+      "scope": [
+        "src/domain/rules.ml",
+        "test/domain_test.ml"
+      ],
       "source": {
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
@@ -42,7 +49,10 @@
     {
       "id": "identity-resolution",
       "text": "Имя «Пётр» и его варианты разрешаются в одного актора, а нераспознанное имя не теряется, а возвращается заглушкой (§5.2)",
-      "scope": [ "src/identity/resolve.ml", "test/identity_test.ml" ],
+      "scope": [
+        "src/identity/resolve.ml",
+        "test/identity_test.ml"
+      ],
       "source": {
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
@@ -74,7 +84,8 @@
       "id": "migration-idempotent",
       "text": "Схема doska разворачивается повторно без дублей: повторное применение миграции не создаёт ни дублей таблиц, ни задвоенных типов (этап 0, §9.2)",
       "scope": [
-        "src/db/migrate.ml", "migrations/001_init.sql",
+        "src/db/migrate.ml",
+        "migrations/001_init.sql",
         "test/check_migration.sh"
       ],
       "source": {
@@ -108,7 +119,8 @@
       "id": "migration-immutable",
       "text": "Файл миграции, уже применённый, нельзя менять молча: мигратор сверяет контрольную сумму и отказывается работать (§9.2)",
       "scope": [
-        "src/db/migrate.ml", "migrations/001_init.sql",
+        "src/db/migrate.ml",
+        "migrations/001_init.sql",
         "test/check_migration.sh"
       ],
       "source": {
@@ -142,7 +154,9 @@
       "id": "api-transition-r1",
       "text": "Запрет правила домена через API — это 403 с деталями перехода, а не 500: клиент должен отличать «правило запрещает» от «сервер сломался» (§6.1, D1, §4.2)",
       "scope": [
-        "src/api/tasks.ml", "src/domain/rules.ml", "test/api_test.ml"
+        "src/api/tasks.ml",
+        "src/domain/rules.ml",
+        "test/api_test.ml"
       ],
       "source": {
         "kind": "madr",
@@ -170,7 +184,9 @@
       "id": "api-list-pagination",
       "text": "Список задач отдаётся постранично: фильтры отбирают нужное, курсор следующей страницы приходит, пока список не кончился (§6.1)",
       "scope": [
-        "src/api/tasks.ml", "src/db/repo_task.ml", "test/api_test.ml"
+        "src/api/tasks.ml",
+        "src/db/repo_task.ml",
+        "test/api_test.ml"
       ],
       "source": {
         "kind": "madr",
@@ -198,7 +214,8 @@
       "id": "api-idempotent-create",
       "text": "Повторное создание задачи с той же парой (source, source_ref) возвращает ту же задачу и не плодит дубль (§3.3, §10.2)",
       "scope": [
-        "src/db/repo_task.ml", "migrations/002_task_ref_seq.sql",
+        "src/db/repo_task.ml",
+        "migrations/002_task_ref_seq.sql",
         "test/api_test.ml"
       ],
       "source": {
@@ -226,7 +243,10 @@
     {
       "id": "repo-status-persistence",
       "text": "Смена статуса сохраняется в базе, а version защищает задачу от гонки: правка с устаревшей версией не проходит (§3.3)",
-      "scope": [ "src/db/repo_task.ml", "test/repo_test.ml" ],
+      "scope": [
+        "src/db/repo_task.ml",
+        "test/repo_test.ml"
+      ],
       "source": {
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
@@ -247,6 +267,484 @@
       "falsifier": "после смены статуса задача читается со старым статусом либо две правки с одной и той же версией проходят",
       "register": "fact",
       "control": "sh test/break/repo_status_not_saved.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-error-contract",
+      "text": "Ошибки API различаются по классу: клиент отличает «запрос неправильный» (400), «нужна аутентификация» (401), «правило запрещает» (403), «нет ресурса» (404) и «конфликт версии» (409); тело ошибки — один и тот же объект с кодом и сообщением (§6.1, «Факт на 18.11.2026: этап 1»)",
+      "scope": [
+        "src/api/errors.ml",
+        "src/api/dune",
+        "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "запрет правила отдаётся 200 или 400 либо тело ошибки не содержит кода и сообщения",
+      "register": "fact",
+      "control": "sh test/break/api_error_status_is_400.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-actor-required",
+      "text": "Актор обязателен: запрос к /api/v1 без заголовка X-Doska-Actor отвечает 401, и неизвестный логин — тоже 401, а не 403 и не анонимный доступ (§6.1)",
+      "scope": [
+        "src/api/auth.ml",
+        "src/api/server.ml",
+        "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "запрос без актора проходит дальше или отвечает не 401",
+      "register": "fact",
+      "control": "sh test/break/api_actor_error_is_403.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-view-links",
+      "text": "Карточка задачи отдаёт читаемые человеком ссылки: исполнитель — именем и идентификатором, а не только uuid (§3.1, П1)",
+      "scope": [
+        "src/api/view.ml",
+        "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "в поле assignee отдаётся идентификатор вместо имени либо поле отсутствует",
+      "register": "fact",
+      "control": "sh test/break/api_view_assignee_is_id.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-invalid-body",
+      "text": "Битое тело запроса — ошибка запроса (400), а не поломка сервера (500): разбор тела не роняет обработчик (§6.1)",
+      "scope": [
+        "src/api/params.ml",
+        "test/api_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "битое тело даёт 500 или проходит как пустое",
+      "register": "fact",
+      "control": "sh test/break/api_invalid_body_is_500.sh",
+      "waiver": null
+    },
+    {
+      "id": "db-value-escaping",
+      "text": "Значения, попадающие в SQL, экранируются: кавычка в тексте не ломает запрос, а значение доезжает до базы целым (решение этапа 1: SQL собирается из проверенных значений и экранируется Conn.quote)",
+      "scope": [
+        "src/db/conn.ml",
+        "src/db/row.ml",
+        "src/db/repo_task.ml",
+        "src/db/dune",
+        "test/repo_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "значение с кавычкой ломает запрос или сохраняется не тем, чем было",
+      "register": "fact",
+      "control": "sh test/break/db_quote_not_escaped.sh",
+      "waiver": null
+    },
+    {
+      "id": "db-transaction-atomicity",
+      "text": "Транзакция цела: сбой внутри неё не оставляет изменений — изменения обязательства и записи в журнал идут вместе или не идут вовсе (§3.3, P4)",
+      "scope": [
+        "src/db/conn.ml",
+        "src/db/repo_task.ml",
+        "src/db/repo_activity.ml",
+        "test/repo_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "после сбоя в транзакции изменения остаются в базе",
+      "register": "fact",
+      "control": "sh test/break/db_transaction_commits_on_error.sh",
+      "waiver": null
+    },
+    {
+      "id": "db-activity-filters",
+      "text": "Журнал выбирается по фильтрам: выборка по задаче не содержит событий другой задачи (§3.6, P4)",
+      "scope": [
+        "src/db/repo_activity.ml",
+        "test/repo_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "в выборку по задаче попадают события другой задачи",
+      "register": "fact",
+      "control": "sh test/break/db_activity_filter_ignored.sh",
+      "waiver": null
+    },
+    {
+      "id": "db-actor-lookup",
+      "text": "Актёр находится по своему логину, а не по отображаемому имени (§5.2)",
+      "scope": [
+        "src/db/repo_actor.ml",
+        "test/repo_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "поиск актора по логину не находит актёра",
+      "register": "fact",
+      "control": "sh test/break/db_actor_by_display_name.sh",
+      "waiver": null
+    },
+    {
+      "id": "db-project-lookup",
+      "text": "Проект находится по своему ключу, а не по названию (§3.2)",
+      "scope": [
+        "src/db/repo_project.ml",
+        "src/db/dune",
+        "test/repo_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "поиск проекта по ключу не находит проект",
+      "register": "fact",
+      "control": "sh test/break/db_project_by_name.sh",
+      "waiver": null
+    },
+    {
+      "id": "db-evidence-ownership",
+      "text": "Доказательство принадлежит своей задаче: в списке доказательств чужой задачи его нет (§3.4)",
+      "scope": [
+        "src/db/repo_evidence.ml",
+        "test/repo_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/repo_test.exe"
+        }
+      ],
+      "falsifier": "доказательство одной задачи попадает в список другой",
+      "register": "fact",
+      "control": "sh test/break/db_evidence_without_task_filter.sh",
+      "waiver": null
+    },
+    {
+      "id": "domain-closed-types",
+      "text": "Домен — замкнутые типы, и имя каждого варианта обратимо: to_string и of_string возвращают друг друга, а чужое имя не принимается (§4.2, §3.1)",
+      "scope": [
+        "src/domain/status.ml",
+        "src/domain/task.ml",
+        "src/domain/actor.ml",
+        "src/domain/project.ml",
+        "src/domain/evidence.ml",
+        "src/domain/activity.ml",
+        "src/domain/comment.ml",
+        "src/domain/dune",
+        "test/domain_types_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/domain_types_test.exe"
+        }
+      ],
+      "falsifier": "имя варианта не разбирается обратно либо два варианта названы одинаково",
+      "register": "fact",
+      "control": "sh test/break/domain_status_renamed.sh",
+      "waiver": null
+    },
+    {
+      "id": "identity-alias-namespace",
+      "text": "Пространства имён разделяют алиасы: алиас из чужого пространства не работает как свой, а предлагается как новый алиас текущего (§5.2)",
+      "scope": [
+        "src/identity/resolve.ml",
+        "src/identity/dune",
+        "test/identity_test.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/identity_test.exe"
+        }
+      ],
+      "falsifier": "алиас из другого пространства начинает работать как свой",
+      "register": "fact",
+      "control": "sh test/break/identity_alias_ignores_namespace.sh",
+      "waiver": null
+    },
+    {
+      "id": "cli-health-and-version",
+      "text": "CLI объявляет версию и честно проверяет живость базы: без базы health падает, а не печатает «ok» (§6.3, §9.1)",
+      "scope": [
+        "src/bin/doska.ml",
+        "src/bin/dune",
+        "src/version/version.ml",
+        "src/version/dune",
+        "test/check_cli.sh",
+        "src/db/conn.ml"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "sh test/check_cli.sh"
+        }
+      ],
+      "falsifier": "health печатает «ok» при недоступной базе либо версия не объявлена",
+      "register": "fact",
+      "control": "sh test/break/cli_health_ping_broken.sh",
+      "waiver": null
+    },
+    {
+      "id": "test-harness-needs-db",
+      "text": "Обвязка тестов не молчит: тест, которому нужна база, без базы падает, а не проходит мимо (решение этапа 1: тесты живут на настоящей базе)",
+      "scope": [
+        "test/support.ml",
+        "test/dune",
+        "test/check_tests_need_db.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "sh test/check_tests_need_db.sh"
+        }
+      ],
+      "falsifier": "тест проходит без базы либо обвязка подставляет чужую базу молча",
+      "register": "fact",
+      "control": "sh test/break/test_harness_ignores_db_url.sh",
+      "waiver": null
+    },
+    {
+      "id": "controls-prove-verifiers",
+      "text": "Каждый отрицательный control меняет свой предмет ровно в одном месте, применим к текущим исходникам и объявлен control’ом ровно одного claim’а в spec.json: claim без control’а — не claim (math-coding)",
+      "scope": [
+        "test/break/api_actor_error_is_403.sh",
+        "test/break/api_create_not_idempotent.sh",
+        "test/break/api_error_status_is_400.sh",
+        "test/break/api_forbidden_is_500.sh",
+        "test/break/api_invalid_body_is_500.sh",
+        "test/break/api_pagination_broken.sh",
+        "test/break/api_view_assignee_is_id.sh",
+        "test/break/cli_health_ping_broken.sh",
+        "test/break/control_breaks_two_places.sh",
+        "test/break/db_activity_filter_ignored.sh",
+        "test/break/db_actor_by_display_name.sh",
+        "test/break/db_evidence_without_task_filter.sh",
+        "test/break/db_project_by_name.sh",
+        "test/break/db_quote_not_escaped.sh",
+        "test/break/db_transaction_commits_on_error.sh",
+        "test/break/domain_status_renamed.sh",
+        "test/break/identity_alias_ignores_namespace.sh",
+        "test/break/identity_yo.sh",
+        "test/break/migration_no_checksum.sh",
+        "test/break/migration_not_idempotent.sh",
+        "test/break/r1_autonomy.sh",
+        "test/break/repo_status_not_saved.sh",
+        "test/break/test_harness_ignores_db_url.sh",
+        "test/check_controls.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "6a66ae3e7f7598022367fdfc5d880cfb8d1c19f86253fec96229660474a6fa5e",
+        "review": null
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "sh test/check_controls.sh"
+        }
+      ],
+      "falsifier": "control меняет больше одного места, не применим к исходникам или объявлен у нескольких claim’ов",
+      "register": "fact",
+      "control": "sh test/break/control_breaks_two_places.sh",
       "waiver": null
     }
   ]

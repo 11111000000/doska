@@ -28,7 +28,12 @@ case "$mode" in
     ;;
 esac
 
-: "${DOSKA_DATABASE_URL:?задайте DOSKA_DATABASE_URL (например postgresql:///doska)}"
+# База по умолчанию — та же, что у остальных проверок (test/support.ml,
+# Db.Conn.default_uri). Слой доказательств запускает проверки в своём
+# окружении, и требование явной переменной делало бы доказательство
+# непроверяемым вне CI.
+DOSKA_DATABASE_URL=${DOSKA_DATABASE_URL:-postgresql:///doska}
+export DOSKA_DATABASE_URL
 
 root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"

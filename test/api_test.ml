@@ -8,6 +8,10 @@ open Domain
 
 let conn = Support.connect ()
 
+(* Фикстуры этого теста общие с другим его прогоном: блокируемся, чтобы
+   уборка одного прогона не удалила фикстуры другого. *)
+let () = Support.lock conn 4712
+
 (* Уборка — до фикстур: [Alcotest.run] завершает процесс, код после него не
    выполняется, поэтому строки прошлого прогона убираем на входе. *)
 let () =
@@ -64,6 +68,12 @@ let error_code value =
       match List.assoc_opt "code" fields with Some (`String code) -> code | _ -> "")
   | _ -> ""
 
+let error_message value =
+  match field "error" value with
+  | Some (`Assoc fields) -> (
+      match List.assoc_opt "message" fields with Some (`String m) -> m | _ -> "")
+  | _ -> ""
+
 let task_of value =
   match field "task" value with Some task -> task | None -> `Null
 
@@ -117,6 +127,29 @@ let test_without_actor_is_unauthorized () =
   let code, text = call "/api/v1/tasks" in
   Alcotest.(check int) "код ответа" 401 code;
   Alcotest.(check string) "код ошибки" "unauthorized" (error_code (json text))
+
+(** Тело ошибки — один и тот же формат для всех классов ошибки: клиент
+    отличает «запрос неправильный» от «правило запрещает» по коду, а не по
+    тексту (§6.1). *)
+let test_error_body_is_uniform () =
+  let code, text = call "/api/v1/tasks" in
+  Alcotest.(check int) "код ответа" 401 code;
+  let value = json text in
+  Alcotest.(check string) "код ошибки" "unauthorized" (error_code value);
+  Alcotest.(check bool) "в теле есть сообщение" true (error_message value <> "");
+  (match value with
+  | `Assoc fields ->
+      Alcotest.(check (list string)) "в теле только error" [ "error" ]
+        (List.map fst fields)
+  | _ -> Alcotest.fail "тело ошибки — не объект")
+
+(** Битое тело — ошибка запроса, а не поломка сервера: 400, а не 500. *)
+let test_broken_body_is_bad_request () =
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr") ~body:"{\"title\": " "/api/v1/tasks"
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
 
 let test_forbidden_transition_is_403 () =
   let _, created = create_task ~status:"in_review" () in
@@ -269,6 +302,9 @@ let () =
         [
           Alcotest.test_case "задача создаётся" `Quick test_create_task;
           Alcotest.test_case "без актора — 401" `Quick test_without_actor_is_unauthorized;
+          Alcotest.test_case "тело ошибки — единый формат" `Quick
+            test_error_body_is_uniform;
+          Alcotest.test_case "битое тело — 400" `Quick test_broken_body_is_bad_request;
           Alcotest.test_case "запрещённый переход — 403, а не 500" `Quick
             test_forbidden_transition_is_403;
           Alcotest.test_case "в доверенном проекте агент принимает работу" `Quick

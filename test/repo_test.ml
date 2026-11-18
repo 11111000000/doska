@@ -8,6 +8,10 @@ open Domain
 
 let conn = Support.connect ()
 
+(* Фикстуры этого теста общие с другим его прогоном: блокируемся, чтобы
+   уборка одного прогона не удалила фикстуры другого. *)
+let () = Support.lock conn 4713
+
 (* Уборка — до фикстур: [Alcotest.run] завершает процесс, код после него не
    выполняется, поэтому строки прошлого прогона убираем на входе. *)
 let () =
@@ -63,6 +67,26 @@ let expect_ok what f =
   match Support.run (f ()) with
   | Ok value -> value
   | Error e -> Alcotest.fail (what ^ ": " ^ e)
+
+(** Аргументы создания задачи: у тестов свой заголовок и своя пара
+    (source, source_ref), чтобы прогоны не мешали друг другу. *)
+let task_args ~title ~source_ref () : Db.Repo_task.create_args =
+  {
+    Db.Repo_task.title = title;
+    description = "описание задачи";
+    project_id = Some project.Project.id;
+    kind = Task.Task;
+    status = Status.Backlog;
+    priority = Task.P2;
+    assignee_id = None;
+    requester_id = Some human.Actor.id;
+    reporter_id = Some human.Actor.id;
+    created_by_id = Some human.Actor.id;
+    due_at = None;
+    labels = [];
+    source = Some "test-repo";
+    source_ref = Some source_ref;
+  }
 
 (* ----------------------------------------------------------------- задачи --- *)
 
@@ -197,6 +221,57 @@ let test_activity_is_recorded () =
           Alcotest.(check string) "действие" "status_changed"
             (Activity.action_to_string first.Activity.action))
 
+(* --------------------------------------------------- значения, транзакции --- *)
+
+(** Значение с кавычкой доезжает до базы целым: SQL собирается из проверенных
+    значений и экранируется (решение этапа 1). *)
+let test_values_are_escaped () =
+  let title = "О'Борис' и «кавычки»" in
+  let args = task_args ~title ~source_ref:(next_source_ref ()) () in
+  let created = expect_ok "создание" (fun () -> Db.Repo_task.create conn args) in
+  match created with
+  | Db.Repo_task.Existing _ -> Alcotest.fail "новая задача уже существовала"
+  | Db.Repo_task.Created task ->
+      let found =
+        expect_ok "чтение задачи" (fun () ->
+            Db.Repo_task.by_ref conn task.Task.ref_)
+      in
+      (match found with
+      | None -> Alcotest.fail "задача не найдена после создания"
+      | Some found -> Alcotest.(check string) "title" title found.Task.title)
+
+(** Сбой в середине транзакции не оставляет половину: изменения задачи и
+    записи в журнал идут вместе или не идут вовсе. *)
+let test_transaction_rolls_back () =
+  let args =
+    task_args ~title:"Задача, которая не должна остаться"
+      ~source_ref:(next_source_ref ()) ()
+  in
+  let created_ref = ref "" in
+  let outcome =
+    Support.run
+      (Db.Conn.with_transaction conn (fun () ->
+           Lwt.bind (Db.Repo_task.create conn args) (fun created ->
+               match created with
+               | Error e -> Lwt_result.lift (Error e)
+               | Ok (Db.Repo_task.Created task) ->
+                   created_ref := task.Task.ref_;
+                   Lwt_result.lift (Error "сбой в середине транзакции")
+               | Ok (Db.Repo_task.Existing task) ->
+                   created_ref := task.Task.ref_;
+                   Lwt_result.lift (Error "сбой в середине транзакции"))))
+  in
+  (match outcome with
+  | Error _ -> ()
+  | Ok _ -> Alcotest.fail "транзакция не сообщила об ошибке");
+  let found =
+    expect_ok "чтение задачи" (fun () ->
+        Db.Repo_task.by_ref conn !created_ref)
+  in
+  (match found with
+  | None -> ()
+  | Some _ -> Alcotest.fail "задача осталась в базе после отката транзакции")
+
 (* ------------------------------------------------------------------ списки --- *)
 
 let filters ?project ?status ?assignee ~limit ?cursor () : Db.Repo_task.filters =
@@ -288,6 +363,85 @@ let test_pagination_walks_all_tasks () =
       Alcotest.(check int) "дубликатов нет" 3
         (List.length (List.sort_uniq String.compare seen)))
 
+(* ------------------------------------------- журнал, доказательства, справочники --- *)
+
+let record_event task_id action =
+  expect_ok "событие" (fun () ->
+      Db.Repo_activity.record conn ~action ~task_id:(Some task_id) ~project_id:None
+        ~actor_id:(Some human.Actor.id) ~from_value:None ~to_value:None
+        ~summary:(Some "переход") ~interface_:"test" ())
+
+(** Выборка журнала отбирает события своей задачи: чужие изменения в неё не
+    попадают (P4, §3.6). *)
+let test_activity_filter_selects_task () =
+  match (create_task (), create_task ()) with
+  | Db.Repo_task.Created first, Db.Repo_task.Created second ->
+      ignore (record_event first.Task.id Activity.Status_changed);
+      ignore (record_event second.Task.id Activity.Commented);
+      let filters : Db.Repo_activity.filters =
+        {
+          Db.Repo_activity.project = None;
+          task = Some first.Task.ref_;
+          actor = None;
+          since = None;
+          limit = 10;
+          cursor = None;
+        }
+      in
+      let items =
+        expect_ok "чтение журнала" (fun () -> Db.Repo_activity.list conn filters)
+      in
+      Alcotest.(check int) "в выборке только события своей задачи" 1
+        (List.length items);
+      (match items with
+      | [] -> Alcotest.fail "событие не найдено"
+      | first_item :: _ ->
+          Alcotest.(check string) "действие" "status_changed"
+            (Activity.action_to_string first_item.Activity.action))
+  | _ -> Alcotest.fail "задачи не созданы"
+
+(** Доказательство принадлежит своей задаче: у другой задачи его нет
+    (§3.4). *)
+let test_evidence_belongs_to_task () =
+  match (create_task (), create_task ()) with
+  | Db.Repo_task.Created first, Db.Repo_task.Created second ->
+      let evidence =
+        expect_ok "доказательство" (fun () ->
+            Db.Repo_evidence.add conn ~task_id:first.Task.id ~kind:Evidence.Commit
+              ~ref_:"abc123" ~uri:"https://example.org/commit/abc123"
+              ~author_id:human.Actor.id ())
+      in
+      Alcotest.(check string) "ref" "abc123" evidence.Evidence.ref_;
+      let own =
+        expect_ok "чтение своих доказательств" (fun () ->
+            Db.Repo_evidence.list_for_task conn ~task_id:first.Task.id)
+      in
+      Alcotest.(check int) "свои доказательства на месте" 1 (List.length own);
+      let other =
+        expect_ok "чтение чужих доказательств" (fun () ->
+            Db.Repo_evidence.list_for_task conn ~task_id:second.Task.id)
+      in
+      Alcotest.(check int) "у другой задачи доказательств нет" 0 (List.length other)
+  | _ -> Alcotest.fail "задачи не созданы"
+
+(** Актёр находится по своему логину, проект — по своему ключу: логин и ключ
+    это то, чем на них ссылаются остальные части системы. *)
+let test_actor_found_by_handle () =
+  let found =
+    expect_ok "поиск актора" (fun () -> Db.Repo_actor.by_handle conn "repo-legist")
+  in
+  match found with
+  | None -> Alcotest.fail "актор не найден по логину"
+  | Some found -> Alcotest.(check string) "id" agent.Actor.id found.Actor.id
+
+let test_project_found_by_key () =
+  let found =
+    expect_ok "поиск проекта" (fun () -> Db.Repo_project.by_key conn "REPOMAIN")
+  in
+  match found with
+  | None -> Alcotest.fail "проект не найден по ключу"
+  | Some found -> Alcotest.(check string) "key" project.Project.key found.Project.key
+
 (* --------------------------------------------------------------------- run --- *)
 
 let () =
@@ -304,6 +458,10 @@ let () =
             test_comments_and_evidence;
           Alcotest.test_case "событие попадает в журнал" `Quick
             test_activity_is_recorded;
+          Alcotest.test_case "значение с кавычкой доезжает целым" `Quick
+            test_values_are_escaped;
+          Alcotest.test_case "сбой в транзакции откатывает изменения" `Quick
+            test_transaction_rolls_back;
         ] );
       ( "списки",
         [
@@ -311,5 +469,19 @@ let () =
             test_filters_select_tasks;
           Alcotest.test_case "пагинация обходит все задачи" `Quick
             test_pagination_walks_all_tasks;
+        ] );
+      ( "журнал и доказательства",
+        [
+          Alcotest.test_case "выборка журнала отбирает свою задачу" `Quick
+            test_activity_filter_selects_task;
+          Alcotest.test_case "доказательство принадлежит своей задаче" `Quick
+            test_evidence_belongs_to_task;
+        ] );
+      ( "справочники",
+        [
+          Alcotest.test_case "актор находится по логину" `Quick
+            test_actor_found_by_handle;
+          Alcotest.test_case "проект находится по ключу" `Quick
+            test_project_found_by_key;
         ] );
     ]

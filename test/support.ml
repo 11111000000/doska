@@ -94,6 +94,24 @@ let ensure_project conn ~prefix ~key ~name ~autonomy : Domain.Project.t =
       | Error e -> failwith ("проект не создан: " ^ e))
   | Error e -> failwith ("проект не прочитан: " ^ e)
 
+(** Блокировка на время прогона.
+
+    Тесты живут на настоящей базе, и фикстуры у них общие: актёры
+    «api-petr», проекты «APIMAIN» и так далее. Два прогона одного теста,
+    идущие одновременно, задели бы фикстуры друг друга — уборка одного
+    удалила бы строки, только что созданные другим. Advisory lock
+    сериализует прогоны: второй ждёт, пока первый закончит.
+
+    Блокировка снимается вместе с соединением, то есть при выходе из
+    процесса: зависшего прогона она не оставляет. *)
+let lock conn id =
+  let sql =
+    Printf.sprintf "SELECT 'locked'::text FROM pg_advisory_lock(%d)" id
+  in
+  match run (Db.Conn.query_strings conn sql) with
+  | Ok _ -> ()
+  | Error e -> failwith ("не удалось взять advisory lock: " ^ e)
+
 (** Убрать за собой: тесты не должны оставлять мусор в рабочей базе. *)
 let cleanup conn ~source ~actor_prefix ~project_prefix =
   let statements =
