@@ -47,7 +47,9 @@ curl -s -H 'X-Doska-Actor: petr' http://[::1]:8500/api/v1/tasks
 Ответ на `POST /api/v1/tasks` содержит `ref` вида `DSK-1`; повторное создание с
 той же парой `(source, source_ref)` возвращает ту же задачу и не плодит дубль.
 
-Этапы 2–10 — в `docs/design/doska-architecture-2026-11-16.md`.
+Этапы 2–10 — в `docs/design/doska-architecture-2026-11-16.md`. Как вести
+разработку, где мы находимся и что делать дальше — в
+[docs/development-guide.md](docs/development-guide.md).
 
 ## Сборка и запуск
 
@@ -82,7 +84,7 @@ doska serve --port 8500
 
 | Переменная | Смысл |
 |---|---|
-| `DOSKA_DATABASE_URL` | URI PostgreSQL. Перекрывает `--db-url`. Секреты в код не прошиты |
+| `DOSKA_DATABASE_URL` | URI PostgreSQL: значение по умолчанию для `--db-url`, явный флаг перекрывает переменную. Секреты в код не прошиты |
 
 ### Требования к базе
 
@@ -180,6 +182,11 @@ verifier падает и без control'а, он не проверяет нич�
 - `docs/design/doska-architecture-2026-11-16.md` — архитектура: границы,
   принципы, полный DDL, машина состояний, идентичность, интерфейсы, этапы,
   риски, решения D1–D3. Статус: принято.
+- `docs/development-guide.md` — ведение проекта: где мы находимся, как поднять
+  с нуля, как работать со слоем доказательств, что делать на этапе 2, какие
+  вопросы открыты. Статус: живой документ.
+- `docs/decision-log.md` — журнал решений: что, кем и почему решено, что
+  осталось открытым. Статус: append-only.
 - `docs/research/estate-research-2026-11-16.md` — разведка по estate
   (Teamboard, AngaraChat, Mattermost, pm-global, `subroutine`, `agent-kanban`):
   что переиспользуем, что нет, что дублируем. Статус: заменено.
