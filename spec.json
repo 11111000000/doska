@@ -1,0 +1,142 @@
+{
+  "schema_version": 5,
+  "goal": {
+    "text": "Каждое обязательство из принятой архитектуры doska связано с проверяемым доказательством",
+    "scope": [ "src/", "test/", "migrations/" ],
+    "by": "Peter",
+    "at": 1794988308,
+    "reason": null
+  },
+  "claims": [
+    {
+      "id": "r1-agent-acceptance",
+      "text": "Агент не закрывает задачу сам: переход in_review → done доступен агенту только в проекте с autonomy = auto (решение D1, §4.2)",
+      "scope": [ "src/domain/rules.ml", "test/domain_test.ml" ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "review": {
+          "by": "Peter",
+          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
+          "at": 1794989184,
+          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/domain_test.exe"
+        }
+      ],
+      "falsifier": "агент в проекте с autonomy = human_gate получает разрешение закрыть задачу",
+      "register": "fact",
+      "control": "sh test/break/r1_autonomy.sh",
+      "waiver": null
+    },
+    {
+      "id": "identity-resolution",
+      "text": "Имя «Пётр» и его варианты разрешаются в одного актора, а нераспознанное имя не теряется, а возвращается заглушкой (§5.2)",
+      "scope": [ "src/identity/resolve.ml", "test/identity_test.ml" ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "review": {
+          "by": "Peter",
+          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
+          "at": 1794989184,
+          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/identity_test.exe"
+        }
+      ],
+      "falsifier": "нормализация не приводит «Пётр» к «петр» либо неизвестное имя теряется вместо заглушки",
+      "register": "fact",
+      "control": "sh test/break/identity_yo.sh",
+      "waiver": null
+    },
+    {
+      "id": "migration-idempotent",
+      "text": "Схема doska разворачивается повторно без дублей: повторное применение миграции не создаёт ни дублей таблиц, ни задвоенных типов (этап 0, §9.2)",
+      "scope": [
+        "src/db/migrate.ml", "migrations/001_init.sql",
+        "test/check_migration.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "review": {
+          "by": "Peter",
+          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
+          "at": 1794989184,
+          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "sh test/check_migration.sh idempotent"
+        }
+      ],
+      "falsifier": "повторное применение миграции создаёт дубли таблиц или типов либо падает",
+      "register": "fact",
+      "control": "sh test/break/migration_not_idempotent.sh",
+      "waiver": null
+    },
+    {
+      "id": "migration-immutable",
+      "text": "Файл миграции, уже применённый, нельзя менять молча: мигратор сверяет контрольную сумму и отказывается работать (§9.2)",
+      "scope": [
+        "src/db/migrate.ml", "migrations/001_init.sql",
+        "test/check_migration.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "175fbd56ed9af01a687f6ef1e786114bdf57dba13a33b520c36b6ca842b3c631",
+        "review": {
+          "by": "Peter",
+          "reason": "добавлен раздел о слое доказательств math-coding; обязательства D1, §4.2, §5.2 и §9.2 не менялись",
+          "at": 1794989184,
+          "previous_digest": "2036603de14df35eee04dbc5eb849c91a24d36b245da865dce42b236a0527198"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "sh test/check_migration.sh immutable"
+        }
+      ],
+      "falsifier": "изменённый после применения файл миграции принимается мигратором без ошибки",
+      "register": "fact",
+      "control": "sh test/break/migration_no_checksum.sh",
+      "waiver": null
+    }
+  ]
+}

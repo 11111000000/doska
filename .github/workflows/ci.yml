@@ -16,7 +16,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       DOSKA_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/doska
     services:
@@ -71,5 +71,32 @@ jobs:
           psql "$DOSKA_DATABASE_URL" -tAc \
             "SELECT count(*) FROM schema_version WHERE version = '001_init.sql'" \
             | grep -q '^1$'
+      # Слой доказательств math-coding. Бинарь ставится из закреплённого
+      # релиза math-coding и сверяется с хешем, зашитым в workflow: версия
+      # из «последнего релиза» недопустима, потому что проверка должна быть
+      # воспроизводимой.
+      - name: Install mathc
+        run: |
+          set -eu
+          version=v5.0.7
+          asset="mathc-${version}-linux-x86_64"
+          expected="4df95e52bd4f3b8289fed0851198f43a0aad97ea9274a3f324cb112fc0945f35"
+          base="https://github.com/11111000000/math-coding/releases/download/${version}"
+          dir="$RUNNER_TEMP/mathc"
+          mkdir -p "$dir"
+          curl -fsSL "$base/$asset" -o "$dir/mathc"
+          actual="$(sha256sum "$dir/mathc" | cut -d' ' -f1)"
+          if [ "$actual" != "$expected" ]; then
+            echo "не совпала контрольная сумма mathc: ожидалось $expected, получено $actual" >&2
+            exit 1
+          fi
+          chmod +x "$dir/mathc"
+          "$dir/mathc" --version
+          echo "$dir" >> "$GITHUB_PATH"
+      # mathc run — обязательный шаг, а не отчёт. Он же доказывает
+      # отрицательные контроли: если verifier падает и без control'а,
+      # он не проверяет ничего, и метод об этом сообщает.
+      - name: Verify the evidence layer (math-coding)
+        run: nix develop -c bash -c 'mathc --root . run'
       - name: Drop the store locks a failed build left behind
         run: sudo find /nix/store -maxdepth 1 -name '*.lock' -delete 2>/dev/null || true

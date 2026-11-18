@@ -101,3 +101,58 @@ nix develop -c bash -c 'dune build --root . && dune runtest --root .'
 - Пуш в `main` — только по явной просьбе человека.
 - Неполный `match` «потом поправлю» — не оставляется: предупреждение 8 включено
   как ошибка именно для этого.
+
+## Слой доказательств
+
+Принятая архитектура — источник обязательств, `mathc` — слой, который
+связывает каждое обязательство с проверяемым доказательством. Правила:
+
+1. **Новое обязательство — новый claim.** Если правка вводит свойство,
+   которое должно быть истинным (правило приёмки, идемпотентность миграции,
+   запрет на смену применённого файла), это оформляется claim'ом со своим
+   verifier'ом, falsifier'ом и **control'ом**.
+2. **Claim без control'а — не claim.** Control обязан менять предмет и
+   заставлять verifier падать. Если verifier падает и без control'а, он не
+   проверяет ничего: падение из-за синтаксиса или из-за отсутствия базы —
+   не доказательство. Control'ы лежат в `test/break/` и правят предмет
+   точечно, ровно одно место.
+3. **Зелёный — только по объявленным claim'ам.** `mathc run` печатает
+   `uncovered`: файлы вне покрытия остаются непроверенными. Зелёный verdict
+   и список `uncovered` сообщаются вместе, никогда по отдельности.
+4. **След не редактируется.** `.math/` — evidence, а не содержимое: он
+   генерируется прогонами и не переносится в репозиторий. Не ослабляй
+   verifier и не меняй control ради зелёного результата.
+5. **Человеческие решения — за человеком.** `waive`, `record`,
+   `review-source`, `authorize` фиксируют решения владельца. Агент не
+   присваивает себе человеческий review и не создаёт waiver без разрешения.
+6. **Архитектура меняется — claim'ы стареют.** После правки
+   `docs/design/doska-architecture-2026-11-16.md` прогони `mathc map`: claim'ы
+   с этим источником покажут `source changed` и станут `outdated`. Пересмотр
+   источника делает человек (`mathc review-source ID --by Peter --reason ...`),
+   после чего нужен новый `mathc run`.
+7. **Блок `math-coding:begin/end` в этом файле принадлежит `mathc install`.**
+   Руками его не правь; свои правила пиши выше.
+
+Перед тем как объявить этап закрытым:
+
+```sh
+nix develop -c bash -c 'dune build --root . && dune runtest --root .'
+nix develop -c bash -c 'mathc --root . run'
+```
+
+`mathc run` требует `DOSKA_DATABASE_URL` — claim'ы о миграторе работают против
+живого PostgreSQL.
+
+<!-- math-coding:begin -->
+## math-coding in this project
+
+Каждое обязательство из принятой архитектуры doska связано с проверяемым доказательством
+
+4 claim(s).
+
+```sh
+mathc run
+```
+
+Every verb: mathc help mathc init mathc goal mathc add mathc run mathc map mathc next mathc context mathc waive mathc record mathc install mathc doctor mathc adopt mathc import-adr mathc import-junit mathc authorize mathc re-evaluate mathc review-source mathc mcp
+<!-- math-coding:end -->
