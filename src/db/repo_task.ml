@@ -199,6 +199,100 @@ let list conn (f : filters) : (page, string) result Lwt.t =
          in
          { items = page_items; next_cursor })
 
+(* ------------------------------------------------------------ главный запрос --- *)
+
+(** Корзина срочности: 0 — просрочено, 1 — срок в ближайшие сутки, 2 — срок
+    позже, 3 — срока нет. Считается от [now()], поэтому один и тот же запрос
+    внутри транзакции всегда видит одну и ту же картину. *)
+let mine_bucket alias =
+  Printf.sprintf
+    "CASE WHEN %s.due_at IS NULL THEN 3 WHEN %s.due_at < now() THEN 0 \
+     WHEN %s.due_at < now() + interval '1 day' THEN 1 ELSE 2 END"
+    alias alias alias
+
+(** Ключ порядка главного запроса: корзина, срок, приоритет, давность и
+    идентификатор. Идентификатор в конце нужен, чтобы порядок был полным:
+    без него равные строки переставлялись бы между страницами.
+
+    [COALESCE] вместо пустого срока — не вкус: в сравнении кортежей NULL даёт
+    «неизвестно», а не «больше», и задачи без срока тогда нельзя было бы
+    расставить между собой. [infinity] больше любого настоящего момента, то
+    же, что [NULLS LAST]. *)
+let mine_key alias =
+  Printf.sprintf
+    "(%s, COALESCE(%s.due_at, 'infinity'::timestamptz), %s.priority, %s.created_at, \
+     %s.id)"
+    (mine_bucket alias) alias alias alias alias
+
+(** Тот же ключ отдельными колонками: подзапрос курсора должен отдавать
+    столько же колонок, сколько их в сравниваемом кортеже. *)
+let mine_key_columns alias =
+  Printf.sprintf
+    "%s, COALESCE(%s.due_at, 'infinity'::timestamptz), %s.priority, %s.created_at, \
+     %s.id"
+    (mine_bucket alias) alias alias alias alias
+
+(** Главный запрос: мои задачи по всем проектам (ADR §6.1).
+
+    Открытые задачи исполнителя, отсортированные по срочности: просроченные
+    первыми, потом срок в ближайшие сутки, потом остальные, потом без срока;
+    внутри — по сроку, приоритету и давности.
+
+    Курсор — идентификатор последней выданной задачи. Следующая страница
+    начинается со строго следующей по порядку, поэтому строки не теряются и не
+    повторяются. Неверный курсор игнорируется, а курсор на несуществующую
+    задачу даёт пустую страницу — так же, как в [list]. *)
+let mine conn ~assignee_id ~limit ~cursor : (page, string) result Lwt.t =
+  match Conn.uuid_literal assignee_id with
+  | None -> Lwt_result.lift (Error "идентификатор исполнителя — не uuid")
+  | Some assignee ->
+      let conditions =
+        ref
+          [
+            Printf.sprintf "t.assignee_id = %s" assignee;
+            "t.deleted_at IS NULL";
+            "t.completed_at IS NULL";
+            "t.status NOT IN ('done','cancelled')";
+          ]
+      in
+      (match cursor with
+      | Some c -> (
+          match Conn.uuid_literal c with
+          | Some literal ->
+              conditions :=
+                Printf.sprintf
+                  "(%s > (SELECT %s FROM task c WHERE c.id = %s))"
+                  (mine_key "t") (mine_key_columns "c") literal
+                :: !conditions
+          | None -> ())
+      | None -> ());
+      let where = String.concat " AND " (List.rev !conditions) in
+      let sql =
+        Printf.sprintf
+          "SELECT row_to_json(x)::text FROM (SELECT t.*, p.key AS project_key, \
+           a.display_name AS assignee_name FROM task t \
+           LEFT JOIN project p ON p.id = t.project_id \
+           LEFT JOIN actor a ON a.id = t.assignee_id \
+           WHERE %s ORDER BY %s ASC, COALESCE(t.due_at, 'infinity'::timestamptz) ASC, \
+           t.priority ASC, t.created_at ASC, t.id ASC LIMIT %d) x"
+          where (mine_bucket "t") (limit + 1)
+      in
+      Conn.query_json_rows conn sql
+      |> Lwt_result.map (fun rows ->
+             let items = List.map of_json rows in
+             let rec take n l =
+               if n <= 0 then [] else match l with [] -> [] | x :: rest -> x :: take (n - 1) rest
+             in
+             let page_items = take limit items in
+             let next_cursor =
+               if List.length items > limit then
+                 match List.rev page_items with
+                 | last :: _ -> Some last.Task.id
+                 | [] -> None
+               else None
+             in
+             { items = page_items; next_cursor })
+
 type create_args = {
   title : string;
   description : string;

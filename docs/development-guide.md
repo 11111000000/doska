@@ -22,6 +22,7 @@
 | 1. Схема и API (первый срез) | закрыт | 12 таблиц, REST `/api/v1`, переходы и R1, 62 теста, 23 claim'а |
 | 2. Идентичность | закрыт (первый срез) | импорт Mattermost (23 актора), алиасы, резолвер, заглушки, `POST /actors/resolve`, 78 тестов, 32 claim'а |
 | 2+. Сервисный слой (D5) | закрыт (первый срез) | use case'ы задач в `src/service/task.ml`, REST — тонкий адаптер; отказ — значение `Service.Failure`; интерфейс действия — тип `Interface.t` |
+| 2+. Главный запрос (`/tasks/mine`) | закрыт (первый срез) | `GET /api/v1/tasks/mine` — открытые задачи исполнителя по всем проектам, порядок по срочности, курсорная пагинация |
 | 3. Миграция | следующий | импорт registry + annotations + epics: 97 задач, повторный импорт не создаёт дублей |
 
 Что в коде:
@@ -42,10 +43,10 @@
 Проверено, а не заявлено:
 
 - `dune build --root .` — зелёный; любое предупреждение компилятора — ошибка.
-- `dune runtest --root .` — 87 тестов: домен 17, типы домена 9, идентичность 9
+- `dune runtest --root .` — 93 теста: домен 17, типы домена 9, идентичность 9
   (без БД), сервисный слой 8 (живая БД), репозитории 13 (живая БД),
-  идентичность на БД 10, API 21 (живая БД).
-- `mathc --root . run` — `verdict: green`, 38/38 claim'ов `holds`, 38/38
+  идентичность на БД 10, API 27 (живая БД).
+- `mathc --root . run` — `verdict: green`, 43/43 claim'а `holds`, 43/43
   отрицательных control'а доказаны, `uncovered: 0`.
 - CI на PR #1 — зелёный; этап 1 смержен в `main` (PR #1, merge-коммит).
 
@@ -58,6 +59,7 @@ REST. Всё под `/api/v1` требует заголовок актора:
 
 ```
 GET   /api/v1/tasks                 POST   /api/v1/tasks
+GET   /api/v1/tasks/mine            ← главный запрос: мои открытые задачи
 GET   /api/v1/tasks/:ref            PATCH  /api/v1/tasks/:ref
 POST  /api/v1/tasks/:ref/transition POST   /api/v1/tasks/:ref/assign
 POST  /api/v1/tasks/:ref/comment    POST   /api/v1/tasks/:ref/evidence
