@@ -123,7 +123,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 38 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 43 claim'а, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -168,8 +168,13 @@ verifier падает и без control'а, он не проверяет нич�
 | `service-failure-types` | Отказ use case — данные: закрытый тип ошибок сервиса, ошибка хранилища не выглядит как запрет правила (§6.0, D5) | `dune exec --root . test/service_task_test.exe` | `service_storage_is_forbidden.sh` |
 | `service-patch-journal` | Правка задачи пишет в журнал `updated` со сводкой изменённых полей, а не выдаёт себя за смену статуса (§3.6, D5) | `dune exec --root . test/service_task_test.exe` | `service_patch_journal_is_status_change.sh` |
 | `service-interface-set` | Набор интерфейсов один и тот же в домене и в базе: закрытый тип, а не произвольная строка (D5) | `sh test/check_service_layer.sh` | `service_interface_set_mismatch.sh` |
+| `api-mine-assignee-scope` | «Мои задачи» — это задачи исполнителя из заголовка актора: чужая задача в выборку не попадает (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_assignee_ignored.sh` |
+| `api-mine-order` | Главный запрос отсортирован по срочности: просроченная задача раньше задачи со сроком позже (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_order_swapped.sh` |
+| `api-mine-open-only` | В главный запрос попадают только открытые задачи: завершённые и отменённые — нет (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_closed_included.sh` |
+| `api-mine-pagination` | Пагинация главного запроса не теряет и не повторяет строку: курсор — строго следующая по порядку (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_cursor_inclusive.sh` |
+| `api-mine-route` | `/tasks/mine` — главный запрос, а не чтение задачи по референсу: статический маршрут стоит раньше параметризованного (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_route_after_ref.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 38 claim'ов выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 43 claim'а выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 

@@ -107,6 +107,27 @@ let list req =
                     ("limit", `Int filters.Db.Repo_task.limit);
                   ])))
 
+(* ------------------------------------------------------------ главный запрос --- *)
+
+(** Главный запрос: мои задачи по всем проектам (ADR §6.1).
+
+    Фильтры свои у него нет: «мои» — это исполнитель, а он известен из
+    заголовка. Клиент не подставляет логин — иначе он запросил бы чужие
+    задачи, назвавшись мной. *)
+let mine req =
+  let limit = limit_of req in
+  Context.with_actor req (fun conn actor ->
+      answer
+        (Service.Task.mine conn ~actor ~limit ~cursor:(Dream.query req "cursor"))
+        (fun page ->
+          ok
+            (`Assoc
+              [
+                ("items", `List (List.map View.task page.Db.Repo_task.items));
+                ("next_cursor", View.opt page.Db.Repo_task.next_cursor);
+                ("limit", `Int limit);
+              ])))
+
 (* ------------------------------------------------------------------ чтение --- *)
 
 let get req =

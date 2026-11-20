@@ -57,6 +57,9 @@ let api_routes =
   [
     Dream.get "/tasks" Tasks.list;
     Dream.post "/tasks" Tasks.create;
+    (* Статический сегмент раньше параметризованного: [Dream] проверяет
+       маршруты по порядку, и "/tasks/:ref" иначе перехватил бы "mine". *)
+    Dream.get "/tasks/mine" Tasks.mine;
     Dream.get "/tasks/:ref" Tasks.get;
     Dream.patch "/tasks/:ref" Tasks.patch;
     Dream.post "/tasks/:ref/transition" Tasks.transition;

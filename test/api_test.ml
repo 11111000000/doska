@@ -95,11 +95,11 @@ let task_ref value = text_field "ref" (task_of value)
 
 (* ------------------------------------------------------------------ помощники --- *)
 
-let create_body ?(status = "backlog") ?source_ref ?project () =
+let create_body ?(status = "backlog") ?source_ref ?project ?title ?assignee ?due_at () =
   let project = match project with Some p -> p | None -> "APIMAIN" in
   let fields =
     [
-      ("title", `String "Задача из API");
+      ("title", `String (match title with Some t -> t | None -> "Задача из API"));
       ("description", `String "описание задачи");
       ("status", `String status);
       ("project", `String project);
@@ -108,6 +108,12 @@ let create_body ?(status = "backlog") ?source_ref ?project () =
     @ (match source_ref with
       | None -> []
       | Some ref_ -> [ ("source_ref", `String ref_) ])
+    @ (match assignee with
+      | None -> []
+      | Some handle -> [ ("assignee", `String handle) ])
+    @ (match due_at with
+      | None -> []
+      | Some value -> [ ("due_at", `String value) ])
   in
   Yojson.Safe.to_string (`Assoc fields)
 
@@ -305,6 +311,175 @@ let test_human_can_assign () =
   Alcotest.(check bool) "исполнитель записан" true
     (text_field "assignee_id" (task_of value) <> "")
 
+(* ------------------------------------------------------- главный запрос --- *)
+
+(** Момент через [hours] часов от сейчас.
+
+    Сроки задаются относительно текущего момента: зашитый в тест календарь
+    рассыпался бы после полуночи. *)
+let in_hours hours =
+  let stamp = Unix.gmtime (Unix.time () +. (float_of_int hours *. 3600.)) in
+  Printf.sprintf "%04d-%02d-%02dT%02d:%02d:%02dZ"
+    (stamp.Unix.tm_year + 1900)
+    (stamp.Unix.tm_mon + 1)
+    stamp.Unix.tm_mday stamp.Unix.tm_hour stamp.Unix.tm_min stamp.Unix.tm_sec
+
+(** Задача для главного запроса.
+
+    Свой [source_ref] — по нему задачу узнают в ответе: у исполнителя могут
+    быть и чужие задачи, заведённые другими тестами, и их нельзя путать со
+    нашими. *)
+let create_mine_task ~source_ref ?assignee ?due_at ?status () =
+  let status = match status with Some s -> s | None -> "backlog" in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(create_body ~status ~source_ref ?assignee ?due_at ())
+      "/api/v1/tasks"
+  in
+  (code, json text)
+
+let mine_items value =
+  match field "items" value with
+  | Some (`List items) -> items
+  | _ -> Alcotest.fail "в ответе нет списка задач"
+
+let mine_refs value = List.map (fun item -> text_field "ref" item) (mine_items value)
+
+let mine_call ?cursor ?(limit = 50) () =
+  let target =
+    Printf.sprintf "/api/v1/tasks/mine?limit=%d%s" limit
+      (match cursor with None -> "" | Some c -> "&cursor=" ^ c)
+  in
+  let code, text = call ~actor:(Some "api-legist") target in
+  (code, json text)
+
+let index_of item items =
+  let rec go i = function
+    | [] -> None
+    | x :: rest -> if x = item then Some i else go (i + 1) rest
+  in
+  go 0 items
+
+(** «Мои» — это исполнитель из заголовка актора, а не то, что попросил клиент:
+    подставив чужой логин в запрос, клиент запросил бы чужие задачи. *)
+let test_mine_returns_only_own_tasks () =
+  let _, own =
+    create_mine_task ~source_ref:"api-mine-own" ~assignee:"api-legist" ()
+  in
+  let _, foreign =
+    create_mine_task ~source_ref:"api-mine-foreign" ~assignee:"api-petr" ()
+  in
+  let code, value = mine_call () in
+  Alcotest.(check int) "код ответа" 200 code;
+  let refs = mine_refs value in
+  Alcotest.(check bool) "моя задача в списке" true (List.mem (task_ref own) refs);
+  Alcotest.(check bool) "чужая задача не в списке" false
+    (List.mem (task_ref foreign) refs)
+
+(** Порядок главного запроса: сначала просроченные, потом срок в ближайшие
+    сутки, потом остальные, и только потом без срока (§6.1).
+
+    Задачи заводятся в обратном порядке срочности — иначе порядок «по
+    давности» совпал бы с правильным и ничего не проверял. *)
+let test_mine_orders_by_urgency () =
+  let _, nodue =
+    create_mine_task ~source_ref:"api-mine-nodue" ~assignee:"api-legist" ()
+  in
+  let _, later =
+    create_mine_task ~source_ref:"api-mine-later" ~assignee:"api-legist"
+      ~due_at:(in_hours 240) ()
+  in
+  let _, today =
+    create_mine_task ~source_ref:"api-mine-today" ~assignee:"api-legist"
+      ~due_at:(in_hours 2) ()
+  in
+  let _, overdue =
+    create_mine_task ~source_ref:"api-mine-overdue" ~assignee:"api-legist"
+      ~due_at:(in_hours (-48)) ()
+  in
+  let code, value = mine_call () in
+  Alcotest.(check int) "код ответа" 200 code;
+  let refs = mine_refs value in
+  let position ref_ =
+    match index_of ref_ refs with
+    | Some i -> i
+    | None -> Alcotest.fail ("задачи " ^ ref_ ^ " нет в главном запросе")
+  in
+  let overdue_at = position (task_ref overdue) in
+  let today_at = position (task_ref today) in
+  let later_at = position (task_ref later) in
+  let nodue_at = position (task_ref nodue) in
+  Alcotest.(check bool) "просроченная раньше сегодняшней" true (overdue_at < today_at);
+  Alcotest.(check bool) "сегодняшняя раньше поздней" true (today_at < later_at);
+  Alcotest.(check bool) "поздняя раньше безсрочной" true (later_at < nodue_at)
+
+(** Закрытое не значит «моё»: ни закрытое при создании, ни принятое задачей
+    не попадают в главный запрос. *)
+let test_mine_excludes_closed_tasks () =
+  let _, done_task =
+    create_mine_task ~source_ref:"api-mine-done" ~assignee:"api-legist" ~status:"done" ()
+  in
+  let _, review =
+    create_mine_task ~source_ref:"api-mine-review" ~assignee:"api-legist"
+      ~status:"in_review" ()
+  in
+  let code, _ = transition "api-petr" (task_ref review) "done" 1 in
+  Alcotest.(check int) "приёмка удалась" 200 code;
+  let code, value = mine_call () in
+  Alcotest.(check int) "код ответа" 200 code;
+  let refs = mine_refs value in
+  Alcotest.(check bool) "закрытая при создании не в списке" false
+    (List.mem (task_ref done_task) refs);
+  Alcotest.(check bool) "принятая задача не в списке" false
+    (List.mem (task_ref review) refs)
+
+(** Курсорная пагинация: обход страниц возвращает каждую задачу ровно один
+    раз — ни потерянных строк, ни повторов. *)
+let walk_mine () =
+  let rec go cursor seen count =
+    if count > 200 then Alcotest.fail "обход страниц не завершился"
+    else
+      let code, value = mine_call ?cursor ~limit:1 () in
+      Alcotest.(check int) "код ответа" 200 code;
+      let refs = mine_refs value in
+      let seen = List.fold_left (fun acc r -> if List.mem r acc then acc else r :: acc) seen refs in
+      match field "next_cursor" value with
+      | Some (`String cursor) when cursor <> "" -> go (Some cursor) seen (count + 1)
+      | _ -> List.rev seen
+  in
+  go None [] 0
+
+let test_mine_pagination_keeps_rows () =
+  let _, first =
+    create_mine_task ~source_ref:"api-mine-page-1" ~assignee:"api-legist"
+      ~due_at:(in_hours 3) ()
+  in
+  let _, second =
+    create_mine_task ~source_ref:"api-mine-page-2" ~assignee:"api-legist"
+      ~due_at:(in_hours 5) ()
+  in
+  let seen = walk_mine () in
+  Alcotest.(check bool) "первая задача пришла" true (List.mem (task_ref first) seen);
+  Alcotest.(check bool) "вторая задача пришла" true (List.mem (task_ref second) seen);
+  let repeated =
+    List.filter
+      (fun ref_ -> List.length (List.filter (fun x -> x = ref_) seen) > 1)
+      seen
+  in
+  Alcotest.(check (list string)) "повторов нет" [] repeated
+
+(** Неверный курсор — не ошибка запроса: клиент с испорченным курсором
+    получает первую страницу, а не 400. *)
+let test_mine_ignores_broken_cursor () =
+  let code, value = mine_call ~cursor:"not-a-uuid" () in
+  Alcotest.(check int) "код ответа" 200 code;
+  Alcotest.(check bool) "список не пуст" true (List.length (mine_items value) > 0)
+
+let test_mine_without_actor_is_unauthorized () =
+  let code, text = call "/api/v1/tasks/mine" in
+  Alcotest.(check int) "код ответа" 401 code;
+  Alcotest.(check string) "код ошибки" "unauthorized" (error_code (json text))
+
 (* --------------------------------------------------- разрешение имён --- *)
 
 let resolve_body ?namespace raw =
@@ -406,6 +581,21 @@ let () =
           Alcotest.test_case "агент не назначает задачу другому" `Quick
             test_agent_cannot_assign_to_another;
           Alcotest.test_case "человек назначает задачу" `Quick test_human_can_assign;
+        ] );
+      ( "главный запрос",
+        [
+          Alcotest.test_case "мои задачи — только мои" `Quick
+            test_mine_returns_only_own_tasks;
+          Alcotest.test_case "порядок — по срочности" `Quick
+            test_mine_orders_by_urgency;
+          Alcotest.test_case "закрытые не попадают" `Quick
+            test_mine_excludes_closed_tasks;
+          Alcotest.test_case "пагинация не теряет и не повторяет" `Quick
+            test_mine_pagination_keeps_rows;
+          Alcotest.test_case "испорченный курсор — не ошибка" `Quick
+            test_mine_ignores_broken_cursor;
+          Alcotest.test_case "без актора — 401" `Quick
+            test_mine_without_actor_is_unauthorized;
         ] );
       ( "разрешение имён",
         [

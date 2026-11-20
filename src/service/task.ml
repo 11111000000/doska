@@ -57,6 +57,16 @@ let list conn (filters : Db.Repo_task.filters) :
     (Db.Repo_task.page, Failure.t) result Lwt.t =
   storage_result (Db.Repo_task.list conn filters)
 
+(** Главный запрос: мои задачи по всем проектам (ADR §6.1).
+
+    Исполнитель — актор запроса: правила тут нет, есть отбор. Поэтому use case
+    берёт актора, а не логин: кто «я» — решает сервер, клиент подставлять
+    ничего не должен. *)
+let mine conn ~actor ~limit ~cursor :
+    (Db.Repo_task.page, Failure.t) result Lwt.t =
+  storage_result
+    (Db.Repo_task.mine conn ~assignee_id:actor.Actor.id ~limit ~cursor)
+
 let find conn ~ref_ : (Task.t, Failure.t) result Lwt.t =
   let* found = storage_result (Db.Repo_task.by_ref conn ref_) in
   match found with
