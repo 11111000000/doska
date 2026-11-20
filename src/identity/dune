@@ -3,5 +3,5 @@
 (library
  (name identity)
  (package doska)
- (modules resolve)
+ (modules resolve admin)
  (libraries domain))

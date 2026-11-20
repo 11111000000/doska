@@ -8,7 +8,9 @@
  (modules
   resolve
   mattermost
-  import_actors)
+  import_actors
+  failure
+  task)
  (libraries
   db
   domain

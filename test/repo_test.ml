@@ -200,7 +200,7 @@ let test_activity_is_recorded () =
              Db.Repo_activity.record conn ~action:Activity.Status_changed
                ~task_id:(Some task.Task.id) ~project_id:task.Task.project_id
                ~actor_id:(Some human.Actor.id) ~from_value:(Some "backlog")
-               ~to_value:(Some "todo") ~summary:(Some "переход") ~interface_:"test" ()));
+               ~to_value:(Some "todo") ~summary:(Some "переход") ~interface_:Interface.Cli ()));
       let filters : Db.Repo_activity.filters =
         {
           Db.Repo_activity.project = None;
@@ -369,7 +369,7 @@ let record_event task_id action =
   expect_ok "событие" (fun () ->
       Db.Repo_activity.record conn ~action ~task_id:(Some task_id) ~project_id:None
         ~actor_id:(Some human.Actor.id) ~from_value:None ~to_value:None
-        ~summary:(Some "переход") ~interface_:"test" ())
+        ~summary:(Some "переход") ~interface_:Interface.Cli ())
 
 (** Выборка журнала отбирает события своей задачи: чужие изменения в неё не
     попадают (P4, §3.6). *)

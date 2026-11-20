@@ -90,6 +90,6 @@ let activity (a : Activity.t) : Yojson.Safe.t =
       ("from_value", opt a.Activity.from_value);
       ("to_value", opt a.Activity.to_value);
       ("summary", opt a.Activity.summary);
-      ("interface", `String a.Activity.interface_);
+      ("interface", `String (Interface.to_string a.Activity.interface_));
       ("created_at", `String a.Activity.created_at);
     ]
