@@ -157,6 +157,23 @@ let check ctx from_ to_ : (unit, string) result =
       Result.bind (check_permission ctx tr.permission) (fun () ->
           check_requirements ctx tr.requirements)
 
+(** Право назначать задачу.
+
+    На этапе 1 у агента нет ни учётной записи, ни флага [can_assign]: агент
+    назначает задачу только себе, а человек — кого угодно. На этапе 4 правило
+    переедёт на scope учётной записи.
+
+    Правило живёт в домене, а не в HTTP-обработчике: назначать будут пять
+    интерфейсов, и право должно быть одно. *)
+let may_assign ~(actor : Actor.t) ~(target : Actor.t) : (unit, string) result =
+  if Actor.is_agent actor then
+    if target.Actor.id = actor.Actor.id then Ok ()
+    else
+      Error
+        "агент не может назначать задачу другому человеку: право can_assign \
+         появится вместе с учётными записями на этапе 2"
+  else Ok ()
+
 (** Необязательные замечания: не блокируют переход, но видны. *)
 let advisory ctx from_ to_ : string list =
   match find_transition from_ to_ with

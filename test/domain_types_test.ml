@@ -132,7 +132,23 @@ let test_activity_round_trip () =
       Activity.Cancelled;
       Activity.Deleted;
       Activity.Restored;
+      Activity.Updated;
     ]
+
+let test_interface_round_trip () =
+  check_round_trip "интерфейс" Interface.to_string Interface.of_string
+    [
+      Interface.Api;
+      Interface.Mcp;
+      Interface.Cli;
+      Interface.Web;
+      Interface.Mattermost;
+      Interface.Paseo;
+      Interface.Import;
+      Interface.System;
+    ];
+  Alcotest.(check string) "интерфейс: неизвестное имя читается как system" "system"
+    (Interface.to_string (Interface.of_string_default "выдумка"))
 
 let () =
   Alcotest.run "типы домена"
@@ -161,5 +177,6 @@ let () =
         [
           Alcotest.test_case "вид доказательства" `Quick test_evidence_round_trip;
           Alcotest.test_case "действие журнала" `Quick test_activity_round_trip;
+          Alcotest.test_case "интерфейс действия" `Quick test_interface_round_trip;
         ] );
     ]

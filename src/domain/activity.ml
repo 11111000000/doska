@@ -23,6 +23,7 @@ type action =
   | Cancelled
   | Deleted
   | Restored
+  | Updated
 
 type t = {
   id : int64;
@@ -33,8 +34,8 @@ type t = {
   from_value : string option;
   to_value : string option;
   summary : string option;
-  (** Откуда пришло: [api | mcp | cli | web | mattermost | paseo | import | system]. *)
-  interface_ : string;
+  (** Откуда пришло: REST, MCP, CLI, веб, чат, Paseo, импорт или система. *)
+  interface_ : Interface.t;
   request_id : string option;
   created_at : string;
 }
@@ -59,6 +60,7 @@ let action_to_string : action -> string = function
   | Cancelled -> "cancelled"
   | Deleted -> "deleted"
   | Restored -> "restored"
+  | Updated -> "updated"
 
 let action_of_string : string -> action option = function
   | "created" -> Some Created
@@ -80,4 +82,5 @@ let action_of_string : string -> action option = function
   | "cancelled" -> Some Cancelled
   | "deleted" -> Some Deleted
   | "restored" -> Some Restored
+  | "updated" -> Some Updated
   | _ -> None

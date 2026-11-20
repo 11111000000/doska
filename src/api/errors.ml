@@ -35,6 +35,20 @@ let status = function
 
 let make ?(details = []) code message : t = { code; message; details }
 
+(** Перевод ошибки use case'а в код ответа.
+
+    Маппинг живёт здесь, а не в сервисе: коды ответа — понятие интерфейса,
+    а сервис о HTTP не знает. *)
+let of_failure (failure : Service.Failure.t) : t =
+  match failure with
+  | Service.Failure.Bad_request { message } -> make Bad_request message
+  | Service.Failure.Forbidden { message; details } ->
+      make Forbidden message
+        ~details:(List.map (fun (key, value) -> (key, `String value)) details)
+  | Service.Failure.Not_found { message } -> make Not_found message
+  | Service.Failure.Conflict { message } -> make Conflict message
+  | Service.Failure.Storage { message } -> make Internal message
+
 let to_json (e : t) : Yojson.Safe.t =
   let base =
     [ ("code", `String (code_to_string e.code)); ("message", `String e.message) ]

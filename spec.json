@@ -16,12 +16,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184921,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -47,12 +47,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184923,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -81,12 +81,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184924,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -115,12 +115,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184926,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -142,18 +142,19 @@
       "id": "api-transition-r1",
       "text": "Запрет правила домена через API — это 403 с деталями перехода, а не 500: клиент должен отличать «правило запрещает» от «сервер сломался» (§6.1, D1, §4.2)",
       "scope": [
-        "src/api/tasks.ml", "src/domain/rules.ml", "test/api_test.ml"
+        "src/api/tasks.ml", "src/domain/rules.ml", "test/api_test.ml",
+        "src/service/task.ml", "src/service/failure.ml", "src/api/errors.ml"
       ],
       "source": {
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184927,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -181,12 +182,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184929,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -215,12 +216,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184931,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -246,12 +247,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184932,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -277,12 +278,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184934,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -308,12 +309,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184935,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -339,12 +340,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184937,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -370,12 +371,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184939,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -404,12 +405,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184940,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -438,12 +439,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184942,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -469,12 +470,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184944,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -500,12 +501,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184946,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -533,12 +534,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184947,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -564,12 +565,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184949,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -594,18 +595,18 @@
         "src/domain/status.ml", "src/domain/task.ml", "src/domain/actor.ml",
         "src/domain/project.ml", "src/domain/evidence.ml",
         "src/domain/activity.ml", "src/domain/comment.ml", "src/domain/dune",
-        "test/domain_types_test.ml"
+        "test/domain_types_test.ml", "src/domain/interface.ml"
       ],
       "source": {
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184950,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -634,12 +635,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184952,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -668,12 +669,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184954,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -698,12 +699,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184955,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -742,18 +743,24 @@
         "test/break/identity_yo.sh", "test/break/migration_no_checksum.sh",
         "test/break/migration_not_idempotent.sh",
         "test/break/r1_autonomy.sh", "test/break/repo_status_not_saved.sh",
-        "test/break/test_harness_ignores_db_url.sh", "test/check_controls.sh"
+        "test/break/test_harness_ignores_db_url.sh",
+        "test/check_controls.sh", "test/break/service_rules_in_api.sh",
+        "test/break/service_journal_interface_constant.sh",
+        "test/break/service_assign_rule_allowed.sh",
+        "test/break/service_storage_is_forbidden.sh",
+        "test/break/service_patch_journal_is_status_change.sh",
+        "test/break/service_interface_set_mismatch.sh"
       ],
       "source": {
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184957,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -779,12 +786,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184959,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -810,12 +817,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184960,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -844,12 +851,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184962,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -879,12 +886,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184964,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -913,12 +920,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184965,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -947,12 +954,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184967,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -981,12 +988,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184968,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -1016,12 +1023,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184970,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -1050,12 +1057,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "e4f658c43077e012b4fbf6bdd5af7a1fc75f00587157ba3f0cf3f2cbf8669fb7",
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
         "review": {
           "by": "Peter",
-          "reason": "правка ADR от 19.11.2026: §6.4, §9.1, §9.2, §11 (этап 5), §13 (D4), приложение — стек веб-фронтенда заменён на веб-компоненты на чистом JavaScript + D3.js. Обязательства D1–D3, правила R1–R3 и границы этапов не менялись. Решение владельца от 19.11.2026 («внеси исправление в архитектуру фронтенда»): пересмотреть источник для всех claim'ов.",
-          "at": 1795067653,
-          "previous_digest": "68c4cde3e84d56baff71a80a7621f0e693ced864999cda52422af9dbc2192a2e"
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184972,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
         }
       },
       "kind": "acceptance",
@@ -1071,6 +1078,212 @@
       "falsifier": "алиас по имени без фамилии не заводится",
       "register": "fact",
       "control": "sh test/break/identity_import_no_first_name.sh",
+      "waiver": null
+    },
+    {
+      "id": "service-layer-rules",
+      "text": "правила и транзакции задач живут в сервисном слое, а не в HTTP-обработчике (D5): REST, MCP и CLI — адаптеры над одним use case (§6.0, D5)",
+      "scope": [
+        "src/service/task.ml", "src/api/tasks.ml", "src/domain/rules.ml",
+        "src/api/auth.ml", "src/identity/admin.ml",
+        "test/check_service_layer.sh", "test/break/service_rules_in_api.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
+        "review": {
+          "by": "Peter",
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184973,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        { "kind": "verifier", "spec": "sh test/check_service_layer.sh" }
+      ],
+      "falsifier": "в src/api/tasks.ml появляется прямой вызов Rules.check или Db.Repo_task.set_status либо проверка администратора возвращается в src/api/auth.ml — логика уехала обратно в адаптер",
+      "register": "fact",
+      "control": "sh test/break/service_rules_in_api.sh",
+      "waiver": null
+    },
+    {
+      "id": "service-journal-interface",
+      "text": "журнал помнит интерфейс, через который пришло действие: вызов агента из paseo не выглядит как человеческий REST (§11, D5)",
+      "scope": [
+        "src/domain/interface.ml", "src/service/task.ml",
+        "src/db/repo_activity.ml", "test/service_task_test.ml",
+        "test/break/service_journal_interface_constant.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
+        "review": {
+          "by": "Peter",
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184975,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_task_test.exe"
+        }
+      ],
+      "falsifier": "действие, пришедшее через paseo, попадает в журнал с интерфейсом api — след не различает, откуда пришло действие",
+      "register": "fact",
+      "control": "sh test/break/service_journal_interface_constant.sh",
+      "waiver": null
+    },
+    {
+      "id": "service-assign-rule",
+      "text": "правило назначения доменное: агент не может назначить задачу другому, отказ приходит как запрет правила (§4.2, D5)",
+      "scope": [
+        "src/domain/rules.ml", "src/service/task.ml",
+        "test/service_task_test.ml",
+        "test/break/service_assign_rule_allowed.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
+        "review": {
+          "by": "Peter",
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184976,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_task_test.exe"
+        }
+      ],
+      "falsifier": "агент назначает задачу другому без отказа либо отказ приходит как 500 вместо 403",
+      "register": "fact",
+      "control": "sh test/break/service_assign_rule_allowed.sh",
+      "waiver": null
+    },
+    {
+      "id": "service-failure-types",
+      "text": "отказ use case — данные: закрытый тип ошибок сервиса, ошибка хранилища не выглядит как запрет правила (§6.0, D5)",
+      "scope": [
+        "src/service/failure.ml", "src/api/errors.ml",
+        "test/service_task_test.ml",
+        "test/break/service_storage_is_forbidden.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
+        "review": {
+          "by": "Peter",
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184978,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_task_test.exe"
+        }
+      ],
+      "falsifier": "ошибка хранилища отдаётся клиенту как 403 — клиент читает сбой сервера как запрет правила",
+      "register": "fact",
+      "control": "sh test/break/service_storage_is_forbidden.sh",
+      "waiver": null
+    },
+    {
+      "id": "service-patch-journal",
+      "text": "правка задачи пишет в журнал updated со сводкой изменённых полей, а не выдаёт себя за смену статуса (§3.6, D5)",
+      "scope": [
+        "src/domain/activity.ml", "src/service/task.ml",
+        "migrations/004_activity_action_updated.sql",
+        "test/service_task_test.ml",
+        "test/break/service_patch_journal_is_status_change.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
+        "review": {
+          "by": "Peter",
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184980,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_task_test.exe"
+        }
+      ],
+      "falsifier": "правка полей пишет в журнал status_changed — след врёт о том, что изменилось",
+      "register": "fact",
+      "control": "sh test/break/service_patch_journal_is_status_change.sh",
+      "waiver": null
+    },
+    {
+      "id": "service-interface-set",
+      "text": "набор интерфейсов один и тот же в домене и в базе: закрытый тип, а не произвольная строка (D5)",
+      "scope": [
+        "src/domain/interface.ml",
+        "migrations/005_activity_interface_check.sql",
+        "test/check_service_layer.sh",
+        "test/break/service_interface_set_mismatch.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "dae8e9c8da945ab8400e506d5b9131ba06f87bf7d3c704ff58eb3e15486cb37d",
+        "review": {
+          "by": "Peter",
+          "reason": "правка ADR от 20.11.2026 по решению владельца (указание): §11 — уточнение фактов среза D5: фактически 38 claim'ов holds и 38 negative control proven, шесть новых отрицательных control'ов (было указано 37 и пять). Содержательных изменений обязательств нет: D1–D4, правила R1–R3 и границы этапов не менялись.",
+          "at": 1795184981,
+          "previous_digest": "71a9f1b795f095e7a7065b2db37a4d4708bb7845d2303050637ba89ace0c9b0a"
+        }
+      },
+      "kind": "acceptance",
+      "phase": "pre-merge",
+      "owner": "Peter",
+      "review_on": [],
+      "requirements": [
+        { "kind": "verifier", "spec": "sh test/check_service_layer.sh" }
+      ],
+      "falsifier": "в базу можно записать интерфейс, которого нет в домене, либо домен читает значение, которого нет в базе — наборы разошлись",
+      "register": "fact",
+      "control": "sh test/break/service_interface_set_mismatch.sh",
       "waiver": null
     }
   ]

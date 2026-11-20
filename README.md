@@ -123,7 +123,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 32 claim'а, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 38 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -162,8 +162,14 @@ verifier падает и без control'а, он не проверяет нич�
 | `identity-import-kind` | Импорт различает человека и агента: агент — непустая должность или служебный адрес `@localhost` (§5.3) | `dune exec --root . test/identity_db_test.exe` | `identity_import_kind_by_position.sh` |
 | `identity-import-idempotent` | Повторный импорт Mattermost обновляет те же строки, а не создаёт новые (§10.2) | `dune exec --root . test/identity_db_test.exe` | `identity_import_duplicate.sh` |
 | `identity-import-aliases` | Импорт заводит алиасы по логину, полному имени и имени без фамилии (§5.3) | `dune exec --root . test/identity_db_test.exe` | `identity_import_no_first_name.sh` |
+| `service-layer-rules` | Правила и транзакции задач живут в сервисном слое, а не в HTTP-обработчике (D5): REST, MCP и CLI — адаптеры над одним use case (§6.0, D5) | `sh test/check_service_layer.sh` | `service_rules_in_api.sh` |
+| `service-journal-interface` | Журнал помнит интерфейс, через который пришло действие: вызов агента из paseo не выглядит как человеческий REST (§11, D5) | `dune exec --root . test/service_task_test.exe` | `service_journal_interface_constant.sh` |
+| `service-assign-rule` | Правило назначения доменное: агент не может назначить задачу другому, отказ приходит как запрет правила (§4.2, D5) | `dune exec --root . test/service_task_test.exe` | `service_assign_rule_allowed.sh` |
+| `service-failure-types` | Отказ use case — данные: закрытый тип ошибок сервиса, ошибка хранилища не выглядит как запрет правила (§6.0, D5) | `dune exec --root . test/service_task_test.exe` | `service_storage_is_forbidden.sh` |
+| `service-patch-journal` | Правка задачи пишет в журнал `updated` со сводкой изменённых полей, а не выдаёт себя за смену статуса (§3.6, D5) | `dune exec --root . test/service_task_test.exe` | `service_patch_journal_is_status_change.sh` |
+| `service-interface-set` | Набор интерфейсов один и тот же в домене и в базе: закрытый тип, а не произвольная строка (D5) | `sh test/check_service_layer.sh` | `service_interface_set_mismatch.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 32 claim'а выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 38 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 
