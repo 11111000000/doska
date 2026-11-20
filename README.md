@@ -4,7 +4,7 @@
 что должен, в каком проекте, к какому сроку, в каком состоянии** — и даёт всем
 сторонам (людям и агентам) один и тот же ответ.
 
-Написан на OCaml. Фронтенд — React 19 + Vite + TypeScript (этап 5).
+Написан на OCaml. Фронтенд — веб-компоненты на чистом JavaScript + D3.js (этап 5).
 
 ## Границы
 
@@ -123,7 +123,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 23 claim'а, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 32 claim'а, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -153,8 +153,17 @@ verifier падает и без control'а, он не проверяет нич�
 | `cli-health-and-version` | CLI объявляет версию и честно проверяет живость базы: без базы health падает, а не печатает «ok» | `sh test/check_cli.sh` | `cli_health_ping_broken.sh` |
 | `test-harness-needs-db` | Обвязка тестов не молчит: тест, которому нужна база, без базы падает, а не проходит мимо | `sh test/check_tests_need_db.sh` | `test_harness_ignores_db_url.sh` |
 | `controls-prove-verifiers` | Каждый control меняет свой предмет ровно в одном месте, применим к текущим исходникам и объявлен control'ом ровно одного claim'а: claim без control'а — не claim | `sh test/check_controls.sh` | `control_breaks_two_places.sh` |
+| `migration-actor-source` | Один внешний объект — одна строка актёра: пара `(source, source_ref)` уникальна, миграция `003` идемпотентна (§10.2) | `sh test/check_actor_source.sh` | `actor_source_not_unique.sh` |
+| `db-actor-source-lookup` | Актёр находится по паре `(source, source_ref)`: актёр одного источника не находится по ключу другого (§10.2) | `dune exec --root . test/identity_db_test.exe` | `db_actor_source_ignored.sh` |
+| `db-alias-repository` | Алиасы живут в пространстве имён, имя регистронезависимо, повторная запись не создаёт второй строки (§5.2) | `dune exec --root . test/identity_db_test.exe` | `db_alias_duplicate.sh` |
+| `identity-placeholder-write` | Нераспознанное имя не теряется: резолвер создаёт заглушку `unresolved = true` с алиасом, повторный резолв находит ту же заглушку (§3.1) | `dune exec --root . test/identity_db_test.exe` | `identity_placeholder_not_flagged.sh` |
+| `identity-resolve-alias-write` | Алиас, найденный в чужом пространстве имён, копируется в своё (§5.2, шаг 4) | `dune exec --root . test/identity_db_test.exe` | `identity_resolve_no_alias_write.sh` |
+| `api-actors-resolve` | `POST /api/v1/actors/resolve` отвечает актёром по имени, неизвестное имя даёт заглушку, пустое имя — 400 (§6.1) | `dune exec --root . test/api_test.exe` | `api_actors_resolve_missing.sh` |
+| `identity-import-kind` | Импорт различает человека и агента: агент — непустая должность или служебный адрес `@localhost` (§5.3) | `dune exec --root . test/identity_db_test.exe` | `identity_import_kind_by_position.sh` |
+| `identity-import-idempotent` | Повторный импорт Mattermost обновляет те же строки, а не создаёт новые (§10.2) | `dune exec --root . test/identity_db_test.exe` | `identity_import_duplicate.sh` |
+| `identity-import-aliases` | Импорт заводит алиасы по логину, полному имени и имени без фамилии (§5.3) | `dune exec --root . test/identity_db_test.exe` | `identity_import_no_first_name.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 23 claim'а выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 32 claim'а выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 

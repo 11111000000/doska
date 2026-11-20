@@ -16,18 +16,21 @@
   domain_types_test
   identity_test
   repo_test
+  identity_db_test
   api_test)
  (modules
   domain_test
   domain_types_test
   identity_test
   repo_test
+  identity_db_test
   api_test)
  (libraries
   support
   db
   domain
   identity
+  service
   api
   alcotest
   lwt

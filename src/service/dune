@@ -1,0 +1,18 @@
+; Сервисный слой: применение доменных правил к данным базы.
+;
+; Здесь живёт то, что не домен (домен не знает про БД) и не HTTP (HTTP — в
+; [api]). Слой зависит от базы и домена, но не наоборот.
+(library
+ (name service)
+ (package doska)
+ (modules
+  resolve
+  mattermost
+  import_actors)
+ (libraries
+  db
+  domain
+  identity
+  lwt
+  yojson
+  unix))

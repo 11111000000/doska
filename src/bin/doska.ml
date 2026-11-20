@@ -6,6 +6,10 @@
 
 open Cmdliner
 
+(** Связка для result-промисов: ошибка пробрасывается как есть, успешное
+    значение разбирается в ветке. *)
+let ( let* ) t f = Lwt.bind t f
+
 let db_uri =
   let doc =
     "URI базы данных PostgreSQL. Значение по умолчанию берётся из переменной \
@@ -21,6 +25,28 @@ let migrations_dir =
 let port =
   let doc = "Порт HTTP-сервера." in
   Arg.(value & opt int 8500 & info [ "port" ] ~docv:"PORT" ~doc)
+
+let source =
+  let doc = "Источник импорта: mattermost." in
+  Arg.(value & opt string "mattermost" & info [ "source" ] ~docv:"SOURCE" ~doc)
+
+(** Адрес Mattermost: сервер Mattermost на этой машине слушает 8065.
+
+    Значение приходит из окружения: адрес развёртывания — не то, что
+    должно быть зашито в программу. *)
+let mattermost_url () : string =
+  match Sys.getenv_opt "DOSKA_MATTERMOST_URL" with
+  | Some url when String.trim url <> "" -> String.trim url
+  | _ -> "http://127.0.0.1:8065"
+
+(** Токен Mattermost.
+
+    Секрет живёт только в окружении: в коде его быть не должно, и печатать
+    его нельзя даже в ошибке. *)
+let mattermost_token () : (string, string) result =
+  match Sys.getenv_opt "DOSKA_MATTERMOST_TOKEN" with
+  | Some token when String.trim token <> "" -> Ok (String.trim token)
+  | _ -> Error "нет токена Mattermost: задайте DOSKA_MATTERMOST_TOKEN"
 
 (** Подключение, выполнение действия и закрытие соединения.
 
@@ -62,6 +88,43 @@ let run_version () : (unit, string) result =
   Printf.printf "%s %s\n" Version.name Version.version;
   Ok ()
 
+(** Импорт из внешнего источника.
+
+    Импорт идемпотентен: ключ актёра — пара (source, source_ref), поэтому
+    повторный запуск обновляет те же строки, а не создаёт новые (§10.2). *)
+let run_import uri source : (unit, string) result =
+  match source with
+  | "mattermost" -> (
+      match mattermost_token () with
+      | Error e -> Error e
+      | Ok token ->
+          let outcome =
+            with_db uri (fun conn ->
+                let* users =
+                  Service.Mattermost.list_users ~base_url:(mattermost_url ()) ~token
+                in
+                match users with
+                | Error e -> Lwt_result.lift (Error e)
+                | Ok users ->
+                    let* report =
+                      Service.Import_actors.import_users conn
+                        ~namespace:Service.Import_actors.namespace users
+                    in
+                    match report with
+                    | Error e -> Lwt_result.lift (Error e)
+                    | Ok report ->
+                        Printf.printf
+                          "mattermost: пользователей %d (людей %d, агентов %d); \
+                           создано %d, обновлено %d; алиасов %d\n"
+                          report.Service.Import_actors.total report.humans report.agents
+                          report.created report.updated report.aliases;
+                        Lwt_result.lift (Ok ()))
+          in
+          (match outcome with
+          | Ok () -> Ok ()
+          | Error e -> Error (Printf.sprintf "ошибка импорта: %s" e)))
+  | other -> Error ("неизвестный источник импорта: " ^ other)
+
 let cmd_migrate =
   Cmd.v
     (Cmd.info "migrate" ~doc:"Применить миграции к базе данных.")
@@ -84,9 +147,16 @@ let cmd_version =
        остальных: в cmdliner тип команды — это тип её терма. *)
     Term.(const run_version $ Term.const ())
 
+let cmd_import =
+  Cmd.v
+    (Cmd.info "import" ~doc:"Импортировать данные из внешнего источника.")
+    Term.(const run_import $ db_uri $ source)
+
 let () =
   let info =
     Cmd.info "doska" ~version:Version.version
       ~doc:"Трекер обязательств для людей и агентов."
   in
-  exit (Cmd.eval_result (Cmd.group info [ cmd_migrate; cmd_health; cmd_serve; cmd_version ]))
+  exit
+    (Cmd.eval_result
+       (Cmd.group info [ cmd_migrate; cmd_health; cmd_serve; cmd_version; cmd_import ]))

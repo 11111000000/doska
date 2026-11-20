@@ -8,6 +8,7 @@
   migrate
   row
   repo_actor
+  repo_actor_alias
   repo_project
   repo_task
   repo_evidence

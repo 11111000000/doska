@@ -65,6 +65,7 @@ let api_routes =
     Dream.post "/tasks/:ref/evidence" Tasks.evidence;
     Dream.get "/activity" Tasks.activity;
     Dream.get "/actors" Tasks.actors;
+    Dream.post "/actors/resolve" Actors.resolve;
   ]
 
 let routes =

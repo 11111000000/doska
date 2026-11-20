@@ -37,6 +37,12 @@ let auto_project =
   Support.ensure_project conn ~prefix:"API" ~key:"AUTO" ~name:"Автономный"
     ~autonomy:Actor.Auto
 
+(* Актёр для проверки резолва: логин и отображаемое имя различаются, и
+   резолвер обязан находить по обоим. *)
+let resolvable =
+  Support.ensure_actor conn ~prefix:"api-" ~kind:Actor.Human ~handle:"resolver"
+    ~display_name:"api-тестовый"
+
 (* ------------------------------------------------------------------ клиент --- *)
 
 let client = Dream.test Api.Server.handler
@@ -76,6 +82,12 @@ let error_message value =
 
 let task_of value =
   match field "task" value with Some task -> task | None -> `Null
+
+let bool_field name value =
+  match field name value with Some (`Bool b) -> b | _ -> false
+
+let actor_of value =
+  match field "actor" value with Some actor -> actor | None -> `Null
 
 let task_status value = text_field "status" (task_of value)
 
@@ -293,6 +305,69 @@ let test_human_can_assign () =
   Alcotest.(check bool) "исполнитель записан" true
     (text_field "assignee_id" (task_of value) <> "")
 
+(* --------------------------------------------------- разрешение имён --- *)
+
+let resolve_body ?namespace raw =
+  let fields =
+    [ ("raw", `String raw) ]
+    @ (match namespace with
+      | None -> []
+      | Some value -> [ ("namespace", `String value) ])
+  in
+  Yojson.Safe.to_string (`Assoc fields)
+
+let resolve ?namespace ?actor raw =
+  call ~method_:`POST ?actor ~body:(resolve_body ?namespace raw)
+    "/api/v1/actors/resolve"
+
+let test_resolve_finds_actor_by_handle () =
+  let code, text = resolve ~actor:(Some "api-petr") "api-resolver" in
+  Alcotest.(check int) "код ответа" 200 code;
+  let value = json text in
+  Alcotest.(check bool) "разрешено" true (bool_field "resolved" value);
+  Alcotest.(check string) "актёр" "api-resolver"
+    (text_field "handle" (actor_of value));
+  Alcotest.(check bool) "не заглушка" false
+    (bool_field "unresolved" (actor_of value))
+
+let test_resolve_finds_actor_by_display_name () =
+  let code, text = resolve ~actor:(Some "api-petr") "api-тестовый" in
+  Alcotest.(check int) "код ответа" 200 code;
+  let value = json text in
+  Alcotest.(check bool) "разрешено" true (bool_field "resolved" value);
+  Alcotest.(check string) "актёр" "api-resolver"
+    (text_field "handle" (actor_of value))
+
+let test_resolve_unknown_name_creates_placeholder () =
+  (* Имя не теряется: сервер отвечает заглушкой, а не ошибкой (§3.1). *)
+  let code, text = resolve ~actor:(Some "api-petr") "api-незнакомец" in
+  Alcotest.(check int) "код ответа" 200 code;
+  let value = json text in
+  Alcotest.(check bool) "не разрешено" false (bool_field "resolved" value);
+  Alcotest.(check string) "вид — заглушка" "placeholder"
+    (text_field "kind" (actor_of value));
+  Alcotest.(check bool) "помечена как неразрешённая" true
+    (bool_field "unresolved" (actor_of value));
+  Alcotest.(check string) "исходное имя" "api-незнакомец" (text_field "raw" value)
+
+let test_resolve_empty_name_is_bad_request () =
+  let code, text = resolve ~actor:(Some "api-petr") "" in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+let test_resolve_without_raw_is_bad_request () =
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr") ~body:"{}"
+      "/api/v1/actors/resolve"
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+let test_resolve_without_actor_is_unauthorized () =
+  let code, text = call ~method_:`POST ~body:(resolve_body "api-resolver") "/api/v1/actors/resolve" in
+  Alcotest.(check int) "код ответа" 401 code;
+  Alcotest.(check string) "код ошибки" "unauthorized" (error_code (json text))
+
 (* --------------------------------------------------------------------- run --- *)
 
 let () =
@@ -332,8 +407,23 @@ let () =
             test_agent_cannot_assign_to_another;
           Alcotest.test_case "человек назначает задачу" `Quick test_human_can_assign;
         ] );
+      ( "разрешение имён",
+        [
+          Alcotest.test_case "по логину" `Quick test_resolve_finds_actor_by_handle;
+          Alcotest.test_case "по отображаемому имени" `Quick
+            test_resolve_finds_actor_by_display_name;
+          Alcotest.test_case "неизвестное имя — заглушка" `Quick
+            test_resolve_unknown_name_creates_placeholder;
+          Alcotest.test_case "пустое имя — 400" `Quick
+            test_resolve_empty_name_is_bad_request;
+          Alcotest.test_case "без raw — 400" `Quick
+            test_resolve_without_raw_is_bad_request;
+          Alcotest.test_case "без актора — 401" `Quick
+            test_resolve_without_actor_is_unauthorized;
+        ] );
     ];
   ignore requester;
   ignore agent;
   ignore stranger;
-  ignore project
+  ignore project;
+  ignore resolvable

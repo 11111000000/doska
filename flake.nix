@@ -62,7 +62,8 @@
         {
           default = pkgs.mkShell {
             name = "doska-dev";
-            packages = [ o.ocaml o.dune_3 o.findlib ] ++ direct;
+            # curl — HTTP-клиент импорта Mattermost (см. src/service/mattermost.ml).
+            packages = [ o.ocaml o.dune_3 o.findlib pkgs.curl ] ++ direct;
             shellHook = ''
               export OCAMLPATH="${ocamlPath}"
               export PATH="${o.ocaml}/bin:${o.dune_3}/bin:$PATH"
@@ -95,6 +96,8 @@
               o.caqti-driver-postgresql
               # Тесты запускаются на этапе check, поэтому alcotest нужен и здесь.
               o.alcotest
+              # Импорт Mattermost ходит по HTTP через curl (src/service/mattermost.ml).
+              pkgs.curl
             ];
 
             # Проверка пакета идёт в герметичной песочнице nix, где PostgreSQL

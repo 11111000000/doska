@@ -41,26 +41,6 @@ let conflict message = Errors.respond (Errors.make Errors.Conflict message)
     [Some (Some v)] — аргумент есть и равен [v]. *)
 let opt_arg = function None -> None | Some v -> Some (Some v)
 
-(** Требуется актор: без него сервер не знает, чьё это действие. *)
-let with_actor req f =
-  match Db.Conn.get_current () with
-  | None ->
-      Errors.respond (Errors.make Errors.Internal "нет соединения с базой данных")
-  | Some conn ->
-      let* outcome = Auth.actor_of conn req in
-      match outcome with
-      | Error e -> Errors.respond e
-      | Ok actor -> f conn actor
-
-(** То же, но с разбором тела запроса: актор и тело нужны почти всем
-    изменяющим маршрутам. *)
-let with_body req f =
-  with_actor req (fun conn actor ->
-      let* body_result = Params.body_json req in
-      match body_result with
-      | Error e -> bad_request ("неверное тело запроса: " ^ e)
-      | Ok body -> f conn actor body)
-
 (* ------------------------------------------------------------------ список --- *)
 
 let default_limit = 50
@@ -112,7 +92,7 @@ let filters_of req : (Db.Repo_task.filters, Errors.t) result =
         }
 
 let list req =
-  with_actor req (fun conn _actor ->
+  Context.with_actor req (fun conn _actor ->
       match filters_of req with
       | Error e -> Errors.respond e
       | Ok filters ->
@@ -134,7 +114,7 @@ let list req =
 
 let get req =
   let ref_ = Dream.param req "ref" in
-  with_actor req (fun conn _actor ->
+  Context.with_actor req (fun conn _actor ->
       let* found = Db.Repo_task.by_ref conn ref_ in
       match found with
       | Error e -> db_failure e
@@ -242,7 +222,7 @@ let lookup_actor conn body name : (string option, Errors.t) result Lwt.t =
             (Error (Errors.make Errors.Bad_request ("актор не найден: " ^ handle))))
 
 let create req =
-  with_body req (fun conn actor body ->
+  Context.with_body req (fun conn actor body ->
       match parse_create body with
       | Error message -> bad_request message
       | Ok parsed ->
@@ -334,7 +314,7 @@ let parse_patch body : (Db.Repo_task.patch, string) result =
 
 let patch req =
   let ref_ = Dream.param req "ref" in
-  with_body req (fun conn actor body ->
+  Context.with_body req (fun conn actor body ->
       match parse_patch body with
       | Error message -> bad_request message
       | Ok fields -> (
@@ -476,7 +456,7 @@ let apply_transition conn actor task target version note =
 
 let transition req =
   let ref_ = Dream.param req "ref" in
-  with_body req (fun conn actor body ->
+  Context.with_body req (fun conn actor body ->
       match (Params.string_field body "to", Params.int_field body "version") with
       | None, _ -> bad_request "нужно поле to"
       | _, None ->
@@ -507,7 +487,7 @@ let may_assign actor target =
 
 let assign req =
   let ref_ = Dream.param req "ref" in
-  with_body req (fun conn actor body ->
+  Context.with_body req (fun conn actor body ->
       match (Params.string_field body "assignee", Params.int_field body "version") with
       | None, _ -> bad_request "нужно поле assignee"
       | _, None ->
@@ -570,7 +550,7 @@ let assign req =
 
 let comment req =
   let ref_ = Dream.param req "ref" in
-  with_body req (fun conn actor body ->
+  Context.with_body req (fun conn actor body ->
       match Params.string_field body "body" with
       | None | Some "" -> bad_request "нужно поле body"
       | Some text ->
@@ -606,7 +586,7 @@ let comment req =
 
 let evidence req =
   let ref_ = Dream.param req "ref" in
-  with_body req (fun conn actor body ->
+  Context.with_body req (fun conn actor body ->
       match
         (Params.string_field body "kind", Params.string_field body "ref")
       with
@@ -654,7 +634,7 @@ let evidence req =
 (* --------------------------------------------------------------- журнал и люди --- *)
 
 let activity req =
-  with_actor req (fun conn _actor ->
+  Context.with_actor req (fun conn _actor ->
       let filters : Db.Repo_activity.filters =
         {
           Db.Repo_activity.project = Dream.query req "project";
@@ -678,7 +658,7 @@ let activity req =
                   ])))
 
 let actors _req =
-  with_actor _req (fun conn _actor ->
+  Context.with_actor _req (fun conn _actor ->
       let* items = Db.Repo_actor.list conn in
       match items with
       | Error e -> db_failure e
