@@ -67,20 +67,21 @@ api  →  service  →  db  →  domain  ←  identity
 
 ### 2.2 Факт против плана: REST
 
-ADR §6.1 обещает 22 маршрута. Реализовано 11:
+ADR §6.1 обещает 22 маршрута. Реализовано 14:
 
 | Есть | Нет |
 |---|---|
-| `GET /tasks`, `POST /tasks`, `GET /tasks/{ref}`, `PATCH /tasks/{ref}` | `GET /tasks/mine` ← **главный запрос** |
-| `POST /tasks/{ref}/transition` | `POST /tasks/{ref}/claim`, `POST /tasks/{ref}/release` |
-| `POST /tasks/{ref}/assign` | `POST /tasks/{ref}/links` |
-| `POST /tasks/{ref}/comment`, `POST /tasks/{ref}/evidence` | `GET/POST /projects`, `POST /actors/{id}/aliases` |
-| `GET /activity`, `GET /actors`, `POST /actors/resolve` | `GET/POST/DELETE /credentials` |
-| | `GET /overview` |
+| `GET /tasks`, `POST /tasks`, `GET /tasks/{ref}`, `PATCH /tasks/{ref}` | `POST /tasks/{ref}/links` |
+| `GET /tasks/mine` ← **главный запрос** | `GET/POST /projects`, `POST /actors/{id}/aliases` |
+| `POST /tasks/{ref}/transition`, `POST /tasks/{ref}/claim`, `POST /tasks/{ref}/release` | `GET/POST/DELETE /credentials` |
+| `POST /tasks/{ref}/assign` | `GET /overview` |
+| `POST /tasks/{ref}/comment`, `POST /tasks/{ref}/evidence` | |
+| `GET /activity`, `GET /actors`, `POST /actors/resolve` | |
 
-Отсутствует ровно то, что нужно агентам и визуализациям: взять задачу
-(`claim`/`release`), увидеть свои задачи (`/tasks/mine`), увидеть связь
-(`/links`), получить сводку (`/overview` — это же вход для D3.js-визуализаций).
+Конвейер агента (взять задачу, увидеть свои) закрыт: `claim`/`release` и
+`/tasks/mine` реализованы 20–21.11.2026. Осталось то, без чего не строится
+граф: связи (`/links`) и сводка (`/overview` — вход для D3.js-визуализаций);
+остальное — учёт, а не конвейер.
 
 ### 2.3 Таблицы, которые есть, но не работают
 
@@ -328,8 +329,16 @@ REST стал тонким адаптером, интерфейс действи
 пагинация по полному ключу порядка. Что именно сделано и что осталось
 открытым — ADR §11 («Факт на 20.11.2026: главный запрос»).
 
-Пункты 3–6 — следующие по очереди. Пункт 3 (`claim` / `release`) — ядро
-агентного конвейера и то, на чём дальше проверяется R1.
+Пункт 3 сделан 21.11.2026: `POST /tasks/{ref}/claim` и `POST /tasks/{ref}/release`
+— заявка на свободную задачу (`todo → in_progress`, исполнитель меняется
+только если задача была свободна) и возврат в пул (`in_progress → todo`,
+исполнитель снимается всегда). Версия обязательна; неверное состояние — 409,
+нарушение правила — 403; журнал пишет `claimed` / `released`. Что именно
+сделано и что осталось открытым — ADR §11 («Факт на 21.11.2026: заявка и
+отпуск»).
+
+Пункты 4–6 — следующие по очереди. Пункт 4 (иерархия и связи) — то, что
+даёт граф: без него у `/overview` нечего показывать.
 
 ### 6.2 Что добавляется по этапам
 

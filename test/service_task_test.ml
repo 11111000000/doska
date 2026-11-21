@@ -32,6 +32,11 @@ let colleague =
   Support.ensure_actor conn ~prefix:"svc-" ~kind:Actor.Human ~handle:"other"
     ~display_name:"Другой"
 
+(* Второй агент — посторонний для правила отпуска. *)
+let other_agent =
+  Support.ensure_actor conn ~prefix:"svc-" ~kind:Actor.Agent ~handle:"legist2"
+    ~display_name:"legist2"
+
 let project =
   Support.ensure_project conn ~prefix:"SVC" ~key:"MAIN" ~name:"Основной"
     ~autonomy:Actor.Human_gate
@@ -226,6 +231,165 @@ let test_missing_task_is_not_found () =
   | other ->
       Alcotest.fail ("не тот отказ: " ^ Service.Failure.to_string other)
 
+(* ------------------------------------------------------- заявка и отпуск --- *)
+
+(** Свободную задачу агент забирает себе: заявка — это и есть назначение
+    себе, если задача ещё ни за кем не закреплена. *)
+let test_claim_assigns_claimer () =
+  let task = create ~status:Status.Todo () in
+  match
+    Support.run
+      (Service.Task.claim conn ~actor:agent ~interface_:Interface.Cli
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  with
+  | Error e -> Alcotest.fail ("заявка не прошла: " ^ Service.Failure.to_string e)
+  | Ok claimed ->
+      Alcotest.(check string) "статус" "in_progress"
+        (Status.to_string claimed.Task.status);
+      Alcotest.(check bool) "исполнитель — заявитель" true
+        (claimed.Task.assignee_id = Some agent.Actor.id)
+
+(** Заявка не отменяет назначение, принятое ранее: назначенная задача
+    остаётся у прежнего исполнителя. *)
+let test_claim_keeps_existing_assignee () =
+  let task = create ~status:Status.Todo ~assignee:colleague.Actor.handle () in
+  match
+    Support.run
+      (Service.Task.claim conn ~actor:human ~interface_:Interface.Cli
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  with
+  | Error e -> Alcotest.fail ("заявка не прошла: " ^ Service.Failure.to_string e)
+  | Ok claimed ->
+      Alcotest.(check bool) "исполнитель прежний" true
+        (claimed.Task.assignee_id = Some colleague.Actor.id)
+
+(** Заявка только из todo: из backlog претендентов нет, из in_progress — тем
+    более. *)
+let test_claim_only_from_todo () =
+  let task = create ~status:Status.Backlog () in
+  let failure =
+    expect_failure "заявка не из todo"
+      (Service.Task.claim conn ~actor:agent ~interface_:Interface.Cli
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  in
+  match failure with
+  | Service.Failure.Conflict { message = _ } -> ()
+  | other -> Alcotest.fail ("не тот отказ: " ^ Service.Failure.to_string other)
+
+(** Отпуск только из in_progress: нечего отпускать у задачи, которую не
+    брали в работу. *)
+let test_release_only_from_in_progress () =
+  let task = create ~status:Status.Todo () in
+  let failure =
+    expect_failure "отпуск не из in_progress"
+      (Service.Task.release conn ~actor:agent ~interface_:Interface.Cli
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  in
+  match failure with
+  | Service.Failure.Conflict { message = _ } -> ()
+  | other -> Alcotest.fail ("не тот отказ: " ^ Service.Failure.to_string other)
+
+(** Посторонний агент чужую работу отпустить не может — отказ правила, а не
+    сбой. *)
+let test_stranger_agent_cannot_release () =
+  let task = create ~status:Status.Todo () in
+  match
+    Support.run
+      (Service.Task.claim conn ~actor:agent ~interface_:Interface.Cli
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  with
+  | Error e -> Alcotest.fail ("заявка не прошла: " ^ Service.Failure.to_string e)
+  | Ok claimed ->
+      let failure =
+        expect_failure "отпуск посторонним агентом"
+          (Service.Task.release conn ~actor:other_agent ~interface_:Interface.Cli
+             ~ref_:task.Task.ref_ ~version:claimed.Task.version ~note:None)
+      in
+      (match failure with
+      | Service.Failure.Forbidden { message; _ } ->
+          Alcotest.(check bool) "сообщение" true (String.length message > 0)
+      | other ->
+          Alcotest.fail ("не тот отказ: " ^ Service.Failure.to_string other))
+
+(** Отпуск возвращает задачу в пул: статус — todo, исполнитель снят. *)
+let test_release_returns_task_to_pool () =
+  let task = create ~status:Status.Todo () in
+  match
+    Support.run
+      (Service.Task.claim conn ~actor:agent ~interface_:Interface.Cli
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  with
+  | Error e -> Alcotest.fail ("заявка не прошла: " ^ Service.Failure.to_string e)
+  | Ok claimed ->
+      (match
+         Support.run
+           (Service.Task.release conn ~actor:agent ~interface_:Interface.Cli
+              ~ref_:task.Task.ref_ ~version:claimed.Task.version ~note:None)
+       with
+      | Error e -> Alcotest.fail ("отпуск не прошёл: " ^ Service.Failure.to_string e)
+      | Ok released ->
+          Alcotest.(check string) "статус" "todo"
+            (Status.to_string released.Task.status);
+          Alcotest.(check bool) "исполнитель снят" true
+            (released.Task.assignee_id = None))
+
+(** Журнал помнит, что задачу заявили: действие [claimed]. *)
+let test_claim_writes_journal () =
+  let task = create ~status:Status.Todo () in
+  match
+    Support.run
+      (Service.Task.claim conn ~actor:agent ~interface_:Interface.Mcp
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  with
+  | Error e -> Alcotest.fail ("заявка не прошла: " ^ Service.Failure.to_string e)
+  | Ok _ -> (
+      match events_for task.Task.ref_ with
+      | event :: _ ->
+          Alcotest.(check string) "action" "claimed"
+            (Activity.action_to_string event.Activity.action);
+          Alcotest.(check string) "from" "todo"
+            (match event.Activity.from_value with
+            | Some value -> value
+            | None -> "");
+          Alcotest.(check string) "to" "in_progress"
+            (match event.Activity.to_value with
+            | Some value -> value
+            | None -> "");
+          Alcotest.(check string) "interface" "mcp"
+            (Interface.to_string event.Activity.interface_)
+      | [] -> Alcotest.fail "заявка не оставила следа в журнале")
+
+(** Журнал помнит, что задачу отпустили: действие [released]. *)
+let test_release_writes_journal () =
+  let task = create ~status:Status.Todo () in
+  match
+    Support.run
+      (Service.Task.claim conn ~actor:agent ~interface_:Interface.Api
+         ~ref_:task.Task.ref_ ~version:task.Task.version ~note:None)
+  with
+  | Error e -> Alcotest.fail ("заявка не прошла: " ^ Service.Failure.to_string e)
+  | Ok claimed ->
+      (match
+         Support.run
+           (Service.Task.release conn ~actor:agent ~interface_:Interface.Api
+              ~ref_:task.Task.ref_ ~version:claimed.Task.version ~note:None)
+       with
+      | Error e -> Alcotest.fail ("отпуск не прошёл: " ^ Service.Failure.to_string e)
+      | Ok _ -> (
+          match events_for task.Task.ref_ with
+          | event :: _ ->
+              Alcotest.(check string) "action" "released"
+                (Activity.action_to_string event.Activity.action);
+              Alcotest.(check string) "from" "in_progress"
+                (match event.Activity.from_value with
+                | Some value -> value
+                | None -> "");
+              Alcotest.(check string) "to" "todo"
+                (match event.Activity.to_value with
+                | Some value -> value
+                | None -> "")
+          | [] -> Alcotest.fail "отпуск не оставил следа в журнале"))
+
 (* ------------------------------------------------------- классы отказов --- *)
 
 (** Классы отказов различаются и на выходе: «правило запрещает» — 403,
@@ -266,6 +430,25 @@ let () =
             test_stale_version_is_conflict;
           Alcotest.test_case "нет задачи — not found" `Quick
             test_missing_task_is_not_found;
+        ] );
+      ( "заявка и отпуск",
+        [
+          Alcotest.test_case "свободную задачу забирает заявитель" `Quick
+            test_claim_assigns_claimer;
+          Alcotest.test_case "назначение не отменяется" `Quick
+            test_claim_keeps_existing_assignee;
+          Alcotest.test_case "заявка только из todo" `Quick
+            test_claim_only_from_todo;
+          Alcotest.test_case "отпуск только из in_progress" `Quick
+            test_release_only_from_in_progress;
+          Alcotest.test_case "посторонний агент не отпускает" `Quick
+            test_stranger_agent_cannot_release;
+          Alcotest.test_case "отпуск возвращает в пул" `Quick
+            test_release_returns_task_to_pool;
+          Alcotest.test_case "заявка пишет в журнал" `Quick
+            test_claim_writes_journal;
+          Alcotest.test_case "отпуск пишет в журнал" `Quick
+            test_release_writes_journal;
         ] );
       ( "классы отказов",
         [

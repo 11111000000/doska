@@ -123,7 +123,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 43 claim'а, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 50 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -173,8 +173,15 @@ verifier падает и без control'а, он не проверяет нич�
 | `api-mine-open-only` | В главный запрос попадают только открытые задачи: завершённые и отменённые — нет (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_closed_included.sh` |
 | `api-mine-pagination` | Пагинация главного запроса не теряет и не повторяет строку: курсор — строго следующая по порядку (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_cursor_inclusive.sh` |
 | `api-mine-route` | `/tasks/mine` — главный запрос, а не чтение задачи по референсу: статический маршрут стоит раньше параметризованного (§6.1) | `dune exec --root . test/api_test.exe` | `api_mine_route_after_ref.sh` |
+| `api-claim-assignee-scope` | Заявку на чужую задачу агент получить не может: свободную берёт любой агент, назначенную — только её исполнитель (§4.1, §6.1) | `dune exec --root . test/api_test.exe` | `api_claim_steal_assigned.sh` |
+| `api-claim-assignee` | Заявка на свободную задачу назначает претендента исполнителем, а назначение не отменяет (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_claim_assignee_replaced.sh` |
+| `api-claim-source-status` | Заявка допустима только из статуса `todo`: из другого статуса — 409, а не 400 и не 200 (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_claim_source_status.sh` |
+| `api-release-owner` | Отпустить задачу может её исполнитель-агент или любой человек; посторонний агент — 403 (§4.1, §6.1) | `dune exec --root . test/api_test.exe` | `api_release_any_agent.sh` |
+| `api-release-pool` | Отпуск возвращает задачу в пул: статус становится `todo`, исполнитель снят (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_release_keeps_assignee.sh` |
+| `api-claim-journal` | Заявка оставляет в журнале действие `claimed` — по нему видно, кто задачу взял (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_claim_journal_swapped.sh` |
+| `api-release-journal` | Отпуск оставляет в журнале действие `released` — по нему видно, кто задачу вернул в пул (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_release_journal_swapped.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 43 claim'а выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 50 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 

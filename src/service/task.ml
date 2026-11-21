@@ -339,6 +339,105 @@ let transition conn ~actor ~interface_ ~ref_ ~target ~version ~note :
           | Ok None -> Lwt_result.lift (Error (stale_version ()))
           | Ok (Some id) -> refresh conn id ~ref_:task.Task.ref_))
 
+(* ------------------------------------------------------ заявка и отпуск --- *)
+
+(** Заявка на задачу: актор берёт её в работу.
+
+    Кто может претендовать — правило таблицы переходов
+    ([Assignee_or_claimant]): свободную задачу берёт любой агент, назначенную —
+    только её исполнитель. Исполнитель меняется, если задача была свободна:
+    заявка не отменяет назначение, принятое человеком. *)
+let claim conn ~actor ~interface_ ~ref_ ~version ~note :
+    (Task.t, Failure.t) result Lwt.t =
+  let* found = find conn ~ref_ in
+  match found with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok task -> (
+      match Rules.check_claim_source task.Task.status with
+      | Error message ->
+          Lwt_result.lift (Error (Failure.Conflict { message }))
+      | Ok () -> (
+          let* decision = decide conn ~actor task Status.In_progress note in
+          match decision with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok () ->
+              let assignee =
+                match task.Task.assignee_id with
+                | None -> Some (Some actor.Actor.id)
+                | Some _ -> None
+              in
+              let* outcome =
+                Db.Conn.with_transaction conn (fun () ->
+                    let* updated =
+                      Db.Repo_task.set_status_and_assignee conn ~ref_:task.Task.ref_
+                        ~status:Status.In_progress ~assignee ~version ~note
+                    in
+                    match updated with
+                    | Error e -> Lwt_result.lift (Error e)
+                    | Ok None -> Lwt_result.lift (Ok None)
+                    | Ok (Some id) ->
+                        let* _ =
+                          Db.Repo_activity.record conn ~action:Activity.Claimed
+                            ~task_id:(Some task.Task.id)
+                            ~project_id:task.Task.project_id
+                            ~actor_id:(Some actor.Actor.id)
+                            ~from_value:(Some (Status.to_string task.Task.status))
+                            ~to_value:(Some (Status.to_string Status.In_progress))
+                            ~summary:note ~interface_ ()
+                        in
+                        Lwt_result.lift (Ok (Some id)))
+              in
+              (match outcome with
+              | Error e -> Lwt_result.lift (Error (storage e))
+              | Ok None -> Lwt_result.lift (Error (stale_version ()))
+              | Ok (Some id) -> refresh conn id ~ref_:task.Task.ref_)))
+
+(** Отпуск задачи: работа откатывается, исполнитель снимается — задача
+    возвращается в пул (§6.2, [release_task]).
+
+    Отпустить может её исполнитель-агент или любой человек; посторонний агент —
+    нет. В отличие от обычного перехода в [todo] отпуск снимает исполнителя:
+    «вернуть в пул» и «откатить работу» — разные действия. *)
+let release conn ~actor ~interface_ ~ref_ ~version ~note :
+    (Task.t, Failure.t) result Lwt.t =
+  let* found = find conn ~ref_ in
+  match found with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok task -> (
+      match Rules.check_release_source task.Task.status with
+      | Error message ->
+          Lwt_result.lift (Error (Failure.Conflict { message }))
+      | Ok () -> (
+          let* decision = decide conn ~actor task Status.Todo note in
+          match decision with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok () ->
+              let* outcome =
+                Db.Conn.with_transaction conn (fun () ->
+                    let* updated =
+                      Db.Repo_task.set_status_and_assignee conn ~ref_:task.Task.ref_
+                        ~status:Status.Todo ~assignee:(Some None) ~version ~note
+                    in
+                    match updated with
+                    | Error e -> Lwt_result.lift (Error e)
+                    | Ok None -> Lwt_result.lift (Ok None)
+                    | Ok (Some id) ->
+                        let* _ =
+                          Db.Repo_activity.record conn ~action:Activity.Released
+                            ~task_id:(Some task.Task.id)
+                            ~project_id:task.Task.project_id
+                            ~actor_id:(Some actor.Actor.id)
+                            ~from_value:(Some (Status.to_string task.Task.status))
+                            ~to_value:(Some (Status.to_string Status.Todo))
+                            ~summary:note ~interface_ ()
+                        in
+                        Lwt_result.lift (Ok (Some id)))
+              in
+              (match outcome with
+              | Error e -> Lwt_result.lift (Error (storage e))
+              | Ok None -> Lwt_result.lift (Error (stale_version ()))
+              | Ok (Some id) -> refresh conn id ~ref_:task.Task.ref_)))
+
 (* ----------------------------------------------------------- назначение --- *)
 
 let assign conn ~actor ~interface_ ~ref_ ~assignee ~version ~note :

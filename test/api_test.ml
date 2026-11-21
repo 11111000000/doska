@@ -29,6 +29,12 @@ let stranger =
   Support.ensure_actor conn ~prefix:"api-" ~kind:Actor.Human ~handle:"other"
     ~display_name:"Другой"
 
+(* Второй агент — посторонний для правила отпуска: задачу отпускает её
+   исполнитель или любой человек, а не всякий агент. *)
+let other_agent =
+  Support.ensure_actor conn ~prefix:"api-" ~kind:Actor.Agent ~handle:"legist2"
+    ~display_name:"legist2"
+
 let project =
   Support.ensure_project conn ~prefix:"API" ~key:"MAIN" ~name:"Основной"
     ~autonomy:Actor.Human_gate
@@ -480,6 +486,109 @@ let test_mine_without_actor_is_unauthorized () =
   Alcotest.(check int) "код ответа" 401 code;
   Alcotest.(check string) "код ошибки" "unauthorized" (error_code (json text))
 
+(* ------------------------------------------------------- заявка и отпуск --- *)
+
+(** Заявка: взять задачу в работу. Тело — версия: без неё два претендента
+    записали бы свои изменения по очереди, и второй затёр бы первого. *)
+let claim actor ref_ version =
+  call ~method_:`POST ~actor:(Some actor)
+    ~body:(Yojson.Safe.to_string (`Assoc [ ("version", `Int version) ]))
+    (Printf.sprintf "/api/v1/tasks/%s/claim" ref_)
+
+(** Отпуск: вернуть задачу в пул. *)
+let release actor ref_ version =
+  call ~method_:`POST ~actor:(Some actor)
+    ~body:(Yojson.Safe.to_string (`Assoc [ ("version", `Int version) ]))
+    (Printf.sprintf "/api/v1/tasks/%s/release" ref_)
+
+(** Задача для заявки: свой [source_ref] — по нему её узнают в ответе. *)
+let create_claim_task ~source_ref ?assignee () =
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(create_body ~status:"todo" ~source_ref ?assignee ())
+      "/api/v1/tasks"
+  in
+  (code, json text)
+
+(** Свободную задачу агент забирает себе: заявка — это и есть назначение
+    себе, если задача ещё ни за кем не закреплена. *)
+let test_claim_takes_free_task () =
+  let _, created = create_claim_task ~source_ref:"api-claim-free" () in
+  let ref_ = task_ref created in
+  let code, text = claim "api-legist" ref_ 1 in
+  Alcotest.(check int) "код ответа" 200 code;
+  let value = json text in
+  Alcotest.(check string) "статус" "in_progress" (task_status value);
+  Alcotest.(check string) "исполнитель" "legist"
+    (text_field "assignee" (task_of value));
+  Alcotest.(check bool) "исполнитель записан" true
+    (text_field "assignee_id" (task_of value) <> "")
+
+(** Назначенную задачу чужой агент не отнимает: правило претендента. *)
+let test_claim_refuses_task_of_other () =
+  let _, created =
+    create_claim_task ~source_ref:"api-claim-assigned" ~assignee:"api-other" ()
+  in
+  let ref_ = task_ref created in
+  let code, text = claim "api-legist" ref_ 1 in
+  Alcotest.(check int) "код ответа" 403 code;
+  Alcotest.(check string) "код ошибки" "forbidden" (error_code (json text))
+
+(** Повторная заявка — конфликт, а не запрет: задача уже в работе, её
+    состояние можно перечитать и повторить. *)
+let test_second_claim_is_conflict () =
+  let _, created = create_claim_task ~source_ref:"api-claim-twice" () in
+  let ref_ = task_ref created in
+  let code, _ = claim "api-legist" ref_ 1 in
+  Alcotest.(check int) "первая заявка удалась" 200 code;
+  let code, text = claim "api-legist" ref_ 2 in
+  Alcotest.(check int) "код ответа" 409 code;
+  Alcotest.(check string) "код ошибки" "conflict" (error_code (json text))
+
+(** Без версии заявка невозможна: блокировка обязательна. *)
+let test_claim_without_version_is_bad_request () =
+  let _, created = create_claim_task ~source_ref:"api-claim-noversion" () in
+  let ref_ = task_ref created in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-legist") ~body:"{}"
+      (Printf.sprintf "/api/v1/tasks/%s/claim" ref_)
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Отпуск возвращает задачу в пул: статус — снова todo, исполнитель снят. *)
+let test_release_returns_task_to_pool () =
+  let _, created = create_claim_task ~source_ref:"api-release-own" () in
+  let ref_ = task_ref created in
+  let code, _ = claim "api-legist" ref_ 1 in
+  Alcotest.(check int) "заявка удалась" 200 code;
+  let code, text = release "api-legist" ref_ 2 in
+  Alcotest.(check int) "код ответа" 200 code;
+  let value = json text in
+  Alcotest.(check string) "статус" "todo" (task_status value);
+  Alcotest.(check bool) "исполнитель снят" true
+    (text_field "assignee_id" (task_of value) = "")
+
+(** Посторонний агент чужую работу отпустить не может. *)
+let test_other_agent_cannot_release () =
+  let _, created = create_claim_task ~source_ref:"api-release-stranger" () in
+  let ref_ = task_ref created in
+  let code, _ = claim "api-legist" ref_ 1 in
+  Alcotest.(check int) "заявка удалась" 200 code;
+  let code, text = release "api-legist2" ref_ 2 in
+  Alcotest.(check int) "код ответа" 403 code;
+  Alcotest.(check string) "код ошибки" "forbidden" (error_code (json text))
+
+(** Человек отпустить может: работа застряла — человек её снимает. *)
+let test_human_can_release () =
+  let _, created = create_claim_task ~source_ref:"api-release-human" () in
+  let ref_ = task_ref created in
+  let code, _ = claim "api-legist" ref_ 1 in
+  Alcotest.(check int) "заявка удалась" 200 code;
+  let code, text = release "api-petr" ref_ 2 in
+  Alcotest.(check int) "код ответа" 200 code;
+  Alcotest.(check string) "статус" "todo" (task_status (json text))
+
 (* --------------------------------------------------- разрешение имён --- *)
 
 let resolve_body ?namespace raw =
@@ -597,6 +706,22 @@ let () =
           Alcotest.test_case "без актора — 401" `Quick
             test_mine_without_actor_is_unauthorized;
         ] );
+      ( "заявка и отпуск",
+        [
+          Alcotest.test_case "свободную задачу агент берёт себе" `Quick
+            test_claim_takes_free_task;
+          Alcotest.test_case "назначенную задачу не отнимает" `Quick
+            test_claim_refuses_task_of_other;
+          Alcotest.test_case "повторная заявка — конфликт" `Quick
+            test_second_claim_is_conflict;
+          Alcotest.test_case "без версии — 400" `Quick
+            test_claim_without_version_is_bad_request;
+          Alcotest.test_case "отпуск возвращает в пул" `Quick
+            test_release_returns_task_to_pool;
+          Alcotest.test_case "посторонний агент не отпускает" `Quick
+            test_other_agent_cannot_release;
+          Alcotest.test_case "человек отпускает" `Quick test_human_can_release;
+        ] );
       ( "разрешение имён",
         [
           Alcotest.test_case "по логину" `Quick test_resolve_finds_actor_by_handle;
@@ -615,5 +740,6 @@ let () =
   ignore requester;
   ignore agent;
   ignore stranger;
+  ignore other_agent;
   ignore project;
   ignore resolvable

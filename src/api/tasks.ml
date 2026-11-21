@@ -281,6 +281,38 @@ let transition req =
                    ~note:(Params.string_field body "reason"))
                 (fun task -> ok (`Assoc [ ("task", View.task task) ]))))
 
+(* --------------------------------------------------------- заявка и отпуск --- *)
+
+(** Заявка на задачу: тело — версия (оптимистичная блокировка) и, по
+    желанию, причина. Версия обязательна: без неё два претендента записали бы
+    свои изменения по очереди, и второй затёр бы первого. *)
+let claim req =
+  let ref_ = Dream.param req "ref" in
+  Context.with_body req (fun conn actor body ->
+      match Params.int_field body "version" with
+      | None ->
+          bad_request
+            "нужно поле version: заявка защищена оптимистичной блокировкой"
+      | Some version ->
+          answer
+            (Service.Task.claim conn ~actor ~interface_:Interface.Api ~ref_ ~version
+               ~note:(Params.string_field body "reason"))
+            (fun task -> ok (`Assoc [ ("task", View.task task) ])))
+
+(** Отпуск задачи: вернуть её в пул. *)
+let release req =
+  let ref_ = Dream.param req "ref" in
+  Context.with_body req (fun conn actor body ->
+      match Params.int_field body "version" with
+      | None ->
+          bad_request
+            "нужно поле version: отпуск защищён оптимистичной блокировкой"
+      | Some version ->
+          answer
+            (Service.Task.release conn ~actor ~interface_:Interface.Api ~ref_ ~version
+               ~note:(Params.string_field body "reason"))
+            (fun task -> ok (`Assoc [ ("task", View.task task) ])))
+
 (* --------------------------------------------------------------- назначение --- *)
 
 let assign req =
