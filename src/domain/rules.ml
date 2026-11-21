@@ -38,11 +38,14 @@ type context = {
   (** Причина, вопрос или резюме — в зависимости от перехода. *)
   note : string option;
   has_evidence : bool;
+  (** Сколько детей задачи ещё открыто. Число считает владелец факта
+      (сервис), решение принимает домен. *)
+  open_children : int;
 }
 
 (** Конструктор контекста: собирает проверку из ролей и фактов. *)
 let make_context ~actor ~project_autonomy ~assignee_id ~is_requester ~is_supervisor
-    ~is_admin ~has_accept_right ~note ~has_evidence : context =
+    ~is_admin ~has_accept_right ~note ~has_evidence ~open_children : context =
   {
     actor;
     project_autonomy;
@@ -53,6 +56,7 @@ let make_context ~actor ~project_autonomy ~assignee_id ~is_requester ~is_supervi
     has_accept_right;
     note;
     has_evidence;
+    open_children;
   }
 
 (** Разрешённый переход: кому и что требуется. *)
@@ -152,6 +156,23 @@ let check_requirements ctx requirements =
     (Ok ())
     requirements
 
+(** Родитель не закрывается, пока открыты дети (D7).
+
+    Отменять родителя можно: это отказ от ветки целиком. Закрывать —
+    нельзя, пока живы дети: закрытый родитель с открытыми детьми обманывает
+    читателя сводки. *)
+
+let check_parent_closed ctx to_ =
+  match to_ with
+  | Done ->
+      if ctx.open_children = 0 then Ok ()
+      else
+        Error
+          (Printf.sprintf
+             "у задачи открытых детей: %d — родителя закрывают после детей"
+             ctx.open_children)
+  | _ -> Ok ()
+
 (** Проверка перехода. Возвращает причину отказа — её можно показать. *)
 let check ctx from_ to_ : (unit, string) result =
   match find_transition from_ to_ with
@@ -161,7 +182,8 @@ let check ctx from_ to_ : (unit, string) result =
            (Status.to_string from_) (Status.to_string to_))
   | Some tr ->
       Result.bind (check_permission ctx tr.permission) (fun () ->
-          check_requirements ctx tr.requirements)
+          Result.bind (check_requirements ctx tr.requirements) (fun () ->
+              check_parent_closed ctx to_))
 
 (** Исходный статус для заявки.
 

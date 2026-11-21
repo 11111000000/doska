@@ -49,7 +49,7 @@ let next_source_ref () =
 
 (** Вход создания: проект, исполнитель и заявитель заданы логинами — клиент
     знает человека по имени, а не по идентификатору. *)
-let input ?(status = Status.Backlog) ?assignee ?requester () :
+let input ?(status = Status.Backlog) ?assignee ?requester ?parent () :
     Service.Task.create_input =
   let source_ref = next_source_ref () in
   {
@@ -65,16 +65,17 @@ let input ?(status = Status.Backlog) ?assignee ?requester () :
     project = Some project.Project.key;
     assignee;
     requester;
+    parent;
   }
 
-let create ?status ?assignee ?requester ?interface_ () =
+let create ?status ?assignee ?requester ?parent ?interface_ () =
   let interface_ =
     match interface_ with Some interface_ -> interface_ | None -> Interface.Api
   in
   match
     Support.run
       (Service.Task.create conn ~actor:human ~interface_
-         (input ?status ?assignee ?requester ()))
+         (input ?status ?assignee ?requester ?parent ()))
   with
   | Ok (Db.Repo_task.Created task) -> task
   | Ok (Db.Repo_task.Existing _) -> Alcotest.fail "задача уже существовала"
@@ -390,6 +391,209 @@ let test_release_writes_journal () =
                 | None -> "")
           | [] -> Alcotest.fail "отпуск не оставил следа в журнале"))
 
+(* ------------------------------------------------------ иерархия и связи --- *)
+
+(** Класс отказа: по нему видно, чья это была вина — правила, клиента или
+    хранилища. *)
+let failure_class (failure : Service.Failure.t) =
+  match failure with
+  | Service.Failure.Bad_request _ -> "bad_request"
+  | Service.Failure.Forbidden _ -> "forbidden"
+  | Service.Failure.Not_found _ -> "not_found"
+  | Service.Failure.Conflict _ -> "conflict"
+  | Service.Failure.Storage _ -> "storage"
+
+(** Связь между задачами — отдельная сущность: у неё свой идентификатор,
+    и журнал помнит, что связь записали. *)
+let test_link_is_created () =
+  let from_ = create () in
+  let to_ = create () in
+  match
+    Support.run
+      (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+         ~ref_:from_.Task.ref_ ~to_ref:to_.Task.ref_ ~kind:Link.Blocks)
+  with
+  | Error e -> Alcotest.fail ("связь не создана: " ^ Service.Failure.to_string e)
+  | Ok link ->
+      Alcotest.(check string) "вид" "blocks"
+        (Link.to_string link.Db.Repo_link.kind);
+      Alcotest.(check string) "откуда" from_.Task.id link.Db.Repo_link.from_id;
+      Alcotest.(check string) "куда" to_.Task.id link.Db.Repo_link.to_id;
+      (match events_for from_.Task.ref_ with
+      | event :: _ ->
+          Alcotest.(check string) "action" "linked"
+            (Activity.action_to_string event.Activity.action)
+      | [] -> Alcotest.fail "связь не оставила следа в журнале")
+
+(** Связь задачи с собой бессмысленна: это ошибка запроса, а не правила. *)
+let test_link_to_self_is_refused () =
+  let task = create () in
+  let failure =
+    expect_failure "самосвязь"
+      (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+         ~ref_:task.Task.ref_ ~to_ref:task.Task.ref_ ~kind:Link.Relates_to)
+  in
+  Alcotest.(check string) "класс отказа" "bad_request" (failure_class failure)
+
+(** Повторная связь — конфликт: тот же факт уже записан, а не новый. *)
+let test_duplicate_link_is_conflict () =
+  let from_ = create () in
+  let to_ = create () in
+  let ok_link =
+    Support.run
+      (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+         ~ref_:from_.Task.ref_ ~to_ref:to_.Task.ref_ ~kind:Link.Relates_to)
+  in
+  (match ok_link with
+  | Error e -> Alcotest.fail ("связь не создана: " ^ Service.Failure.to_string e)
+  | Ok _ -> ());
+  let failure =
+    expect_failure "повтор"
+      (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+         ~ref_:from_.Task.ref_ ~to_ref:to_.Task.ref_ ~kind:Link.Relates_to)
+  in
+  Alcotest.(check string) "класс отказа" "conflict" (failure_class failure)
+
+(** Кольцо блокировок превращает вопрос «кто мешает» в «все мешают всем» —
+    поэтому кольцо запрещают, а с цепочкой в сообщении. *)
+let test_blocking_cycle_is_refused () =
+  let first = create () in
+  let second = create () in
+  let ok_link =
+    Support.run
+      (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+         ~ref_:first.Task.ref_ ~to_ref:second.Task.ref_ ~kind:Link.Blocks)
+  in
+  (match ok_link with
+  | Error e -> Alcotest.fail ("связь не создана: " ^ Service.Failure.to_string e)
+  | Ok _ -> ());
+  let failure =
+    expect_failure "кольцо"
+      (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+         ~ref_:second.Task.ref_ ~to_ref:first.Task.ref_ ~kind:Link.Blocks)
+  in
+  Alcotest.(check string) "класс отказа" "bad_request" (failure_class failure);
+  match failure with
+  | Service.Failure.Bad_request { message } ->
+      Alcotest.(check bool) "в сообщении есть цепочка" true
+        (String.length message > 0)
+  | _ -> Alcotest.fail "не тот класс отказа"
+
+(** Снятие связи убирает её из графа; задачи остаются на месте. *)
+let test_unlink_removes_link () =
+  let from_ = create () in
+  let to_ = create () in
+  let link =
+    match
+      Support.run
+        (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+           ~ref_:from_.Task.ref_ ~to_ref:to_.Task.ref_ ~kind:Link.Relates_to)
+    with
+    | Error e -> Alcotest.fail ("связь не создана: " ^ Service.Failure.to_string e)
+    | Ok link -> link
+  in
+  match
+    Support.run
+      (Service.Task.unlink conn ~actor:human ~interface_:Interface.Api
+         ~ref_:from_.Task.ref_ ~link_id:link.Db.Repo_link.id)
+  with
+  | Error e -> Alcotest.fail ("связь не снята: " ^ Service.Failure.to_string e)
+  | Ok () ->
+      let details =
+        match Support.run (Service.Task.get conn ~ref_:from_.Task.ref_) with
+        | Ok details -> details
+        | Error e -> Alcotest.fail ("задача не прочитана: " ^ Service.Failure.to_string e)
+      in
+      Alcotest.(check int) "связей не осталось" 0
+        (List.length details.Service.Task.links);
+      (match events_for from_.Task.ref_ with
+      | event :: _ ->
+          Alcotest.(check string) "action" "unlinked"
+            (Activity.action_to_string event.Activity.action)
+      | [] -> Alcotest.fail "снятие связи не оставило следа в журнале")
+
+(** Снять чужую связь из чужой задачи — не то действие, о котором просили. *)
+let test_unlink_of_foreign_link_is_not_found () =
+  let owner = create () in
+  let other = create () in
+  let target = create () in
+  let link =
+    match
+      Support.run
+        (Service.Task.link conn ~actor:human ~interface_:Interface.Api
+           ~ref_:owner.Task.ref_ ~to_ref:target.Task.ref_ ~kind:Link.Relates_to)
+    with
+    | Error e -> Alcotest.fail ("связь не создана: " ^ Service.Failure.to_string e)
+    | Ok link -> link
+  in
+  let failure =
+    expect_failure "чужая связь"
+      (Service.Task.unlink conn ~actor:human ~interface_:Interface.Api
+         ~ref_:other.Task.ref_ ~link_id:link.Db.Repo_link.id)
+  in
+  Alcotest.(check string) "класс отказа" "not_found" (failure_class failure)
+
+(** Смена родителя переносит задачу в ветку; журнал помнит, что сменили. *)
+let test_set_parent_moves_task () =
+  let parent = create () in
+  let child = create () in
+  match
+    Support.run
+      (Service.Task.set_parent conn ~actor:human ~interface_:Interface.Api
+         ~ref_:child.Task.ref_ ~parent_ref:(Some parent.Task.ref_)
+         ~version:child.Task.version)
+  with
+  | Error e -> Alcotest.fail ("родитель не сменён: " ^ Service.Failure.to_string e)
+  | Ok moved ->
+      Alcotest.(check string) "родитель записан" parent.Task.id
+        (match moved.Task.parent_id with Some id -> id | None -> "");
+      (match events_for child.Task.ref_ with
+      | event :: _ ->
+          Alcotest.(check string) "action" "updated"
+            (Activity.action_to_string event.Activity.action)
+      | [] -> Alcotest.fail "смена родителя не оставила следа в журнале")
+
+(** Родителем нельзя назначить собственного потомка: дерево замкнулось бы
+    в кольцо. *)
+let test_parent_cycle_is_refused () =
+  let parent = create () in
+  let child = create ~parent:parent.Task.ref_ () in
+  let failure =
+    expect_failure "потомок в родители"
+      (Service.Task.set_parent conn ~actor:human ~interface_:Interface.Api
+         ~ref_:parent.Task.ref_ ~parent_ref:(Some child.Task.ref_)
+         ~version:parent.Task.version)
+  in
+  Alcotest.(check string) "класс отказа" "bad_request" (failure_class failure)
+
+(** Родителя не закрывают, пока открыты дети: сводка не должна врать. *)
+let test_parent_with_open_child_is_not_closed () =
+  let parent = create () in
+  let _child = create ~parent:parent.Task.ref_ () in
+  let step target version note =
+    match
+      Support.run
+        (Service.Task.transition conn ~actor:human ~interface_:Interface.Api
+           ~ref_:parent.Task.ref_ ~target ~version ~note)
+    with
+    | Error e ->
+        Alcotest.fail
+          ("переход не прошёл: " ^ Service.Failure.to_string e ^ " (ожидался успех)")
+    | Ok task -> task
+  in
+  let todo = step Status.Todo parent.Task.version None in
+  let started = step Status.In_progress todo.Task.version None in
+  let review =
+    step Status.In_review started.Task.version (Some "сделал, проверил")
+  in
+  let failure =
+    expect_failure "приёмка с открытым ребёнком"
+      (Service.Task.transition conn ~actor:human ~interface_:Interface.Api
+         ~ref_:parent.Task.ref_ ~target:Status.Done
+         ~version:review.Task.version ~note:None)
+  in
+  Alcotest.(check string) "класс отказа" "forbidden" (failure_class failure)
+
 (* ------------------------------------------------------- классы отказов --- *)
 
 (** Классы отказов различаются и на выходе: «правило запрещает» — 403,
@@ -449,6 +653,27 @@ let () =
             test_claim_writes_journal;
           Alcotest.test_case "отпуск пишет в журнал" `Quick
             test_release_writes_journal;
+        ] );
+      ( "иерархия и связи",
+        [
+          Alcotest.test_case "связь записана" `Quick
+            test_link_is_created;
+          Alcotest.test_case "связь с собой отклонена" `Quick
+            test_link_to_self_is_refused;
+          Alcotest.test_case "повторная связь — конфликт" `Quick
+            test_duplicate_link_is_conflict;
+          Alcotest.test_case "кольцо блокировок отклонено" `Quick
+            test_blocking_cycle_is_refused;
+          Alcotest.test_case "снятие связи убирает её" `Quick
+            test_unlink_removes_link;
+          Alcotest.test_case "чужая связь — не найдена" `Quick
+            test_unlink_of_foreign_link_is_not_found;
+          Alcotest.test_case "смена родителя переносит задачу" `Quick
+            test_set_parent_moves_task;
+          Alcotest.test_case "цикл по родителю отклонён" `Quick
+            test_parent_cycle_is_refused;
+          Alcotest.test_case "родитель с открытым ребёнком не закрыт" `Quick
+            test_parent_with_open_child_is_not_closed;
         ] );
       ( "классы отказов",
         [
