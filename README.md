@@ -23,14 +23,15 @@
 
 ## Состояние
 
-Этапы 0 (каркас) и 1 (схема и API) закрыты. Работает связка «мигратор → схема →
-REST `/api/v1`»: задачи создаются, читаются, переводятся, комментируются,
-и всё это фиксируется в журнале активности.
+Этапы 0 и 1 закрыты, от этапа 2 взят первый срез (идентичность). Работает связка
+«мигратор → схема → REST `/api/v1`»: задачи создаются, читаются, переводятся,
+комментируются, заявляются и отпускаются, делятся на части и связываются между
+собой — и всё это фиксируется в журнале активности.
 
 | Проверка | Результат |
 |---|---|
 | `dune build --root .` | без ошибок (любое включённое предупреждение — ошибка) |
-| `dune runtest --root .` | 62 теста OK — домен 17, идентичность 9, типы домена 8, репозитории 13, API 15 (живая БД) |
+| `dune runtest --root .` | 133 теста OK — домен 21, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 25, API 46 (живая БД) |
 | `nix build .#doska` | успешно; checkPhase гоняет тесты без БД (в песочнице nix PostgreSQL нет) |
 | `doska migrate` | применены `001_init.sql` и `002_task_ref_seq.sql`; повторный запуск — «нечего применять» |
 | `doska health` | `ok` |
@@ -123,7 +124,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 50 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 60 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -180,8 +181,18 @@ verifier падает и без control'а, он не проверяет нич�
 | `api-release-pool` | Отпуск возвращает задачу в пул: статус становится `todo`, исполнитель снят (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_release_keeps_assignee.sh` |
 | `api-claim-journal` | Заявка оставляет в журнале действие `claimed` — по нему видно, кто задачу взял (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_claim_journal_swapped.sh` |
 | `api-release-journal` | Отпуск оставляет в журнале действие `released` — по нему видно, кто задачу вернул в пул (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_release_journal_swapped.sh` |
+| `domain-link-direction` | Направление блокировки однозначно: `blocks` — «from блокирует to», `blocked_by` — обратное (§3.5, §6.1) | `dune exec --root . test/domain_test.exe` | `domain_link_direction.sh` |
+| `domain-parent-closed` | Родителя нельзя перевести в `done`, пока у него открытые дети: правило живёт в домене (§6.1) | `dune exec --root . test/domain_test.exe` | `domain_parent_closed.sh` |
+| `api-link-kind` | Неизвестный вид связи — 400, а не запись связи с чужим видом (§6.1) | `dune exec --root . test/api_test.exe` | `api_link_unknown_kind.sh` |
+| `api-link-self` | Связь задачи с собой отклоняется (§6.1) | `dune exec --root . test/api_test.exe` | `api_link_self.sh` |
+| `api-link-duplicate` | Повторная связь отклоняется, в том числе записанная с другой стороны (§6.1) | `dune exec --root . test/api_test.exe` | `api_link_duplicate.sh` |
+| `api-link-cycle` | Кольцо блокировок не записывается: цепочка блокировок остаётся без петель (§6.1) | `dune exec --root . test/service_task_test.exe` | `api_link_cycle.sh` |
+| `api-link-unlink-scope` | Связь снимается только из своей задачи: чужая связь оттуда не снимается (§6.1) | `dune exec --root . test/api_test.exe` | `api_link_unlink_scope.sh` |
+| `api-parent-cycle` | Родителем нельзя назначить собственного потомка: дерево не замыкается в кольцо (§6.1) | `dune exec --root . test/api_test.exe` | `api_parent_cycle.sh` |
+| `api-parent-version` | Версия обязательна при смене родителя: смена меняет задачу и ломает её блокировку (§6.1) | `dune exec --root . test/api_test.exe` | `api_parent_version.sh` |
+| `api-parent-create` | Родитель, указанный при создании задачи, записывается в дерево (§6.1) | `dune exec --root . test/api_test.exe` | `api_parent_create.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 50 claim'ов выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 60 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 

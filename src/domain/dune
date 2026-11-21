@@ -3,4 +3,4 @@
 (library
  (name domain)
  (package doska)
- (modules status actor task project evidence activity comment rules interface))
+ (modules status actor task project evidence activity comment rules interface link))

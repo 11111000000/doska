@@ -40,12 +40,13 @@ let next_source_ref () =
   incr counter;
   Printf.sprintf "repo-%d" !counter
 
-let create_task ?(status = Status.Backlog) ?assignee ?requester ?project () =
+let create_task ?(status = Status.Backlog) ?assignee ?requester ?project ?parent_id () =
   let args : Db.Repo_task.create_args =
     {
       Db.Repo_task.title = Printf.sprintf "Тестовая задача %d" !counter;
       description = "описание задачи";
       project_id = (match project with None -> None | Some p -> Some p.Project.id);
+      parent_id;
       kind = Task.Task;
       status;
       priority = Task.P2;
@@ -75,6 +76,7 @@ let task_args ~title ~source_ref () : Db.Repo_task.create_args =
     Db.Repo_task.title = title;
     description = "описание задачи";
     project_id = Some project.Project.id;
+    parent_id = None;
     kind = Task.Task;
     status = Status.Backlog;
     priority = Task.P2;
@@ -113,6 +115,7 @@ let test_create_is_idempotent () =
       Db.Repo_task.title = "Задача с повтором";
       description = "";
       project_id = Some project.Project.id;
+      parent_id = None;
       kind = Task.Task;
       status = Status.Backlog;
       priority = Task.P2;

@@ -130,6 +130,9 @@ let mine req =
 
 (* ------------------------------------------------------------------ чтение --- *)
 
+(** Одна задача со всем, что её касается: комментарии, доказательства,
+    родитель, дети и связи (D7). Связи — входящие и исходящие: отношение
+    читается одинаково с обеих сторон. *)
 let get req =
   let ref_ = Dream.param req "ref" in
   Context.with_actor req (fun conn _actor ->
@@ -140,6 +143,9 @@ let get req =
                 ("task", View.task details.task);
                 ("comments", `List (List.map View.comment details.comments));
                 ("evidence", `List (List.map View.evidence details.evidence));
+                ("parent", View.opt_task details.parent);
+                ("children", `List (List.map View.task details.children));
+                ("links", `List (List.map View.link details.links));
               ])))
 
 (* ---------------------------------------------------------------- создание --- *)
@@ -192,6 +198,7 @@ let parse_create body : (Service.Task.create_input, string) result =
           project = Params.string_field body "project";
           assignee = Params.string_field body "assignee";
           requester = Params.string_field body "requester";
+          parent = Params.string_field body "parent";
         }
   | None, _, _, _ -> Error "нужно поле title"
   | _, None, _, _ -> Error "неизвестный вид задачи"
@@ -312,6 +319,61 @@ let release req =
             (Service.Task.release conn ~actor ~interface_:Interface.Api ~ref_ ~version
                ~note:(Params.string_field body "reason"))
             (fun task -> ok (`Assoc [ ("task", View.task task) ])))
+
+(* --------------------------------------------------------- иерархия и связи --- *)
+
+(** Связь между задачами: [to] — ссылка другой задачи, [kind] — вид связи.
+
+    Версии нет: связь — отдельная сущность со своим идентификатором, версия
+    задачи её не касается. *)
+let link req =
+  let ref_ = Dream.param req "ref" in
+  Context.with_body req (fun conn actor body ->
+      match (Params.string_field body "to", Params.string_field body "kind") with
+      | None, _ -> bad_request "нужно поле to"
+      | _, None -> bad_request "нужно поле kind"
+      | Some to_ref, Some kind_name -> (
+          match Link.of_string kind_name with
+          | None -> bad_request ("неизвестный вид связи: " ^ kind_name)
+          | Some kind ->
+              answer
+                (Service.Task.link conn ~actor ~interface_:Interface.Api ~ref_ ~to_ref ~kind)
+                (fun link -> created (`Assoc [ ("link", View.link link) ]))))
+
+(** Снятие связи: связь удаляется, задачи остаются как были. *)
+let unlink req =
+  let ref_ = Dream.param req "ref" in
+  let link_id = Dream.param req "link_id" in
+  Context.with_actor req (fun conn actor ->
+      answer
+        (Service.Task.unlink conn ~actor ~interface_:Interface.Api ~ref_ ~link_id)
+        (fun () -> ok (`Assoc [ ("removed", `Bool true) ])))
+
+(** Смена родителя: [parent] — ссылка родителя, [null] — отвязать.
+
+    Версия обязательна: смена родителя меняет задачу, а значит ломает её
+    оптимистичную блокировку. *)
+let set_parent req =
+  let ref_ = Dream.param req "ref" in
+  Context.with_body req (fun conn actor body ->
+      match Params.int_field body "version" with
+      | None ->
+          bad_request
+            "нужно поле version: смена родителя защищена оптимистичной блокировкой"
+      | Some version -> (
+          match Params.json_field body "parent" with
+          | None -> bad_request "нужно поле parent: ссылка родителя или null"
+          | Some `Null ->
+              answer
+                (Service.Task.set_parent conn ~actor ~interface_:Interface.Api ~ref_
+                   ~parent_ref:None ~version)
+                (fun task -> ok (`Assoc [ ("task", View.task task) ]))
+          | Some (`String parent_ref) ->
+              answer
+                (Service.Task.set_parent conn ~actor ~interface_:Interface.Api ~ref_
+                   ~parent_ref:(Some parent_ref) ~version)
+                (fun task -> ok (`Assoc [ ("task", View.task task) ]))
+          | Some _ -> bad_request "поле parent: ссылка родителя или null"))
 
 (* --------------------------------------------------------------- назначение --- *)
 

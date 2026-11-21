@@ -24,15 +24,16 @@
 | 2+. Сервисный слой (D5) | закрыт (первый срез) | use case'ы задач в `src/service/task.ml`, REST — тонкий адаптер; отказ — значение `Service.Failure`; интерфейс действия — тип `Interface.t` |
 | 2+. Главный запрос (`/tasks/mine`) | закрыт (первый срез) | `GET /api/v1/tasks/mine` — открытые задачи исполнителя по всем проектам, порядок по срочности, курсорная пагинация |
 | 2+. Заявка и отпуск (`claim` / `release`) | закрыт (первый срез) | `POST /api/v1/tasks/:ref/claim` и `.../release` — агент берёт свободную задачу в работу и возвращает её в пул; версия обязательна |
+| 2+. Иерархия и связи (D7) | закрыт (первый срез) | `POST /tasks/:ref/links`, `DELETE /tasks/:ref/links/:link_id`, `POST /tasks/:ref/parent` — дерево задач и граф связей; кольцо блокировок и кольцо по родителю запрещены; родителя не закрывают, пока открыты дети |
 | 3. Миграция | следующий | импорт registry + annotations + epics: 97 задач, повторный импорт не создаёт дублей |
 
 Что в коде:
 
-- `src/domain` — статусы, переходы, правила R1–R3, задачи, актёры, проекты. Не
-  знает про БД и HTTP: это обеспечено раздельными библиотеками dune.
+- `src/domain` — статусы, переходы, правила R1–R3, задачи, актёры, проекты, виды
+  связей. Не знает про БД и HTTP: это обеспечено раздельными библиотеками dune.
 - `src/identity` — нормализация имён и резолвер алиасов. Ни базы, ни HTTP.
 - `src/db` — caqti: подключение, свой мигратор, репозитории (task, actor,
-  actor_alias, project, evidence, activity).
+  actor_alias, project, evidence, activity, link).
 - `src/service` — слой между базой и доменом: use case'ы задач
   (`Service.Task`), отказ как значение (`Service.Failure`), резолвер против БД
   (`Service.Resolve`), клиент Mattermost (`Service.Mattermost`), импорт
@@ -44,10 +45,10 @@
 Проверено, а не заявлено:
 
 - `dune build --root .` — зелёный; любое предупреждение компилятора — ошибка.
-- `dune runtest --root .` — 108 тестов: домен 17, типы домена 9, идентичность 9
-  (без БД), сервисный слой 16 (живая БД), репозитории 13 (живая БД),
-  идентичность на БД 10, API 34 (живая БД).
-- `mathc --root . run` — `verdict: green`, 50/50 claim'ов `holds`, 50/50
+- `dune runtest --root .` — 133 тестов: домен 21, типы домена 9, идентичность 9
+  (без БД), сервисный слой 25 (живая БД), репозитории 13 (живая БД),
+  идентичность на БД 10, API 46 (живая БД).
+- `mathc --root . run` — `verdict: green`, 60/60 claim'ов `holds`, 60/60
   отрицательных control'а доказаны, `uncovered: 0`.
 - CI на PR #1 — зелёный; этап 1 смержен в `main` (PR #1, merge-коммит).
 
@@ -65,12 +66,18 @@ GET   /api/v1/tasks/:ref            PATCH  /api/v1/tasks/:ref
 POST  /api/v1/tasks/:ref/transition POST   /api/v1/tasks/:ref/assign
 POST  /api/v1/tasks/:ref/claim      POST   /api/v1/tasks/:ref/release
 POST  /api/v1/tasks/:ref/comment    POST   /api/v1/tasks/:ref/evidence
+POST  /api/v1/tasks/:ref/links      DELETE /api/v1/tasks/:ref/links/:link_id
+POST  /api/v1/tasks/:ref/parent
 GET   /api/v1/activity              GET    /api/v1/actors
 POST  /api/v1/actors/resolve        {raw, namespace?} → actor | placeholder
 ```
 
 Заявка и отпуск требуют версию в теле: `{version, reason?}`. Без версии — 400,
 с устаревшей — 409.
+
+Связь — отдельная сущность, версии у неё нет: тело `{to, kind}`, где `kind` —
+одно из семи значений `link_kind`. Родитель меняется телом `{parent, version}`
+(`parent` — ссылка родителя или `null`), версия обязательна и здесь.
 
 Вне области с актором: `GET /`, `/version`, `/healthz`, `/api/v1/healthz`.
 

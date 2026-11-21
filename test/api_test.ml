@@ -74,6 +74,10 @@ let field name value =
 let text_field name value =
   match field name value with Some (`String s) -> s | _ -> ""
 
+(* Список из тела: связи и дети приходят списками. *)
+let list_field name value =
+  match field name value with Some (`List items) -> items | _ -> []
+
 let error_code value =
   match field "error" value with
   | Some (`Assoc fields) -> (
@@ -101,7 +105,8 @@ let task_ref value = text_field "ref" (task_of value)
 
 (* ------------------------------------------------------------------ помощники --- *)
 
-let create_body ?(status = "backlog") ?source_ref ?project ?title ?assignee ?due_at () =
+let create_body ?(status = "backlog") ?source_ref ?project ?title ?assignee ?due_at ?parent
+    () =
   let project = match project with Some p -> p | None -> "APIMAIN" in
   let fields =
     [
@@ -120,6 +125,9 @@ let create_body ?(status = "backlog") ?source_ref ?project ?title ?assignee ?due
     @ (match due_at with
       | None -> []
       | Some value -> [ ("due_at", `String value) ])
+    @ (match parent with
+      | None -> []
+      | Some ref_ -> [ ("parent", `String ref_) ])
   in
   Yojson.Safe.to_string (`Assoc fields)
 
@@ -589,6 +597,225 @@ let test_human_can_release () =
   Alcotest.(check int) "код ответа" 200 code;
   Alcotest.(check string) "статус" "todo" (task_status (json text))
 
+(* ------------------------------------------------- иерархия и связи --- *)
+
+(** Связь между задачами: тело — ссылка другой задачи и вид связи.
+
+    Версии нет: связь — отдельная сущность со своим идентификатором, версия
+    задачи её не касается. *)
+let link_body ~to_ref ~kind =
+  Yojson.Safe.to_string
+    (`Assoc [ ("to", `String to_ref); ("kind", `String kind) ])
+
+let link actor ref_ ~to_ref ~kind =
+  call ~method_:`POST ~actor:(Some actor)
+    ~body:(link_body ~to_ref ~kind)
+    (Printf.sprintf "/api/v1/tasks/%s/links" ref_)
+
+let unlink actor ref_ link_id =
+  call ~method_:`DELETE ~actor:(Some actor)
+    (Printf.sprintf "/api/v1/tasks/%s/links/%s" ref_ link_id)
+
+(** Смена родителя: [parent] — ссылка родителя, [None] — отвязать. *)
+let set_parent actor ref_ parent version =
+  let parent = match parent with Some ref_ -> `String ref_ | None -> `Null in
+  call ~method_:`POST ~actor:(Some actor)
+    ~body:
+      (Yojson.Safe.to_string
+         (`Assoc [ ("parent", parent); ("version", `Int version) ]))
+    (Printf.sprintf "/api/v1/tasks/%s/parent" ref_)
+
+(** Карточка задачи со всем, что её касается. *)
+let card ref_ =
+  let code, text =
+    call ~actor:(Some "api-petr") (Printf.sprintf "/api/v1/tasks/%s" ref_)
+  in
+  (code, json text)
+
+(** Задача для проверки связей: свой [source_ref] — по нему её узнают. *)
+let create_link_task ~source_ref ?parent () =
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(create_body ~source_ref ?parent ())
+      "/api/v1/tasks"
+  in
+  (code, json text)
+
+(** Связь записана: у неё свой идентификатор, и она видна в карточке. *)
+let test_link_is_created () =
+  let _, from_ = create_link_task ~source_ref:"api-link-from" () in
+  let _, to_ = create_link_task ~source_ref:"api-link-to" () in
+  let from_ref = task_ref from_ in
+  let to_ref = task_ref to_ in
+  let code, text = link "api-petr" from_ref ~to_ref ~kind:"blocks" in
+  Alcotest.(check int) "код ответа" 201 code;
+  let value = json text in
+  let created = match field "link" value with Some l -> l | None -> `Null in
+  Alcotest.(check string) "вид" "blocks" (text_field "kind" created);
+  Alcotest.(check bool) "связь получила свой id" true
+    (text_field "id" created <> "");
+  (* Связь видна с обеих сторон: отношение читается одинаково. *)
+  let _, from_card = card from_ref in
+  let _, to_card = card to_ref in
+  Alcotest.(check int) "связей у источника" 1
+    (List.length (list_field "links" from_card));
+  Alcotest.(check int) "связей у цели" 1
+    (List.length (list_field "links" to_card))
+
+(** Неизвестный вид связи — ошибка запроса: клиент перепутал имя. *)
+let test_link_unknown_kind_is_bad_request () =
+  let _, from_ = create_link_task ~source_ref:"api-link-badkind" () in
+  let _, to_ = create_link_task ~source_ref:"api-link-badkind-to" () in
+  let code, text =
+    link "api-petr" (task_ref from_) ~to_ref:(task_ref to_) ~kind:"мешает"
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Без адресата связь не о чем: 400, а не пустая связь. *)
+let test_link_without_target_is_bad_request () =
+  let _, from_ = create_link_task ~source_ref:"api-link-noto" () in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(Yojson.Safe.to_string (`Assoc [ ("kind", `String "blocks") ]))
+      (Printf.sprintf "/api/v1/tasks/%s/links" (task_ref from_))
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Связь задачи с собой бессмысленна — 400. *)
+let test_link_to_self_is_bad_request () =
+  let _, task = create_link_task ~source_ref:"api-link-self" () in
+  let ref_ = task_ref task in
+  let code, text = link "api-petr" ref_ ~to_ref:ref_ ~kind:"relates_to" in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Повторная связь — конфликт: тот же факт уже записан. *)
+let test_duplicate_link_is_conflict () =
+  let _, from_ = create_link_task ~source_ref:"api-link-twice" () in
+  let _, to_ = create_link_task ~source_ref:"api-link-twice-to" () in
+  let from_ref = task_ref from_ in
+  let to_ref = task_ref to_ in
+  let code, _ = link "api-petr" from_ref ~to_ref ~kind:"relates_to" in
+  Alcotest.(check int) "первая связь удалась" 201 code;
+  let code, text = link "api-petr" from_ref ~to_ref ~kind:"relates_to" in
+  Alcotest.(check int) "код ответа" 409 code;
+  Alcotest.(check string) "код ошибки" "conflict" (error_code (json text))
+
+(** Снятие связи убирает её из графа; задачи остаются на месте. *)
+let test_unlink_removes_link () =
+  let _, from_ = create_link_task ~source_ref:"api-unlink" () in
+  let _, to_ = create_link_task ~source_ref:"api-unlink-to" () in
+  let from_ref = task_ref from_ in
+  let to_ref = task_ref to_ in
+  let _, text = link "api-petr" from_ref ~to_ref ~kind:"relates_to" in
+  let link_id =
+    match field "link" (json text) with
+    | Some l -> text_field "id" l
+    | None -> ""
+  in
+  let code, text = unlink "api-petr" from_ref link_id in
+  Alcotest.(check int) "код ответа" 200 code;
+  Alcotest.(check bool) "связь снята" true
+    (bool_field "removed" (json text));
+  let _, card_value = card from_ref in
+  Alcotest.(check int) "связей не осталось" 0
+    (List.length (list_field "links" card_value))
+
+(** Снять чужую связь из чужой задачи — 404: это не то действие. *)
+let test_unlink_of_foreign_link_is_not_found () =
+  let _, owner = create_link_task ~source_ref:"api-unlink-owner" () in
+  let _, other = create_link_task ~source_ref:"api-unlink-other" () in
+  let _, target = create_link_task ~source_ref:"api-unlink-target" () in
+  let _, text =
+    link "api-petr" (task_ref owner) ~to_ref:(task_ref target) ~kind:"relates_to"
+  in
+  let link_id =
+    match field "link" (json text) with
+    | Some l -> text_field "id" l
+    | None -> ""
+  in
+  let code, text = unlink "api-petr" (task_ref other) link_id in
+  Alcotest.(check int) "код ответа" 404 code;
+  Alcotest.(check string) "код ошибки" "not_found" (error_code (json text))
+
+(** Родитель задаётся при создании: ребёнок сразу попадает в ветку. *)
+let test_create_with_parent () =
+  let _, parent = create_link_task ~source_ref:"api-tree-parent" () in
+  let parent_ref = task_ref parent in
+  let code, child =
+    create_link_task ~source_ref:"api-tree-child" ~parent:parent_ref ()
+  in
+  Alcotest.(check int) "код ответа" 201 code;
+  Alcotest.(check bool) "родитель записан" true
+    (text_field "parent_id" (task_of child) <> "");
+  let _, parent_card = card parent_ref in
+  Alcotest.(check int) "у родителя один ребёнок" 1
+    (List.length (list_field "children" parent_card))
+
+(** Смена родителя переносит задачу в другую ветку. *)
+let test_set_parent_moves_task () =
+  let _, first = create_link_task ~source_ref:"api-move-first" () in
+  let _, second = create_link_task ~source_ref:"api-move-second" () in
+  let first_ref = task_ref first in
+  let second_ref = task_ref second in
+  let code, text = set_parent "api-petr" first_ref (Some second_ref) 1 in
+  Alcotest.(check int) "код ответа" 200 code;
+  let value = json text in
+  Alcotest.(check bool) "родитель записан" true
+    (text_field "parent_id" (task_of value) <> "");
+  let _, card_value = card second_ref in
+  Alcotest.(check int) "у нового родителя один ребёнок" 1
+    (List.length (list_field "children" card_value));
+  let _, old_card = card first_ref in
+  Alcotest.(check int) "у прежнего родителя детей нет" 0
+    (List.length (list_field "children" old_card))
+
+(** Отвязка: [parent] = null — ребёнок снова сам по себе. *)
+let test_set_parent_null_detaches () =
+  let _, parent = create_link_task ~source_ref:"api-detach-parent" () in
+  let parent_ref = task_ref parent in
+  let _, child =
+    create_link_task ~source_ref:"api-detach-child" ~parent:parent_ref ()
+  in
+  let child_ref = task_ref child in
+  let code, text = set_parent "api-petr" child_ref None 1 in
+  Alcotest.(check int) "код ответа" 200 code;
+  Alcotest.(check string) "родителя нет" ""
+    (text_field "parent_id" (task_of (json text)));
+  let _, parent_card = card parent_ref in
+  Alcotest.(check int) "у родителя детей нет" 0
+    (List.length (list_field "children" parent_card))
+
+(** Версия обязательна: смена родителя меняет задачу, а значит ломает её
+    оптимистичную блокировку. Родитель здесь — другая задача: иначе отказ
+    пришёл бы от запрета самородителя и тест прошёл бы по неверной причине. *)
+let test_set_parent_without_version_is_bad_request () =
+  let _, task = create_link_task ~source_ref:"api-parent-noversion" () in
+  let _, parent = create_link_task ~source_ref:"api-parent-noversion-to" () in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:
+        (Yojson.Safe.to_string
+           (`Assoc [ ("parent", `String (task_ref parent)) ]))
+      (Printf.sprintf "/api/v1/tasks/%s/parent" (task_ref task))
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Родителем нельзя назначить собственного потомка: дерево замкнулось бы
+    в кольцо. *)
+let test_set_parent_cycle_is_bad_request () =
+  let _, parent = create_link_task ~source_ref:"api-cycle-parent" () in
+  let parent_ref = task_ref parent in
+  let _, child =
+    create_link_task ~source_ref:"api-cycle-child" ~parent:parent_ref ()
+  in
+  let code, text = set_parent "api-petr" parent_ref (Some (task_ref child)) 1 in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
 (* --------------------------------------------------- разрешение имён --- *)
 
 let resolve_body ?namespace raw =
@@ -721,6 +948,32 @@ let () =
           Alcotest.test_case "посторонний агент не отпускает" `Quick
             test_other_agent_cannot_release;
           Alcotest.test_case "человек отпускает" `Quick test_human_can_release;
+        ] );
+      ( "иерархия и связи",
+        [
+          Alcotest.test_case "связь записана" `Quick test_link_is_created;
+          Alcotest.test_case "неизвестный вид связи — 400" `Quick
+            test_link_unknown_kind_is_bad_request;
+          Alcotest.test_case "без адресата — 400" `Quick
+            test_link_without_target_is_bad_request;
+          Alcotest.test_case "связь с собой — 400" `Quick
+            test_link_to_self_is_bad_request;
+          Alcotest.test_case "повторная связь — конфликт" `Quick
+            test_duplicate_link_is_conflict;
+          Alcotest.test_case "снятие связи убирает её" `Quick
+            test_unlink_removes_link;
+          Alcotest.test_case "чужая связь — 404" `Quick
+            test_unlink_of_foreign_link_is_not_found;
+          Alcotest.test_case "родитель задаётся при создании" `Quick
+            test_create_with_parent;
+          Alcotest.test_case "смена родителя переносит задачу" `Quick
+            test_set_parent_moves_task;
+          Alcotest.test_case "null отвязывает" `Quick
+            test_set_parent_null_detaches;
+          Alcotest.test_case "без версии — 400" `Quick
+            test_set_parent_without_version_is_bad_request;
+          Alcotest.test_case "цикл по родителю — 400" `Quick
+            test_set_parent_cycle_is_bad_request;
         ] );
       ( "разрешение имён",
         [

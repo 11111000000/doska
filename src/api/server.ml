@@ -65,6 +65,11 @@ let api_routes =
     Dream.post "/tasks/:ref/transition" Tasks.transition;
     Dream.post "/tasks/:ref/claim" Tasks.claim;
     Dream.post "/tasks/:ref/release" Tasks.release;
+    (* Связи и родитель — отдельные сущности со своими идентификаторами, поэтому
+       у них нет [version] задачи. *)
+    Dream.post "/tasks/:ref/links" Tasks.link;
+    Dream.delete "/tasks/:ref/links/:link_id" Tasks.unlink;
+    Dream.post "/tasks/:ref/parent" Tasks.set_parent;
     Dream.post "/tasks/:ref/assign" Tasks.assign;
     Dream.post "/tasks/:ref/comment" Tasks.comment;
     Dream.post "/tasks/:ref/evidence" Tasks.evidence;

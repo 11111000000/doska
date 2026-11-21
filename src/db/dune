@@ -11,6 +11,7 @@
   repo_actor_alias
   repo_project
   repo_task
+  repo_link
   repo_evidence
   repo_activity)
  (libraries

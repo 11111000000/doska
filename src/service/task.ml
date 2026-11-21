@@ -51,6 +51,14 @@ type details = {
   task : Task.t;
   comments : Comment.t list;
   evidence : Evidence.t list;
+  (** Родитель по дереву — задача, а не идентификатор: читателю нужен
+      заголовок. *)
+  parent : Task.t option;
+  (** Дети по дереву: ветка ниже задачи. *)
+  children : Task.t list;
+  (** Связи по графу — входящие и исходящие, читатель видит отношение
+      одинаково с обеих сторон. *)
+  links : Db.Repo_link.t list;
 }
 
 let list conn (filters : Db.Repo_task.filters) :
@@ -74,6 +82,17 @@ let find conn ~ref_ : (Task.t, Failure.t) result Lwt.t =
   | Ok (Some task) -> Lwt_result.lift (Ok task)
   | Error e -> Lwt_result.lift (Error e)
 
+(** Родитель задачи — задача, а не идентификатор: читателю нужен заголовок. *)
+let parent_of conn task : (Task.t option, Failure.t) result Lwt.t =
+  match task.Task.parent_id with
+  | None -> Lwt_result.lift (Ok None)
+  | Some id ->
+      let* found = storage_result (Db.Repo_task.by_id conn id) in
+      (match found with
+      | Ok (Some parent) -> Lwt_result.lift (Ok (Some parent))
+      | Ok None -> Lwt_result.lift (Ok None)
+      | Error e -> Lwt_result.lift (Error e))
+
 let get conn ~ref_ : (details, Failure.t) result Lwt.t =
   let* found = find conn ~ref_ in
   match found with
@@ -85,10 +104,21 @@ let get conn ~ref_ : (details, Failure.t) result Lwt.t =
       let* evidence =
         storage_result (Db.Repo_evidence.list_for_task conn ~task_id:task.Task.id)
       in
-      (match (comments, evidence) with
-      | Ok comments, Ok evidence -> Lwt_result.lift (Ok { task; comments; evidence })
-      | Error e, _ -> Lwt_result.lift (Error e)
-      | _, Error e -> Lwt_result.lift (Error e))
+      let* parent = parent_of conn task in
+      let* children =
+        storage_result (Db.Repo_task.children conn ~parent_id:task.Task.id)
+      in
+      let* links =
+        storage_result (Db.Repo_link.list_for_task conn ~task_id:task.Task.id)
+      in
+      (match (comments, evidence, parent, children, links) with
+      | Ok comments, Ok evidence, Ok parent, Ok children, Ok links ->
+          Lwt_result.lift (Ok { task; comments; evidence; parent; children; links })
+      | Error e, _, _, _, _ -> Lwt_result.lift (Error e)
+      | _, Error e, _, _, _ -> Lwt_result.lift (Error e)
+      | _, _, Error e, _, _ -> Lwt_result.lift (Error e)
+      | _, _, _, Error e, _ -> Lwt_result.lift (Error e)
+      | _, _, _, _, Error e -> Lwt_result.lift (Error e))
 
 (** Перечитать задачу после изменения: вернуться клиенту надо свежее
     состояние, а не то, что было до записи. *)
@@ -118,6 +148,9 @@ type create_input = {
   project : string option;
   assignee : string option;
   requester : string option;
+  (** Родитель по дереву — его ссылка ([DSK-N]), а не идентификатор: клиент
+      знает родителя по номеру. *)
+  parent : string option;
 }
 
 let resolve_project conn key : (string option, Failure.t) result Lwt.t =
@@ -140,18 +173,33 @@ let resolve_actor conn handle : (string option, Failure.t) result Lwt.t =
       | Ok None -> Lwt_result.lift (Error (bad_request ("актор не найден: " ^ handle)))
       | Error e -> Lwt_result.lift (Error e))
 
+(** Родитель по ссылке: клиент знает родителя по номеру [DSK-N], а не по
+    внутреннему идентификатору. *)
+let resolve_parent conn ref_ : (string option, Failure.t) result Lwt.t =
+  match ref_ with
+  | None -> Lwt_result.lift (Ok None)
+  | Some ref_ ->
+      let* found = storage_result (Db.Repo_task.by_ref conn ref_) in
+      (match found with
+      | Ok (Some task) -> Lwt_result.lift (Ok (Some task.Task.id))
+      | Ok None ->
+          Lwt_result.lift (Error (bad_request ("родитель не найден: " ^ ref_)))
+      | Error e -> Lwt_result.lift (Error e))
+
 let create conn ~actor ~interface_ (input : create_input) :
     (Db.Repo_task.created, Failure.t) result Lwt.t =
   let* project = resolve_project conn input.project in
   let* assignee = resolve_actor conn input.assignee in
   let* requester = resolve_actor conn input.requester in
-  match (project, assignee, requester) with
-  | Ok project_id, Ok assignee_id, Ok requester_id ->
+  let* parent = resolve_parent conn input.parent in
+  match (project, assignee, requester, parent) with
+  | Ok project_id, Ok assignee_id, Ok requester_id, Ok parent_id ->
       let args : Db.Repo_task.create_args =
         {
           Db.Repo_task.title = input.title;
           description = input.description;
           project_id;
+          parent_id;
           kind = input.kind;
           status = input.status;
           priority = input.priority;
@@ -189,9 +237,10 @@ let create conn ~actor ~interface_ (input : create_input) :
       (match outcome with
       | Error e -> Lwt_result.lift (Error (storage e))
       | Ok created -> Lwt_result.lift (Ok created))
-  | Error e, _, _ -> Lwt_result.lift (Error e)
-  | _, Error e, _ -> Lwt_result.lift (Error e)
-  | _, _, Error e -> Lwt_result.lift (Error e)
+  | Error e, _, _, _ -> Lwt_result.lift (Error e)
+  | _, Error e, _, _ -> Lwt_result.lift (Error e)
+  | _, _, Error e, _ -> Lwt_result.lift (Error e)
+  | _, _, _, Error e -> Lwt_result.lift (Error e)
 
 (* ------------------------------------------------------------------ правка --- *)
 
@@ -275,14 +324,20 @@ let decide conn ~actor task target note : (unit, Failure.t) result Lwt.t =
   let* autonomy = autonomy_of conn task in
   let* supervisor = is_supervisor_of conn task actor in
   let* evidence = storage_result (Db.Repo_evidence.count conn ~task_id:task.Task.id) in
-  match (autonomy, supervisor, evidence) with
-  | Ok autonomy, Ok supervisor, Ok evidence ->
+  (* Сколько детей задачи ещё открыто: родителя закрывают после детей (D7).
+     Число считает сервис, решение принимает домен. *)
+  let* open_children =
+    storage_result (Db.Repo_task.open_children_count conn ~parent_id:task.Task.id)
+  in
+  match (autonomy, supervisor, evidence, open_children) with
+  | Ok autonomy, Ok supervisor, Ok evidence, Ok open_children ->
       let context =
         Rules.make_context ~actor ~project_autonomy:autonomy
           ~assignee_id:task.Task.assignee_id
           ~is_requester:(task.Task.requester_id = Some actor.Actor.id)
           ~is_supervisor:supervisor ~is_admin:(Identity.Admin.is_admin actor)
           ~has_accept_right:false ~note ~has_evidence:(evidence > 0)
+          ~open_children
       in
       (match Rules.check context task.Task.status target with
       | Error message ->
@@ -299,9 +354,10 @@ let decide conn ~actor task target note : (unit, Failure.t) result Lwt.t =
                       ];
                   }))
       | Ok () -> Lwt_result.lift (Ok ()))
-  | Error e, _, _ -> Lwt_result.lift (Error e)
-  | _, Error e, _ -> Lwt_result.lift (Error e)
-  | _, _, Error e -> Lwt_result.lift (Error e)
+  | Error e, _, _, _ -> Lwt_result.lift (Error e)
+  | _, Error e, _, _ -> Lwt_result.lift (Error e)
+  | _, _, Error e, _ -> Lwt_result.lift (Error e)
+  | _, _, _, Error e -> Lwt_result.lift (Error e)
 
 let transition conn ~actor ~interface_ ~ref_ ~target ~version ~note :
     (Task.t, Failure.t) result Lwt.t =
@@ -430,6 +486,330 @@ let release conn ~actor ~interface_ ~ref_ ~version ~note :
                             ~from_value:(Some (Status.to_string task.Task.status))
                             ~to_value:(Some (Status.to_string Status.Todo))
                             ~summary:note ~interface_ ()
+                        in
+                        Lwt_result.lift (Ok (Some id)))
+              in
+              (match outcome with
+              | Error e -> Lwt_result.lift (Error (storage e))
+              | Ok None -> Lwt_result.lift (Error (stale_version ()))
+              | Ok (Some id) -> refresh conn id ~ref_:task.Task.ref_)))
+
+(* ------------------------------------------------------- иерархия и связи --- *)
+
+(** Ссылки задач по их идентификаторам: цепочку показывают человеку, а не
+    показывают uuid. *)
+let refs_of conn ids : (string list, Failure.t) result Lwt.t =
+  let rec go acc = function
+    | [] -> Lwt_result.lift (Ok (List.rev acc))
+    | id :: rest ->
+        let* found = storage_result (Db.Repo_task.by_id conn id) in
+        (match found with
+        | Error e -> Lwt_result.lift (Error e)
+        | Ok (Some task) -> go (task.Task.ref_ :: acc) rest
+        | Ok None -> go acc rest)
+  in
+  go [] ids
+
+(** Цепочка блокировок от [current] к [target]: пустая — цепочки нет.
+
+    Идём по рёбрам графа блокировок («X мешает Y»). Глубина ограничена:
+    граф небольшой, но защита от бесконечного обхода при испорченных данных
+    обязана быть. *)
+let rec blocking_chain conn ~visited ~chain current target :
+    (string list, Failure.t) result Lwt.t =
+  if List.length chain > 64 then Lwt_result.lift (Ok [])
+  else if current = target then Lwt_result.lift (Ok chain)
+  else if List.mem current visited then Lwt_result.lift (Ok [])
+  else
+    let* neighbours = storage_result (Db.Repo_link.blocks_out conn ~task_id:current) in
+    (match neighbours with
+    | Error e -> Lwt_result.lift (Error e)
+    | Ok neighbours ->
+        let rec try_next = function
+          | [] -> Lwt_result.lift (Ok [])
+          | next :: rest ->
+              let* found =
+                blocking_chain conn ~visited:(current :: visited)
+                  ~chain:(chain @ [ next ]) next target
+              in
+              (match found with
+              | Ok [] -> try_next rest
+              | Ok found -> Lwt_result.lift (Ok found)
+              | Error e -> Lwt_result.lift (Error e))
+        in
+        try_next neighbours)
+
+(** Кольцо в графе блокировок: новая связь замкнула бы «X мешает … мешает
+    X». Возвращает сообщение с цепочкой — человеку понятнее, чем «цикл». *)
+let check_blocking_cycle conn ~from_id ~to_id ~kind :
+    (string option, Failure.t) result Lwt.t =
+  match Link.blocking_edge kind ~from_id ~to_id with
+  | None -> Lwt_result.lift (Ok None)
+  | Some (u, v) ->
+      (* Новое ребро u → v; кольцо есть, если уже есть путь v → … → u. *)
+      let* chain = blocking_chain conn ~visited:[] ~chain:[ v ] v u in
+      (match chain with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok [] -> Lwt_result.lift (Ok None)
+      | Ok chain ->
+          let* refs = refs_of conn chain in
+          (match refs with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok refs ->
+              Lwt_result.lift
+                (Ok
+                   (Some
+                      ("связь замыкает кольцо блокировок: "
+                      ^ String.concat " → " refs)))))
+
+(** Цепочка родителей вверх: если в ней сама задача — родителем станет её
+    потомок, и дерево замкнётся в кольцо. *)
+let parent_chain conn ~task_id current : (string list, Failure.t) result Lwt.t =
+  let rec up visited current =
+    if List.mem current visited then Lwt_result.lift (Ok [])
+    else
+      let* parent = storage_result (Db.Repo_task.parent_id_of conn current) in
+      (match parent with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok None -> Lwt_result.lift (Ok [])
+      | Ok (Some pid) ->
+          if pid = task_id then Lwt_result.lift (Ok [ pid ])
+          else
+            let* rest = up (current :: visited) pid in
+            (match rest with
+            | Error e -> Lwt_result.lift (Error e)
+            | Ok [] -> Lwt_result.lift (Ok [])
+            | Ok rest -> Lwt_result.lift (Ok (pid :: rest))))
+  in
+  up [] current
+
+(** Предварительные проверки связи: что не так с парой задач и видом связи.
+    [None] — создавать можно. *)
+let link_problem conn ~from_task ~to_task ~kind :
+    (Failure.t option, Failure.t) result Lwt.t =
+  if from_task.Task.id = to_task.Task.id then
+    Lwt_result.lift (Ok (Some (bad_request "связь задачи с собой")))
+  else
+    let* existing =
+      storage_result
+        (Db.Repo_link.find conn ~from_id:from_task.Task.id ~to_id:to_task.Task.id ~kind)
+    in
+    (match existing with
+    | Error e -> Lwt_result.lift (Error e)
+    | Ok (Some _) ->
+        Lwt_result.lift (Ok (Some (Failure.Conflict { message = "связь уже есть" })))
+    | Ok None ->
+        let* mirrored =
+          storage_result
+            (Db.Repo_link.find_mirror conn ~from_id:from_task.Task.id
+               ~to_id:to_task.Task.id ~kind)
+        in
+        (match mirrored with
+        | Error e -> Lwt_result.lift (Error e)
+        | Ok (Some _) ->
+            Lwt_result.lift
+              (Ok
+                 (Some
+                    (Failure.Conflict
+                       { message = "связь уже записана с другой стороны" })))
+        | Ok None ->
+            let* cycle =
+              check_blocking_cycle conn ~from_id:from_task.Task.id
+                ~to_id:to_task.Task.id ~kind
+            in
+            (match cycle with
+            | Error e -> Lwt_result.lift (Error e)
+            | Ok (Some message) -> Lwt_result.lift (Ok (Some (bad_request message)))
+            | Ok None -> Lwt_result.lift (Ok None))))
+
+(** Связь между задачами.
+
+    Связь — отдельная сущность со своим идентификатором: снятие связи не
+    трогает ни одну из задач и не требует версии. Но у неё есть два
+    ограничения: связь задачи с собой бессмысленна, а в графе блокировок не
+    должно быть кольца — иначе «кто мешает» превращается в «все мешают
+    всем». *)
+let link conn ~actor ~interface_ ~ref_ ~to_ref ~kind :
+    (Db.Repo_link.t, Failure.t) result Lwt.t =
+  let* found = find conn ~ref_ in
+  match found with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok task -> (
+      let* target = find conn ~ref_:to_ref in
+      match target with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok target ->
+          let* problem = link_problem conn ~from_task:task ~to_task:target ~kind in
+          (match problem with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok (Some failure) -> Lwt_result.lift (Error failure)
+          | Ok None ->
+              let* outcome =
+                Db.Conn.with_transaction conn (fun () ->
+                    let* created =
+                      Db.Repo_link.create conn ~from_id:task.Task.id
+                        ~to_id:target.Task.id ~kind
+                        ~created_by_id:(Some actor.Actor.id)
+                    in
+                    match created with
+                    | Error e -> Lwt_result.lift (Error e)
+                    | Ok link ->
+                        let summary =
+                          Printf.sprintf "%s %s %s" task.Task.ref_ (Link.to_string kind)
+                            target.Task.ref_
+                        in
+                        let* _ =
+                          Db.Repo_activity.record conn ~action:Activity.Linked
+                            ~task_id:(Some task.Task.id)
+                            ~project_id:task.Task.project_id
+                            ~actor_id:(Some actor.Actor.id)
+                            ~from_value:(Some target.Task.ref_)
+                            ~to_value:(Some (Link.to_string kind))
+                            ~summary:(Some summary) ~interface_ ()
+                        in
+                        Lwt_result.lift (Ok link))
+              in
+              (match outcome with
+              | Error e -> Lwt_result.lift (Error (storage e))
+              | Ok link -> Lwt_result.lift (Ok link))))
+
+(** Снятие связи: связь удаляется, задачи остаются как были.
+
+    Связь должна быть у этой задачи: снять чужую связь из чужой задачи —
+    не то действие, о котором просили. *)
+let unlink conn ~actor ~interface_ ~ref_ ~link_id : (unit, Failure.t) result Lwt.t =
+  let* found = find conn ~ref_ in
+  match found with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok task ->
+      let* found_link = storage_result (Db.Repo_link.by_id conn link_id) in
+      (match found_link with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok None ->
+          Lwt_result.lift
+            (Error (Failure.Not_found { message = "связь не найдена: " ^ link_id }))
+      | Ok (Some link) ->
+          let touches =
+            link.Db.Repo_link.from_id = task.Task.id
+            || link.Db.Repo_link.to_id = task.Task.id
+          in
+          if not touches then
+            Lwt_result.lift
+              (Error (Failure.Not_found { message = "связь не найдена: " ^ link_id }))
+          else
+            let* outcome =
+              Db.Conn.with_transaction conn (fun () ->
+                  let* deleted = Db.Repo_link.delete conn link_id in
+                  match deleted with
+                  | Error e -> Lwt_result.lift (Error e)
+                  | Ok false -> Lwt_result.lift (Ok false)
+                  | Ok true ->
+                      let other =
+                        if link.Db.Repo_link.from_id = task.Task.id then
+                          link.Db.Repo_link.to_id
+                        else link.Db.Repo_link.from_id
+                      in
+                      let* other_task = Db.Repo_task.by_id conn other in
+                      (match other_task with
+                      | Error e -> Lwt_result.lift (Error e)
+                      | Ok (Some other_task) ->
+                          let summary =
+                            Printf.sprintf "снята связь %s %s" task.Task.ref_
+                              (Link.to_string link.Db.Repo_link.kind)
+                          in
+                          let* _ =
+                            Db.Repo_activity.record conn ~action:Activity.Unlinked
+                              ~task_id:(Some task.Task.id)
+                              ~project_id:task.Task.project_id
+                              ~actor_id:(Some actor.Actor.id)
+                              ~from_value:(Some other_task.Task.ref_)
+                              ~to_value:(Some (Link.to_string link.Db.Repo_link.kind))
+                              ~summary:(Some summary) ~interface_ ()
+                          in
+                          Lwt_result.lift (Ok true)
+                      | Ok None -> Lwt_result.lift (Ok true)))
+            in
+            (match outcome with
+            | Error e -> Lwt_result.lift (Error (storage e))
+            | Ok _ -> Lwt_result.lift (Ok ())))
+
+(** Предварительные проверки смены родителя. *)
+let parent_problem conn ~task ~parent : (Failure.t option, Failure.t) result Lwt.t =
+  match parent with
+  | None -> Lwt_result.lift (Ok None)
+  | Some parent ->
+      if parent.Task.id = task.Task.id then
+        Lwt_result.lift
+          (Ok (Some (bad_request "задача не может быть своим родителем")))
+      else
+        let* chain = parent_chain conn ~task_id:task.Task.id parent.Task.id in
+        (match chain with
+        | Error e -> Lwt_result.lift (Error e)
+        | Ok [] -> Lwt_result.lift (Ok None)
+        | Ok chain ->
+            let* refs = refs_of conn chain in
+            (match refs with
+            | Error e -> Lwt_result.lift (Error e)
+            | Ok refs ->
+                Lwt_result.lift
+                  (Ok
+                     (Some
+                        (bad_request
+                           ("родитель не может быть потомком задачи: "
+                           ^ String.concat " → " refs))))))
+
+(** Смена родителя: задача встаёт в дерево или выходит из него.
+
+    Родителя задают его ссылкой ([DSK-N]) — так же, как его видят в списке.
+    Версия обязательна: смена родителя меняет задачу, а значит ломает её
+    оптимистичную блокировку. *)
+let set_parent conn ~actor ~interface_ ~ref_ ~parent_ref ~version :
+    (Task.t, Failure.t) result Lwt.t =
+  let* found = find conn ~ref_ in
+  match found with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok task ->
+      let* parent =
+        match parent_ref with
+        | None -> Lwt_result.lift (Ok None)
+        | Some parent_ref ->
+            let* parent_task = find conn ~ref_:parent_ref in
+            (match parent_task with
+            | Error e -> Lwt_result.lift (Error e)
+            | Ok parent -> Lwt_result.lift (Ok (Some parent)))
+      in
+      (match parent with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok parent ->
+          let* problem = parent_problem conn ~task ~parent in
+          (match problem with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok (Some failure) -> Lwt_result.lift (Error failure)
+          | Ok None ->
+              let parent_id =
+                match parent with Some p -> Some p.Task.id | None -> None
+              in
+              let summary =
+                match parent with
+                | Some p -> "изменён родитель: " ^ p.Task.ref_
+                | None -> "родитель снят"
+              in
+              let* outcome =
+                Db.Conn.with_transaction conn (fun () ->
+                    let* updated =
+                      Db.Repo_task.set_parent conn ~ref_:task.Task.ref_ ~parent_id ~version
+                    in
+                    match updated with
+                    | Error e -> Lwt_result.lift (Error e)
+                    | Ok None -> Lwt_result.lift (Ok None)
+                    | Ok (Some id) ->
+                        let* _ =
+                          Db.Repo_activity.record conn ~action:Activity.Updated
+                            ~task_id:(Some task.Task.id)
+                            ~project_id:task.Task.project_id
+                            ~actor_id:(Some actor.Actor.id)
+                            ~from_value:None ~to_value:None ~summary:(Some summary)
+                            ~interface_ ()
                         in
                         Lwt_result.lift (Ok (Some id)))
               in

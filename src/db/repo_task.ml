@@ -297,6 +297,7 @@ type create_args = {
   title : string;
   description : string;
   project_id : string option;
+  parent_id : string option;
   kind : Task.kind;
   status : Status.t;
   priority : Task.priority;
@@ -333,18 +334,20 @@ let labels_sql labels =
 let insert_sql (a : create_args) : (string, string) result =
   let ( let* ) = Result.bind in
   let* project_id = uuid_sql a.project_id in
+  let* parent_id = uuid_sql a.parent_id in
   let* assignee_id = uuid_sql a.assignee_id in
   let* requester_id = uuid_sql a.requester_id in
   let* reporter_id = uuid_sql a.reporter_id in
   let* created_by_id = uuid_sql a.created_by_id in
   let sql =
     Printf.sprintf
-      "INSERT INTO task (ref, project_id, kind, status, priority, title, description, \
-       assignee_id, requester_id, reporter_id, created_by_id, due_at, labels, source, \
-       source_ref) VALUES ('DSK-' || nextval('task_ref_seq'), %s, %s::task_kind, \
+      "INSERT INTO task (ref, project_id, parent_id, kind, status, priority, title, \
+       description, assignee_id, requester_id, reporter_id, created_by_id, due_at, labels, \
+       source, source_ref) VALUES ('DSK-' || nextval('task_ref_seq'), %s, %s, %s::task_kind, \
        %s::task_status, %s::task_priority, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) \
        RETURNING id::text"
       project_id
+      parent_id
       (Conn.quote (Task.kind_to_string a.kind))
       (Conn.quote (Status.to_string a.status))
       (Conn.quote (Task.priority_to_string a.priority))
@@ -466,6 +469,70 @@ let set_assignee conn ~ref_ ~assignee_id ~version :
           "UPDATE task SET assignee_id = %s, version = version + 1, updated_at = now() \
            WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
           assignee
+          (Conn.quote ref_)
+          version
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+
+(** Дети задачи: ветка дерева ниже [parent_id]. *)
+let children conn ~parent_id : (Task.t list, string) result Lwt.t =
+  match Conn.uuid_literal parent_id with
+  | None -> Lwt_result.lift (Ok [])
+  | Some literal ->
+      Conn.query_json_rows conn
+        (Printf.sprintf
+           "%s WHERE t.parent_id = %s AND t.deleted_at IS NULL ORDER BY t.ref) x"
+           task_select literal)
+      |> Lwt_result.map (List.map of_json)
+
+(** Сколько детей задачи ещё открыто.
+
+    Открыта задача, которая не в [done] и не в [cancelled]: пока живы её
+    дети, родителя закрывать рано (D7). *)
+let open_children_count conn ~parent_id : (int, string) result Lwt.t =
+  match Conn.uuid_literal parent_id with
+  | None -> Lwt_result.lift (Ok 0)
+  | Some literal ->
+      Conn.query_int64s conn
+        (Printf.sprintf
+           "SELECT count(*) FROM task WHERE parent_id = %s AND deleted_at IS NULL \
+            AND status NOT IN ('done','cancelled')"
+           literal)
+      |> Lwt_result.map (fun counts ->
+          match counts with [] -> 0 | count :: _ -> Int64.to_int count)
+
+(** Родитель задачи — на один уровень вверх. Нужен для проверки цикла:
+    цепочка родителей поднимается от предполагаемого родителя вверх. *)
+let parent_id_of conn id : (string option, string) result Lwt.t =
+  match Conn.uuid_literal id with
+  | None -> Lwt_result.lift (Ok None)
+  | Some literal ->
+      Conn.query_json_rows conn
+        (Printf.sprintf
+           "SELECT row_to_json(x)::text FROM (SELECT parent_id::text AS parent_id FROM task \
+            WHERE id = %s AND deleted_at IS NULL) x"
+           literal)
+      |> Lwt_result.map (function
+          | [] -> None
+          | json :: _ -> Row.opt_string json "parent_id")
+
+(** Смена родителя. [parent_id = None] — отвязать задачу от родителя. *)
+let set_parent conn ~ref_ ~parent_id ~version :
+    (string option, string) result Lwt.t =
+  let parent_fragment =
+    match parent_id with
+    | None -> Ok "NULL"
+    | Some id -> uuid_sql (Some id)
+  in
+  match parent_fragment with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok literal ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET parent_id = %s, version = version + 1, updated_at = now() \
+           WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
+          literal
           (Conn.quote ref_)
           version
       in
