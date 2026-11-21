@@ -396,10 +396,15 @@ let create conn (a : create_args) : (created, string) result Lwt.t =
           | Ok (Some task) -> Lwt_result.lift (Ok (Created task))
           | Ok None -> Lwt_result.lift (Error "задача создана, но не прочитана"))
 
-(** Смена статуса с проверкой версии: [version] — оптимистичная блокировка
-    (§3.3 архитектуры). Пустой результат означает «строка не обновлена»: либо
-    задачи нет, либо версия устарела. *)
-let set_status conn ~ref_ ~status ~version ~note :
+(** Смена статуса и исполнителя одной записью: [version] — оптимистичная
+    блокировка (§3.3 архитектуры). Пустой результат означает «строка не
+    обновлена»: либо задачи нет, либо версия устарела.
+
+    [assignee] — «опция внутри опции»: [None] — исполнителя не трогать,
+    [Some None] — снять, [Some (Some id)] — назначить. Заявка и отпуск меняют
+    исполнителя вместе со статусом: двумя записями между ними задача была бы
+    в работе без исполнителя. *)
+let set_status_and_assignee conn ~ref_ ~status ~assignee ~version ~note :
     (string option, string) result Lwt.t =
   let started =
     match status with
@@ -418,20 +423,37 @@ let set_status conn ~ref_ ~status ~version ~note :
         | Some reason -> Conn.quote reason)
     | _ -> "NULL"
   in
-  let sql =
-    Printf.sprintf
-      "UPDATE task SET status = %s::task_status, version = version + 1, \
-       updated_at = now(), started_at = %s, completed_at = %s, blocked_reason = %s \
-       WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
-      (Conn.quote (Status.to_string status))
-      started
-      completed
-      blocked
-      (Conn.quote ref_)
-      version
+  let assignee_fragment =
+    match assignee with
+    | None -> Ok ""
+    | Some None -> Ok ", assignee_id = NULL"
+    | Some (Some id) -> (
+        match uuid_sql (Some id) with
+        | Error e -> Error e
+        | Ok literal -> Ok (", assignee_id = " ^ literal))
   in
-  Conn.query_strings conn sql
-  |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+  match assignee_fragment with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok fragment ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET status = %s::task_status, version = version + 1, \
+           updated_at = now(), started_at = %s, completed_at = %s, blocked_reason = %s%s \
+           WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
+          (Conn.quote (Status.to_string status))
+          started
+          completed
+          blocked
+          fragment
+          (Conn.quote ref_)
+          version
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+
+(** Смена статуса без изменения исполнителя. *)
+let set_status conn ~ref_ ~status ~version ~note =
+  set_status_and_assignee conn ~ref_ ~status ~assignee:None ~version ~note
 
 (** Назначение исполнителя. *)
 let set_assignee conn ~ref_ ~assignee_id ~version :

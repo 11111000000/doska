@@ -63,6 +63,8 @@ let api_routes =
     Dream.get "/tasks/:ref" Tasks.get;
     Dream.patch "/tasks/:ref" Tasks.patch;
     Dream.post "/tasks/:ref/transition" Tasks.transition;
+    Dream.post "/tasks/:ref/claim" Tasks.claim;
+    Dream.post "/tasks/:ref/release" Tasks.release;
     Dream.post "/tasks/:ref/assign" Tasks.assign;
     Dream.post "/tasks/:ref/comment" Tasks.comment;
     Dream.post "/tasks/:ref/evidence" Tasks.evidence;

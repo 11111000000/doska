@@ -12,6 +12,7 @@ type permission =
   | Anyone
   | Human_only
   | Assignee_or_claimant
+  | Assignee_or_human
   | Requester_or_supervisor
   | Acceptance
 
@@ -74,7 +75,7 @@ let transition_table : (Status.t * Status.t * transition) list =
       Needs_input,
       { permission = Anyone; requirements = [ Question ] } );
     (In_progress, In_review, { permission = Anyone; requirements = [ Summary ] });
-    (In_progress, Todo, { permission = Anyone; requirements = [] });
+    (In_progress, Todo, { permission = Assignee_or_human; requirements = [] });
     ( Needs_input,
       In_progress,
       { permission = Requester_or_supervisor; requirements = [] } );
@@ -104,6 +105,11 @@ let check_permission ctx permission =
       else if ctx.assignee_id = None then Ok ()
       else if ctx.assignee_id = Some ctx.actor.id then Ok ()
       else Error "Задача назначена другому исполнителю"
+  | Assignee_or_human ->
+      (* Отпустить задачу может её исполнитель-агент или любой человек. *)
+      if Actor.is_human ctx.actor then Ok ()
+      else if ctx.assignee_id = Some ctx.actor.id then Ok ()
+      else Error "Отпустить задачу может её исполнитель или человек"
   | Requester_or_supervisor ->
       if ctx.is_requester || ctx.is_supervisor then Ok ()
       else if Actor.is_human ctx.actor && (ctx.has_accept_right || ctx.is_admin)
@@ -156,6 +162,26 @@ let check ctx from_ to_ : (unit, string) result =
   | Some tr ->
       Result.bind (check_permission ctx tr.permission) (fun () ->
           check_requirements ctx tr.requirements)
+
+(** Исходный статус для заявки.
+
+    Заявка имеет смысл, только пока задача не в работе: из [in_progress]
+    претендентов нет, из [done] или [cancelled] — тоже. Возвращает причину
+    отказа — её показывает клиент. *)
+let check_claim_source (status : Status.t) : (unit, string) result =
+  if status = Todo then Ok ()
+  else
+    Error
+      (Printf.sprintf "задача в статусе %s: заявка — только из статуса todo"
+         (Status.to_string status))
+
+(** Исходный статус для отпуска: отпустить можно только то, что в работе. *)
+let check_release_source (status : Status.t) : (unit, string) result =
+  if status = In_progress then Ok ()
+  else
+    Error
+      (Printf.sprintf "задача в статусе %s: отпуск — только из статуса in_progress"
+         (Status.to_string status))
 
 (** Право назначать задачу.
 
