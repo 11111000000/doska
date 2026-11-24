@@ -96,6 +96,11 @@ let task_of value =
 let bool_field name value =
   match field name value with Some (`Bool b) -> b | _ -> false
 
+(* Число из тела: в сводке их много, и по умолчанию «нет числа» должно
+   отличаться от нуля, иначе проверка проходит на пустом месте. *)
+let int_field name value =
+  match field name value with Some (`Int n) -> n | _ -> -1
+
 let actor_of value =
   match field "actor" value with Some actor -> actor | None -> `Null
 
@@ -879,6 +884,98 @@ let test_resolve_without_actor_is_unauthorized () =
   Alcotest.(check int) "код ответа" 401 code;
   Alcotest.(check string) "код ошибки" "unauthorized" (error_code (json text))
 
+(* ------------------------------------------------------------------- сводка --- *)
+
+(** Сводка — ресурс про трекер целиком: актёр нужен, чтобы знать, чьими
+    глазами смотреть, но правил доступа у неё нет. *)
+let overview ?(actor = Some "api-petr") target =
+  let code, text = call ~actor target in
+  (code, json text)
+
+let test_overview_without_actor_is_unauthorized () =
+  let code, body = overview ~actor:None "/api/v1/overview" in
+  Alcotest.(check int) "код ответа" 401 code;
+  Alcotest.(check string) "код ошибки" "unauthorized" (error_code body)
+
+let test_overview_has_contract_shape () =
+  let code, body = overview "/api/v1/overview" in
+  Alcotest.(check int) "код ответа" 200 code;
+  List.iter
+    (fun name ->
+      Alcotest.(check bool) ("поле " ^ name) true (field name body <> None))
+    [
+      "generated_at";
+      "stuck_days";
+      "limit";
+      "totals";
+      "wip_by_actor";
+      "by_project";
+      "stuck";
+      "needs_input";
+    ];
+  let totals = match field "totals" body with Some t -> t | None -> `Null in
+  List.iter
+    (fun name ->
+      Alcotest.(check bool) ("счётчик " ^ name) true (field name totals <> None))
+    [
+      "open_tasks";
+      "in_progress";
+      "blocked";
+      "needs_input";
+      "unassigned";
+      "without_project";
+    ]
+
+let test_overview_echoes_parameters () =
+  let code, body = overview "/api/v1/overview?stuck_days=3&limit=5" in
+  Alcotest.(check int) "код ответа" 200 code;
+  Alcotest.(check int) "порог застоя" 3 (int_field "stuck_days" body);
+  Alcotest.(check int) "предел" 5 (int_field "limit" body)
+
+let test_overview_unparsable_parameter_is_bad_request () =
+  let code, body = overview "/api/v1/overview?stuck_days=abc" in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code body)
+
+let test_overview_rejects_out_of_range_parameters () =
+  let cases =
+    [
+      "/api/v1/overview?stuck_days=0";
+      "/api/v1/overview?limit=0";
+      "/api/v1/overview?limit=1000";
+    ]
+  in
+  List.iter
+    (fun target ->
+      let code, body = overview target in
+      Alcotest.(check int) ("код ответа для " ^ target) 400 code;
+      Alcotest.(check string) "код ошибки" "bad_request" (error_code body))
+    cases
+
+let test_overview_shows_actor_load () =
+  (* Задача с исполнитетелем обязана появиться в нагрузке этого человека:
+     иначе сводка отвечает не на тот вопрос. *)
+  let code, _ =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:
+        (create_body ~status:"todo" ~source_ref:"overview-load"
+           ~assignee:"api-legist" ())
+      "/api/v1/tasks"
+  in
+  Alcotest.(check int) "задача создана" 201 code;
+  let code, body = overview ~actor:(Some "api-legist") "/api/v1/overview" in
+  Alcotest.(check int) "код ответа" 200 code;
+  let load =
+    List.find_opt
+      (fun w -> text_field "handle" w = "api-legist")
+      (list_field "wip_by_actor" body)
+  in
+  match load with
+  | None -> Alcotest.fail "исполнитель не попал в нагрузку"
+  | Some w ->
+      Alcotest.(check bool) "есть открытые задачи" true
+        (int_field "open_tasks" w >= 1)
+
 (* --------------------------------------------------------------------- run --- *)
 
 let () =
@@ -988,6 +1085,20 @@ let () =
             test_resolve_without_raw_is_bad_request;
           Alcotest.test_case "без актора — 401" `Quick
             test_resolve_without_actor_is_unauthorized;
+        ] );
+      ( "сводка",
+        [
+          Alcotest.test_case "без актора — 401" `Quick
+            test_overview_without_actor_is_unauthorized;
+          Alcotest.test_case "форма ответа" `Quick test_overview_has_contract_shape;
+          Alcotest.test_case "параметры возвращаются эхом" `Quick
+            test_overview_echoes_parameters;
+          Alcotest.test_case "неразобранный параметр — 400" `Quick
+            test_overview_unparsable_parameter_is_bad_request;
+          Alcotest.test_case "параметры вне диапазона — 400" `Quick
+            test_overview_rejects_out_of_range_parameters;
+          Alcotest.test_case "нагрузка по исполнителю" `Quick
+            test_overview_shows_actor_load;
         ] );
     ];
   ignore requester;

@@ -23,15 +23,17 @@
 
 ## Состояние
 
-Этапы 0 и 1 закрыты, от этапа 2 взят первый срез (идентичность). Работает связка
-«мигратор → схема → REST `/api/v1`»: задачи создаются, читаются, переводятся,
-комментируются, заявляются и отпускаются, делятся на части и связываются между
-собой — и всё это фиксируется в журнале активности.
+Этапы 0 и 1 закрыты, от этапа 2 взяты пять срезов (идентичность, сервисный слой,
+главный запрос, заявка и отпуск, иерархия и связи) и взят шестой — сводка.
+Работает связка «мигратор → схема → REST `/api/v1`»: задачи создаются,
+читаются, переводятся, комментируются, заявляются и отпускаются, делятся на
+части и связываются между собой, а `/overview` отвечает одним запросом «где
+застряло и кто перегружен» — и всё это фиксируется в журнале активности.
 
 | Проверка | Результат |
 |---|---|
 | `dune build --root .` | без ошибок (любое включённое предупреждение — ошибка) |
-| `dune runtest --root .` | 133 теста OK — домен 21, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 25, API 46 (живая БД) |
+| `dune runtest --root .` | 149 тестов OK — домен 21, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 25, сводка 10, API 52 (живая БД) |
 | `nix build .#doska` | успешно; checkPhase гоняет тесты без БД (в песочнице nix PostgreSQL нет) |
 | `doska migrate` | применены `001_init.sql` и `002_task_ref_seq.sql`; повторный запуск — «нечего применять» |
 | `doska health` | `ok` |
@@ -98,8 +100,8 @@ PostgreSQL 17 с расширениями `citext` (регистронезави
 src/
 ├── domain/     чистый домен: статусы, правила, задачи, акторы, проекты — ни БД, ни HTTP
 ├── identity/   нормализация имён и resolve алиасов в актора
-├── db/         caqti: подключение, свой мигратор, репозитории (task, actor, project, evidence, activity)
-├── api/        dream: REST /api/v1 (задачи, комментарии, доказательства, активность) + healthz
+├── db/         caqti: подключение, свой мигратор, репозитории (task, actor, project, evidence, activity, link, overview)
+├── api/        dream: REST /api/v1 (задачи, комментарии, доказательства, активность, сводка) + healthz
 ├── version/    имя и версия
 └── bin/        cmdliner: doska serve | migrate | health | version
 migrations/     идемпотентные SQL-файлы, применяются по имени
@@ -124,7 +126,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 60 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 69 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -191,8 +193,17 @@ verifier падает и без control'а, он не проверяет нич�
 | `api-parent-cycle` | Родителем нельзя назначить собственного потомка: дерево не замыкается в кольцо (§6.1) | `dune exec --root . test/api_test.exe` | `api_parent_cycle.sh` |
 | `api-parent-version` | Версия обязательна при смене родителя: смена меняет задачу и ломает её блокировку (§6.1) | `dune exec --root . test/api_test.exe` | `api_parent_version.sh` |
 | `api-parent-create` | Родитель, указанный при создании задачи, записывается в дерево (§6.1) | `dune exec --root . test/api_test.exe` | `api_parent_create.sh` |
+| `overview-open-tasks` | Открытая задача считается открытой по статусу: закрытые и удалённые в сводку не попадают (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_open_condition.sh` |
+| `overview-stuck-rule` | Застой — это начатые статусы (`in_progress`, `blocked`, `in_review`): задача, ждущая ответа человека, в застой не попадает (R2, §4.2, §6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_stuck_statuses.sh` |
+| `overview-project-load` | Нагрузка по проектам — только проекты с открытыми задачами (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_project_having.sh` |
+| `overview-wip-order` | Нагрузка по людям отсортирована по убыванию числа открытых задач, при равенстве — по логину (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_wip_order.sh` |
+| `overview-stuck-threshold` | Порог застоя задан параметром `stuck_days`, и применённый порог возвращается в ответе (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_stuck_days_threshold.sh` |
+| `overview-limit` | Предел длины списков задан параметром `limit`, и применённый предел возвращается в ответе (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_limit.sh` |
+| `overview-parameter-range` | Значения вне допустимого диапазона отклоняются: `stuck_days` меньше суток и `limit` вне 1…200 — 400 (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_limit_range.sh` |
+| `overview-api-shape` | `GET /api/v1/overview` отдаёт сводку в объявленной форме: счётчики, нагрузка по людям и проектам, застрявшие, ждущие ответа (§6.1) | `dune exec --root . test/api_test.exe` | `ov_response_shape.sh` |
+| `overview-api-parameters` | Неразобранный параметр сводки — ошибка запроса (400), а не молчаливая замена (§6.1) | `dune exec --root . test/api_test.exe` | `ov_unparsable_parameter.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 60 claim'ов выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 69 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 
