@@ -14,10 +14,11 @@ let agent =
 
 let make_ctx ?(autonomy = Actor.Human_gate) ?(assignee = None) ?(requester = false)
     ?(supervisor = false) ?(admin = false) ?(accept = false) ?(note = None)
-    ?(open_children = 0) actor =
+    ?(open_children = 0) ?(asked_to = None) ?(answer = None) actor =
   Rules.make_context ~actor ~project_autonomy:autonomy ~assignee_id:assignee
     ~is_requester:requester ~is_supervisor:supervisor ~is_admin:admin
     ~has_accept_right:accept ~note ~has_evidence:false ~open_children
+    ~asked_to_id:asked_to ~answer
 
 let expect_ok name ctx from_ to_ =
   match Rules.check ctx from_ to_ with
@@ -27,6 +28,26 @@ let expect_ok name ctx from_ to_ =
 let expect_error name ctx from_ to_ =
   match Rules.check ctx from_ to_ with
   | Error _ -> ()
+  | Ok () -> Alcotest.fail (Printf.sprintf "%s: переход следовало запретить" name)
+
+(** Проверка, что причина отказа называет именно то, чего не хватило:
+    иначе «нет адресата» и «нет ответа» выглядят одинаково. *)
+let mentions text fragment =
+  let t = String.length text and f = String.length fragment in
+  if f = 0 then true
+  else
+    let rec loop i =
+      i + f <= t && (String.sub text i f = fragment || loop (i + 1))
+    in
+    loop 0
+
+let expect_error_about name fragment ctx from_ to_ =
+  match Rules.check ctx from_ to_ with
+  | Error e ->
+      Alcotest.(check bool)
+        (Printf.sprintf "%s: причина отказа упоминает «%s»" name fragment)
+        true
+        (mentions e fragment)
   | Ok () -> Alcotest.fail (Printf.sprintf "%s: переход следовало запретить" name)
 
 let tests_transitions =
@@ -47,11 +68,36 @@ let tests_transitions =
     Alcotest.test_case "администратор принимает работу" `Quick (fun () ->
         expect_ok "admin" (make_ctx ~admin:true petr) Status.In_review Status.Done);
     Alcotest.test_case "needs_input требует вопрос" `Quick (fun () ->
-        expect_error "no question" (make_ctx agent) Status.In_progress
-          Status.Needs_input;
+        (* Адресат назван, вопроса нет: отказ должен быть именно про вопрос.
+           Иначе тест не отличит это от отказа «нет адресата» — и требование
+           вопроса можно будет убрать из правил незаметно. *)
+        expect_error_about "no question" "вопрос, на который ждём ответа"
+          (make_ctx ~asked_to:(Some "u-petr") agent)
+          Status.In_progress Status.Needs_input;
         expect_ok "with question"
+          (make_ctx ~note:(Some "какой формат отчёта?") ~asked_to:(Some "u-petr")
+             agent)
+          Status.In_progress Status.Needs_input);
+    Alcotest.test_case "вопрос без адресата запрещён" `Quick (fun () ->
+        expect_error_about "no addressee" "кому адресован вопрос"
           (make_ctx ~note:(Some "какой формат отчёта?") agent)
           Status.In_progress Status.Needs_input);
+    Alcotest.test_case "выход из needs_input требует ответа" `Quick (fun () ->
+        expect_error_about "no answer" "ответ на вопрос"
+          (make_ctx ~asked_to:(Some "u-petr") petr)
+          Status.Needs_input Status.In_progress);
+    Alcotest.test_case "агент не отвечает на вопрос" `Quick (fun () ->
+        expect_error_about "agent" "только человек"
+          (make_ctx ~asked_to:(Some "a-legist") ~answer:(Some "вот ответ") agent)
+          Status.Needs_input Status.In_progress);
+    Alcotest.test_case "посторонний человек не отвечает на вопрос" `Quick (fun () ->
+        expect_error_about "stranger" "адресат, заявитель или руководитель"
+          (make_ctx ~asked_to:(Some "u-other") ~answer:(Some "вот ответ") petr)
+          Status.Needs_input Status.In_progress);
+    Alcotest.test_case "адресат отвечает на вопрос" `Quick (fun () ->
+        expect_ok "answerer"
+          (make_ctx ~asked_to:(Some "u-petr") ~answer:(Some "вот ответ") petr)
+          Status.Needs_input Status.In_progress);
     Alcotest.test_case "blocked требует причину" `Quick (fun () ->
         expect_error "no reason" (make_ctx agent) Status.In_progress Status.Blocked;
         expect_ok "with reason"

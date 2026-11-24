@@ -270,6 +270,11 @@ let patch req =
 
 (* --------------------------------------------------------------- переходы --- *)
 
+(** Переход задачи.
+
+    Тело: [to] — целевой статус, [version] — версия (оптимистичная
+    блокировка), [reason] — причина или текст вопроса, [asked_to] — кому
+    адресован вопрос, [answer] — ответ на открытый вопрос. *)
 let transition req =
   let ref_ = Dream.param req "ref" in
   Context.with_body req (fun conn actor body ->
@@ -285,7 +290,9 @@ let transition req =
               answer
                 (Service.Task.transition conn ~actor ~interface_:Interface.Api ~ref_
                    ~target ~version
-                   ~note:(Params.string_field body "reason"))
+                   ~note:(Params.string_field body "reason")
+                   ~asked_to:(Params.string_field body "asked_to")
+                   ~answer:(Params.string_field body "answer"))
                 (fun task -> ok (`Assoc [ ("task", View.task task) ]))))
 
 (* --------------------------------------------------------- заявка и отпуск --- *)

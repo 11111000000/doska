@@ -318,9 +318,126 @@ let is_supervisor_of conn task actor : (bool, Failure.t) result Lwt.t =
       | Ok None -> Lwt_result.lift (Ok false)
       | Error e -> Lwt_result.lift (Error e))
 
+(* ---------------------------------------------------------------- вопрос --- *)
+
+(** Адресат вопроса: тот, чьего ответа ждут.
+
+    Идентификатор нужен записи в базе, handle — карточке и уведомлению:
+    человек читает «@ivanov», а не uuid. *)
+type addressee = {
+  id : string;
+  handle : string;
+}
+
+(** Явный адресат: handle из запроса.
+
+    Неизвестный handle — плохой запрос, а не отказ правила: клиент ошибся в
+    имени, и это видно сразу. Пустой handle адресатом не является: такой
+    запрос уходит на вывод по цепочке, это решает вызывающий код. *)
+let explicit_addressee conn handle : (addressee option, Failure.t) result Lwt.t =
+  if String.trim handle = "" then Lwt_result.lift (Ok None)
+  else
+    let* found = storage_result (Db.Repo_actor.by_handle conn handle) in
+    match found with
+    | Ok None -> Lwt_result.lift (Error (bad_request ("актор не найден: " ^ handle)))
+    | Ok (Some actor) ->
+        if Actor.is_human actor then
+          Lwt_result.lift
+            (Ok (Some { id = actor.Actor.id; handle = actor.Actor.handle }))
+        else
+          Lwt_result.lift
+            (Error (bad_request "адресат вопроса должен быть человеком"))
+    | Error e -> Lwt_result.lift (Error e)
+
+(** Кандидат в цепочке вывода: человек.
+
+    Не-человека пропускаем: от агента или заглушки нельзя получить живой
+    ответ, и задача ждала бы его вечно. *)
+let human_addressee conn id : (addressee option, Failure.t) result Lwt.t =
+  let* found = storage_result (Db.Repo_actor.by_id conn id) in
+  match found with
+  | Ok (Some actor) when Actor.is_human actor ->
+      Lwt_result.lift
+        (Ok (Some { id = actor.Actor.id; handle = actor.Actor.handle }))
+  | Ok _ -> Lwt_result.lift (Ok None)
+  | Error e -> Lwt_result.lift (Error e)
+
+(** Руководитель актора — следующий кандидат в цепочке вывода. *)
+let supervisor_addressee conn id : (addressee option, Failure.t) result Lwt.t =
+  let* found = storage_result (Db.Repo_actor.supervisor_of conn id) in
+  match found with
+  | Ok None -> Lwt_result.lift (Ok None)
+  | Ok (Some supervisor_id) -> human_addressee conn supervisor_id
+  | Error e -> Lwt_result.lift (Error e)
+
+(** Администратор из окружения — последний кандидат: ответить больше некому,
+    а вопрос без адресата ждать не может. *)
+let admin_addressee conn : (addressee option, Failure.t) result Lwt.t =
+  let rec first = function
+    | [] -> Lwt_result.lift (Ok None)
+    | handle :: rest ->
+        let* found = storage_result (Db.Repo_actor.by_handle conn handle) in
+        (match found with
+        | Error e -> Lwt_result.lift (Error e)
+        | Ok (Some actor) when Actor.is_human actor ->
+            Lwt_result.lift
+              (Ok (Some { id = actor.Actor.id; handle = actor.Actor.handle }))
+        | Ok _ -> first rest)
+  in
+  first (Identity.Admin.admin_handles ())
+
+(** Адресат вопроса: явный или выведенный.
+
+    Порядок вывода: заявитель → руководитель исполнителя → руководитель
+    заявителя → администратор. Если адресата так и нет, домен отклонит
+    переход требованием [Addressee]: подставлять замену значило бы спрятать
+    вопрос от того, кому он адресован.
+
+    Пустой handle — это не адресат, а его отсутствие: с пустым значением
+    идём по цепочке вывода, как если бы [asked_to] не передали. *)
+let resolve_addressee conn task ~asked_to :
+    (addressee option, Failure.t) result Lwt.t =
+  let derive () =
+    let candidates : (unit -> (addressee option, Failure.t) result Lwt.t) list =
+      [
+        (fun () ->
+          match task.Task.requester_id with
+          | Some id -> human_addressee conn id
+          | None -> Lwt_result.lift (Ok None));
+        (fun () ->
+          match task.Task.assignee_id with
+          | Some id -> supervisor_addressee conn id
+          | None -> Lwt_result.lift (Ok None));
+        (fun () ->
+          match task.Task.requester_id with
+          | Some id -> supervisor_addressee conn id
+          | None -> Lwt_result.lift (Ok None));
+        (fun () -> admin_addressee conn);
+      ]
+    in
+    let rec first = function
+      | [] -> Lwt_result.lift (Ok None)
+      | candidate :: rest -> (
+          let* found = candidate () in
+          match found with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok (Some addressee) -> Lwt_result.lift (Ok (Some addressee))
+          | Ok None -> first rest)
+    in
+    first candidates
+  in
+  match asked_to with
+  | Some handle when String.trim handle <> "" -> explicit_addressee conn handle
+  | _ -> derive ()
+
 (** Решение о переходе принимает домен; здесь мы только собираем его контекст
-    и переводим отказ в [Failure.Forbidden] с понятными деталями. *)
-let decide conn ~actor task target note : (unit, Failure.t) result Lwt.t =
+    и переводим отказ в [Failure.Forbidden] с понятными деталями.
+
+    [asked_to_id] — адресат вопроса: при входе в [needs_input] — кому
+    адресуем вопрос, при выходе — кому он был адресован. [answer] — ответ
+    на открытый вопрос. *)
+let decide conn ~actor task target note ~asked_to_id ~answer :
+    (unit, Failure.t) result Lwt.t =
   let* autonomy = autonomy_of conn task in
   let* supervisor = is_supervisor_of conn task actor in
   let* evidence = storage_result (Db.Repo_evidence.count conn ~task_id:task.Task.id) in
@@ -337,7 +454,7 @@ let decide conn ~actor task target note : (unit, Failure.t) result Lwt.t =
           ~is_requester:(task.Task.requester_id = Some actor.Actor.id)
           ~is_supervisor:supervisor ~is_admin:(Identity.Admin.is_admin actor)
           ~has_accept_right:false ~note ~has_evidence:(evidence > 0)
-          ~open_children
+          ~open_children ~asked_to_id ~answer
       in
       (match Rules.check context task.Task.status target with
       | Error message ->
@@ -359,41 +476,204 @@ let decide conn ~actor task target note : (unit, Failure.t) result Lwt.t =
   | _, _, Error e, _ -> Lwt_result.lift (Error e)
   | _, _, _, Error e -> Lwt_result.lift (Error e)
 
-let transition conn ~actor ~interface_ ~ref_ ~target ~version ~note :
+(** Итог записи внутри транзакции: [Written] — запись сделана, [Stale] —
+    строки задачи уже нет, версия устарела. *)
+type write_result =
+  | Written
+  | Stale
+
+(** Событие журнала: те же поля, что и у соседней записи о смене статуса. *)
+let record_event conn ~actor ~interface_ ~task ~action ~from_ ~to_ ~summary :
+    (unit, string) result Lwt.t =
+  let* recorded =
+    Db.Repo_activity.record conn ~action ~task_id:(Some task.Task.id)
+      ~project_id:task.Task.project_id ~actor_id:(Some actor.Actor.id)
+      ~from_value:(Some (Status.to_string from_))
+      ~to_value:(Some (Status.to_string to_)) ~summary ~interface_ ()
+  in
+  match recorded with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok _ -> Lwt_result.lift (Ok ())
+
+(** Записать вопрос и его адресата.
+
+    Версию не проверяет: её ведёт смена статуса в той же транзакции. *)
+let write_question conn ~task ~note ~addressee :
+    (write_result, string) result Lwt.t =
+  let question_text = Option.value ~default:"" note in
+  let asked_to_id = Option.map (fun a -> a.id) addressee in
+  let* updated =
+    Db.Repo_task.set_question conn ~ref_:task.Task.ref_ ~question:question_text
+      ~asked_to_id
+  in
+  match updated with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok None -> Lwt_result.lift (Ok Stale)
+  | Ok (Some _) -> Lwt_result.lift (Ok Written)
+
+(** Записать ответ на вопрос: текст, кто ответил и когда. *)
+let write_answer conn ~actor ~task ~answer_text :
+    (write_result, string) result Lwt.t =
+  let text = Option.value ~default:"" answer_text in
+  let* updated =
+    Db.Repo_task.set_answer conn ~ref_:task.Task.ref_ ~answer:text
+      ~answered_by:(Some actor.Actor.id)
+  in
+  match updated with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok None -> Lwt_result.lift (Ok Stale)
+  | Ok (Some _) -> Lwt_result.lift (Ok Written)
+
+(** Уведомление адресату: вопрос ждёт ответа, и ответить должен он.
+
+    Уведомление не уходит сразу: запись ложится в очередь доставки, и
+    упавший Mattermost не ломает переход задачи. *)
+let enqueue_needs_input conn ~task ~addressee ~question_text :
+    (unit, string) result Lwt.t =
+  let payload =
+    `Assoc
+      [
+        ("task", `String task.Task.ref_);
+        ("question", `String question_text);
+        ( "asked_to",
+          `String
+            (Option.value ~default:"" (Option.map (fun a -> a.handle) addressee)) );
+      ]
+  in
+  let* enqueued =
+    Db.Repo_notification.enqueue conn ~task_id:(Some task.Task.id)
+      ~actor_id:(Option.map (fun a -> a.id) addressee)
+      ~kind:"needs_input" ~payload
+  in
+  match enqueued with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok () -> Lwt_result.lift (Ok ())
+
+(** Запись перехода: смена статуса, вопрос или ответ, след в журнале и
+    уведомление в очередь доставки.
+
+    Всё в одной транзакции: полузаписанный переход (статус сменился, а
+    вопрос не записан) оставил бы задачу ждать ответа, которого никто не
+    задавал. *)
+let commit_transition conn ~actor ~interface_ ~task ~target ~version ~note
+    ~addressee ~answer_text : (string option, string) result Lwt.t =
+  Db.Conn.with_transaction conn (fun () ->
+      let* updated =
+        Db.Repo_task.set_status conn ~ref_:task.Task.ref_ ~status:target ~version ~note
+      in
+      match updated with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok None -> Lwt_result.lift (Ok None)
+      | Ok (Some id) ->
+          let* question =
+            match target with
+            | Status.Needs_input -> write_question conn ~task ~note ~addressee
+            | _ -> Lwt_result.lift (Ok Written)
+          in
+          (match question with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok Stale -> Lwt_result.lift (Ok None)
+          | Ok Written ->
+              let* answered =
+                match (task.Task.status, target) with
+                | Status.Needs_input, Status.In_progress ->
+                    write_answer conn ~actor ~task ~answer_text
+                | _ -> Lwt_result.lift (Ok Written)
+              in
+              (match answered with
+              | Error e -> Lwt_result.lift (Error e)
+              | Ok Stale -> Lwt_result.lift (Ok None)
+              | Ok Written ->
+                  let* journal =
+                    record_event conn ~actor ~interface_ ~task
+                      ~action:Activity.Status_changed ~from_:task.Task.status
+                      ~to_:target ~summary:note
+                  in
+                  (match journal with
+                  | Error e -> Lwt_result.lift (Error e)
+                  | Ok () ->
+                      let* asked =
+                        match target with
+                        | Status.Needs_input ->
+                            record_event conn ~actor ~interface_ ~task
+                              ~action:Activity.Questioned ~from_:task.Task.status
+                              ~to_:target ~summary:note
+                        | _ -> Lwt_result.lift (Ok ())
+                      in
+                      (match asked with
+                      | Error e -> Lwt_result.lift (Error e)
+                      | Ok () ->
+                          let* answer_recorded =
+                            match (task.Task.status, target) with
+                            | Status.Needs_input, Status.In_progress ->
+                                record_event conn ~actor ~interface_ ~task
+                                  ~action:Activity.Answered ~from_:task.Task.status
+                                  ~to_:target ~summary:answer_text
+                            | _ -> Lwt_result.lift (Ok ())
+                          in
+                          (match answer_recorded with
+                          | Error e -> Lwt_result.lift (Error e)
+                          | Ok () ->
+                              let* queued =
+                                match target with
+                                | Status.Needs_input ->
+                                    enqueue_needs_input conn ~task ~addressee
+                                      ~question_text:(Option.value ~default:"" note)
+                                | _ -> Lwt_result.lift (Ok ())
+                              in
+                              (match queued with
+                              | Error e -> Lwt_result.lift (Error e)
+                              | Ok () -> Lwt_result.lift (Ok (Some id)))))))))
+
+(** Переход задачи.
+
+    [asked_to] — handle адресата вопроса (только для входа в [needs_input]),
+    [answer] — ответ на открытый вопрос (только для выхода из него).
+
+    Опциональные аргументы стоят перед [conn], а не в конце списка: последним
+    параметром optional-аргумент быть не может — компилятор не умеет стереть
+    такой аргумент и поднимает предупреждение 16, а у нас предупреждение
+    ошибка. Перед позиционным [conn] стирание работает, и метку можно не
+    указывать: адресат и ответ необязательны. *)
+let transition ?(asked_to : string option = None) ?(answer : string option = None)
+    conn ~actor ~interface_ ~ref_ ~target ~version ~note :
     (Task.t, Failure.t) result Lwt.t =
   let* found = find conn ~ref_ in
   match found with
   | Error e -> Lwt_result.lift (Error e)
   | Ok task -> (
-      let* decision = decide conn ~actor task target note in
-      match decision with
+      let* addressee =
+        match target with
+        | Status.Needs_input -> resolve_addressee conn task ~asked_to
+        | _ -> Lwt_result.lift (Ok None)
+      in
+      match addressee with
       | Error e -> Lwt_result.lift (Error e)
-      | Ok () ->
-          let* outcome =
-            Db.Conn.with_transaction conn (fun () ->
-                let* updated =
-                  Db.Repo_task.set_status conn ~ref_:task.Task.ref_ ~status:target
-                    ~version ~note
-                in
-                match updated with
-                | Error e -> Lwt_result.lift (Error e)
-                | Ok None -> Lwt_result.lift (Ok None)
-                | Ok (Some id) ->
-                    let* _ =
-                      Db.Repo_activity.record conn ~action:Activity.Status_changed
-                        ~task_id:(Some task.Task.id)
-                        ~project_id:task.Task.project_id
-                        ~actor_id:(Some actor.Actor.id)
-                        ~from_value:(Some (Status.to_string task.Task.status))
-                        ~to_value:(Some (Status.to_string target)) ~summary:note
-                        ~interface_ ()
-                    in
-                    Lwt_result.lift (Ok (Some id)))
+      | Ok addressee ->
+          (* Контекст вопроса: при входе в [needs_input] — кому адресован
+             вопрос, при выходе — кому он был адресован и какой ответ дан. *)
+          let asked_to_id, answer_text =
+            match (task.Task.status, target) with
+            | _, Status.Needs_input ->
+                (Option.map (fun a -> a.id) addressee, None)
+            | Status.Needs_input, Status.In_progress ->
+                (task.Task.asked_to_id, answer)
+            | _ -> (None, None)
           in
-          (match outcome with
-          | Error e -> Lwt_result.lift (Error (storage e))
-          | Ok None -> Lwt_result.lift (Error (stale_version ()))
-          | Ok (Some id) -> refresh conn id ~ref_:task.Task.ref_))
+          let* decision =
+            decide conn ~actor task target note ~asked_to_id ~answer:answer_text
+          in
+          (match decision with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok () ->
+              let* outcome =
+                commit_transition conn ~actor ~interface_ ~task ~target ~version
+                  ~note ~addressee ~answer_text
+              in
+              (match outcome with
+              | Error e -> Lwt_result.lift (Error (storage e))
+              | Ok None -> Lwt_result.lift (Error (stale_version ()))
+              | Ok (Some id) -> refresh conn id ~ref_:task.Task.ref_)))
 
 (* ------------------------------------------------------ заявка и отпуск --- *)
 
@@ -413,7 +693,10 @@ let claim conn ~actor ~interface_ ~ref_ ~version ~note :
       | Error message ->
           Lwt_result.lift (Error (Failure.Conflict { message }))
       | Ok () -> (
-          let* decision = decide conn ~actor task Status.In_progress note in
+          let* decision =
+            decide conn ~actor task Status.In_progress note ~asked_to_id:None
+              ~answer:None
+          in
           match decision with
           | Error e -> Lwt_result.lift (Error e)
           | Ok () ->
@@ -464,7 +747,9 @@ let release conn ~actor ~interface_ ~ref_ ~version ~note :
       | Error message ->
           Lwt_result.lift (Error (Failure.Conflict { message }))
       | Ok () -> (
-          let* decision = decide conn ~actor task Status.Todo note in
+          let* decision =
+            decide conn ~actor task Status.Todo note ~asked_to_id:None ~answer:None
+          in
           match decision with
           | Error e -> Lwt_result.lift (Error e)
           | Ok () ->

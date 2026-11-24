@@ -41,6 +41,16 @@ type t = {
   created_by_id : string option;
   due_at : string option;
   blocked_reason : string option;
+  question : string option;
+  (* Вопрос, на который задача ждёт ответа (R2, ADR §4.2). *)
+  asked_to_id : string option;
+  (* Адресат вопроса: тот, чьего ответа ждут. *)
+  asked_to_name : string option;
+  (* Handle адресата: карточка показывает человека, а не uuid. *)
+  answer : string option;
+  (* Ответ на вопрос: остаётся в карточке и после смены статуса. *)
+  answered_at : string option;
+  answered_by : string option;
   labels : string list;
   (** Происхождение: [mattermost | teamboard | pm-global | api | agent]. *)
   source : string option;

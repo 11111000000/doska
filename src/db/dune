@@ -14,6 +14,7 @@
   repo_link
   repo_evidence
   repo_activity
+  repo_notification
   repo_overview)
  (libraries
   lwt

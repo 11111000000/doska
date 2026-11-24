@@ -152,6 +152,27 @@ let transition actor ref_ to_ version =
          (`Assoc [ ("to", `String to_); ("version", `Int version) ]))
     (Printf.sprintf "/api/v1/tasks/%s/transition" ref_)
 
+(** Переход с вопросом или ответом.
+
+    [reason] — текст вопроса, [asked_to] — кому адресован, [answer] — ответ
+    на открытый вопрос. *)
+let transition_with ?reason ?asked_to ?answer actor ref_ to_ version =
+  let fields =
+    [ ("to", `String to_); ("version", `Int version) ]
+    @ (match reason with
+      | None -> []
+      | Some text -> [ ("reason", `String text) ])
+    @ (match asked_to with
+      | None -> []
+      | Some handle -> [ ("asked_to", `String handle) ])
+    @ (match answer with
+      | None -> []
+      | Some text -> [ ("answer", `String text) ])
+  in
+  call ~method_:`POST ~actor:(Some actor)
+    ~body:(Yojson.Safe.to_string (`Assoc fields))
+    (Printf.sprintf "/api/v1/tasks/%s/transition" ref_)
+
 (* --------------------------------------------------------------------- тесты --- *)
 
 let test_create_task () =
@@ -241,6 +262,79 @@ let test_stale_version_is_conflict () =
   let code, text = transition "api-petr" ref_ "done" 999 in
   Alcotest.(check int) "код ответа" 409 code;
   Alcotest.(check string) "код ошибки" "conflict" (error_code (json text))
+
+(* ------------------------------------------------------- вопрос и ответ --- *)
+
+(** Вопрос доезжает до карточки: клиенту видно, о чём спросили и кого. *)
+let test_question_is_stored_in_card () =
+  let _, created = create_task ~status:"in_progress" () in
+  let ref_ = task_ref created in
+  let code, text =
+    transition_with ~reason:"Какой формат отчёта нужен?" ~asked_to:"api-other"
+      "api-petr" ref_ "needs_input" 1
+  in
+  Alcotest.(check int) "код ответа" 200 code;
+  let card = task_of (json text) in
+  Alcotest.(check string) "статус" "needs_input" (text_field "status" card);
+  Alcotest.(check string) "вопрос" "Какой формат отчёта нужен?"
+    (text_field "question" card);
+  Alcotest.(check string) "адресат" "api-other" (text_field "asked_to" card)
+
+(** Версия обязательна и для вопроса: без неё — плохой запрос. *)
+let test_question_without_version_is_bad_request () =
+  let _, created = create_task ~status:"in_progress" () in
+  let ref_ = task_ref created in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(Yojson.Safe.to_string (`Assoc [ ("to", `String "needs_input") ]))
+      (Printf.sprintf "/api/v1/tasks/%s/transition" ref_)
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Неизвестная задача — 404, а не 500: опечатку в ref видно сразу. *)
+let test_question_of_unknown_task_is_not_found () =
+  let code, text =
+    transition_with ~reason:"Нужен отчёт?" ~asked_to:"api-other" "api-petr"
+      "DSK-НЕТ-ТАКОЙ" "needs_input" 1
+  in
+  Alcotest.(check int) "код ответа" 404 code;
+  Alcotest.(check string) "код ошибки" "not_found" (error_code (json text))
+
+(** Адресат-нечеловек — плохой запрос: от агента ответа не будет. *)
+let test_addressee_must_be_human () =
+  let _, created = create_task ~status:"in_progress" () in
+  let ref_ = task_ref created in
+  let code, text =
+    transition_with ~reason:"Нужен отчёт?" ~asked_to:"api-legist" "api-petr" ref_
+      "needs_input" 1
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Неизвестный адресат — плохой запрос: клиент ошибся в логине. *)
+let test_unknown_addressee_is_bad_request () =
+  let _, created = create_task ~status:"in_progress" () in
+  let ref_ = task_ref created in
+  let code, text =
+    transition_with ~reason:"Нужен отчёт?" ~asked_to:"api-нет-такого" "api-petr"
+      ref_ "needs_input" 1
+  in
+  Alcotest.(check int) "код ответа" 400 code;
+  Alcotest.(check string) "код ошибки" "bad_request" (error_code (json text))
+
+(** Из needs_input нельзя выйти молча: без ответа переход запрещён. *)
+let test_answer_is_required_to_leave_needs_input () =
+  let _, created = create_task ~status:"in_progress" () in
+  let ref_ = task_ref created in
+  let code, _ =
+    transition_with ~reason:"Нужен отчёт?" ~asked_to:"api-other" "api-petr" ref_
+      "needs_input" 1
+  in
+  Alcotest.(check int) "вопрос задан" 200 code;
+  let code, text = transition_with "api-other" ref_ "in_progress" 2 in
+  Alcotest.(check int) "код ответа" 403 code;
+  Alcotest.(check string) "код ошибки" "forbidden" (error_code (json text))
 
 let test_list_is_paginated () =
   let code, text = call ~actor:(Some "api-petr") "/api/v1/tasks?project=APIMAIN&limit=1" in
@@ -1000,6 +1094,21 @@ let () =
             test_unknown_status_is_bad_request;
           Alcotest.test_case "устаревшая версия — 409" `Quick
             test_stale_version_is_conflict;
+        ] );
+      ( "вопрос и ответ",
+        [
+          Alcotest.test_case "вопрос попадает в карточку" `Quick
+            test_question_is_stored_in_card;
+          Alcotest.test_case "без версии — 400" `Quick
+            test_question_without_version_is_bad_request;
+          Alcotest.test_case "неизвестная задача — 404" `Quick
+            test_question_of_unknown_task_is_not_found;
+          Alcotest.test_case "адресат-нечеловек — 400" `Quick
+            test_addressee_must_be_human;
+          Alcotest.test_case "неизвестный адресат — 400" `Quick
+            test_unknown_addressee_is_bad_request;
+          Alcotest.test_case "выход без ответа — 403" `Quick
+            test_answer_is_required_to_leave_needs_input;
         ] );
       ( "списки и карточки",
         [

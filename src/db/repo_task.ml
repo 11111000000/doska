@@ -67,6 +67,12 @@ let of_json (json : Yojson.Safe.t) : Task.t =
     created_by_id = Row.opt_string json "created_by_id";
     due_at = Row.opt_string json "due_at";
     blocked_reason = Row.opt_string json "blocked_reason";
+    question = Row.opt_string json "question";
+    asked_to_id = Row.opt_string json "asked_to_id";
+    asked_to_name = Row.opt_string json "asked_to_name";
+    answer = Row.opt_string json "answer";
+    answered_at = Row.opt_string json "answered_at";
+    answered_by = Row.opt_string json "answered_by";
     labels = Row.string_list json "labels";
     source = Row.opt_string json "source";
     source_ref = Row.opt_string json "source_ref";
@@ -77,13 +83,15 @@ let of_json (json : Yojson.Safe.t) : Task.t =
     completed_at = Row.opt_string json "completed_at";
   }
 
-(** Общий подзапрос задачи: сама задача плюс ключ проекта и имя исполнителя —
-    то, что человек читает в списке. *)
+(** Общий подзапрос задачи: сама задача плюс ключ проекта, имя исполнителя и
+    handle адресата вопроса — то, что человек читает в списке. Адресат
+    приходит как handle, а не uuid: карточка показывает человека. *)
 let task_select =
   "SELECT row_to_json(x)::text FROM (SELECT t.*, p.key AS project_key, \
-   a.display_name AS assignee_name FROM task t \
+   a.display_name AS assignee_name, q.handle AS asked_to_name FROM task t \
    LEFT JOIN project p ON p.id = t.project_id \
-   LEFT JOIN actor a ON a.id = t.assignee_id"
+   LEFT JOIN actor a ON a.id = t.assignee_id \
+   LEFT JOIN actor q ON q.id = t.asked_to_id"
 
 let by_id conn id : (Task.t option, string) result Lwt.t =
   match Conn.uuid_literal id with
@@ -270,9 +278,10 @@ let mine conn ~assignee_id ~limit ~cursor : (page, string) result Lwt.t =
       let sql =
         Printf.sprintf
           "SELECT row_to_json(x)::text FROM (SELECT t.*, p.key AS project_key, \
-           a.display_name AS assignee_name FROM task t \
+           a.display_name AS assignee_name, q.handle AS asked_to_name FROM task t \
            LEFT JOIN project p ON p.id = t.project_id \
            LEFT JOIN actor a ON a.id = t.assignee_id \
+           LEFT JOIN actor q ON q.id = t.asked_to_id \
            WHERE %s ORDER BY %s ASC, COALESCE(t.due_at, 'infinity'::timestamptz) ASC, \
            t.priority ASC, t.created_at ASC, t.id ASC LIMIT %d) x"
           where (mine_bucket "t") (limit + 1)
@@ -457,6 +466,42 @@ let set_status_and_assignee conn ~ref_ ~status ~assignee ~version ~note :
 (** Смена статуса без изменения исполнителя. *)
 let set_status conn ~ref_ ~status ~version ~note =
   set_status_and_assignee conn ~ref_ ~status ~assignee:None ~version ~note
+
+(** Записать вопрос и его адресата. Версию не проверяет и не увеличивает:
+    смену статуса и версию ведёт [set_status_and_assignee] в той же
+    транзакции, а этот вызов идёт следом.
+
+    Прежний ответ обнуляется: новый вопрос — это новое ожидание, и старый
+    ответ на него не подходит. Иначе карточка показывала бы ответ на
+    прошлый вопрос как будто он отвечает на текущий. *)
+let set_question conn ~ref_ ~question ~asked_to_id : (string option, string) result Lwt.t =
+  match uuid_sql asked_to_id with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok asked_to ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET question = %s, asked_to_id = %s, answer = NULL, \
+           answered_at = NULL, answered_by = NULL, updated_at = now() \
+           WHERE ref = %s AND deleted_at IS NULL RETURNING id::text"
+          (Conn.quote question) asked_to (Conn.quote ref_)
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+
+(** Записать ответ на вопрос: текст, кто ответил и когда. Версию не трогает —
+    по той же причине, что и [set_question]. *)
+let set_answer conn ~ref_ ~answer ~answered_by : (string option, string) result Lwt.t =
+  match uuid_sql answered_by with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok answered ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET answer = %s, answered_by = %s, answered_at = now(), \
+           updated_at = now() WHERE ref = %s AND deleted_at IS NULL RETURNING id::text"
+          (Conn.quote answer) answered (Conn.quote ref_)
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
 
 (** Назначение исполнителя. *)
 let set_assignee conn ~ref_ ~assignee_id ~version :

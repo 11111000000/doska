@@ -115,6 +115,8 @@ let test_activity_round_trip () =
     [
       Activity.Created;
       Activity.Status_changed;
+      Activity.Questioned;
+      Activity.Answered;
       Activity.Assigned;
       Activity.Unassigned;
       Activity.Reassigned;

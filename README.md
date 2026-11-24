@@ -23,19 +23,20 @@
 
 ## Состояние
 
-Этапы 0 и 1 закрыты, от этапа 2 взяты пять срезов (идентичность, сервисный слой,
-главный запрос, заявка и отпуск, иерархия и связи) и взят шестой — сводка.
-Работает связка «мигратор → схема → REST `/api/v1`»: задачи создаются,
-читаются, переводятся, комментируются, заявляются и отпускаются, делятся на
-части и связываются между собой, а `/overview` отвечает одним запросом «где
-застряло и кто перегружен» — и всё это фиксируется в журнале активности.
+Этапы 0 и 1 закрыты, от этапа 2 взяты семь срезов: идентичность, сервисный
+слой, главный запрос, заявка и отпуск, иерархия и связи, сводка и вопрос при
+`needs_input`. Работает связка «мигратор → схема → REST `/api/v1`»: задачи
+создаются, читаются, переводятся, комментируются, заявляются и отпускаются,
+делятся на части и связываются между собой, `/overview` отвечает одним запросом
+«где застряло и кто перегружен», а задача в `needs_input` ждёт ответа
+конкретного человека — и всё это фиксируется в журнале активности.
 
 | Проверка | Результат |
 |---|---|
 | `dune build --root .` | без ошибок (любое включённое предупреждение — ошибка) |
-| `dune runtest --root .` | 149 тестов OK — домен 21, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 25, сводка 10, API 52 (живая БД) |
+| `dune runtest --root .` | 175 тестов OK — домен 26, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 25, сводка 10, вопрос при `needs_input` 15, API 58 (живая БД) |
 | `nix build .#doska` | успешно; checkPhase гоняет тесты без БД (в песочнице nix PostgreSQL нет) |
-| `doska migrate` | применены `001_init.sql` и `002_task_ref_seq.sql`; повторный запуск — «нечего применять» |
+| `doska migrate` | применены `001_init.sql` … `006_task_question.sql`; повторный запуск — «нечего применять» |
 | `doska health` | `ok` |
 | `doska serve` → `/healthz` | 200 `{"status":"ok"}` |
 
@@ -126,7 +127,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 69 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 79 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -202,8 +203,18 @@ verifier падает и без control'а, он не проверяет нич�
 | `overview-parameter-range` | Значения вне допустимого диапазона отклоняются: `stuck_days` меньше суток и `limit` вне 1…200 — 400 (§6.1) | `dune exec --root . test/service_overview_test.exe` | `ov_limit_range.sh` |
 | `overview-api-shape` | `GET /api/v1/overview` отдаёт сводку в объявленной форме: счётчики, нагрузка по людям и проектам, застрявшие, ждущие ответа (§6.1) | `dune exec --root . test/api_test.exe` | `ov_response_shape.sh` |
 | `overview-api-parameters` | Неразобранный параметр сводки — ошибка запроса (400), а не молчаливая замена (§6.1) | `dune exec --root . test/api_test.exe` | `ov_unparsable_parameter.sh` |
+| `needs-input-question-required` | Вход в `needs_input` требует текст вопроса: `reason` в переходе — это вопрос (§6.1) | `dune exec --root . test/domain_test.exe` | `q_question_required.sh` |
+| `needs-input-addressee-required` | Вход в `needs_input` требует адресата: вопрос без адресата (явного или выведенного) отклоняется (§6.1) | `dune exec --root . test/domain_test.exe` | `q_addressee_required.sh` |
+| `needs-input-answer-required` | Выход из `needs_input` требует ответа: `reason` ответ не заменяет (§6.1) | `dune exec --root . test/domain_test.exe` | `q_answer_required.sh` |
+| `needs-input-answerer` | Отвечает на вопрос только человек — адресат, заявитель, руководитель или администратор (§4.1) | `dune exec --root . test/domain_test.exe` | `q_answerer_only_human.sh` |
+| `needs-input-question-stored` | Текст вопроса и адресат сохраняются в задаче и остаются в карточке после перехода в `needs_input` (§6.1) | `dune exec --root . test/task_question_test.exe` | `q_question_stored.sh` |
+| `needs-input-addressee-resolved` | Адресат вопроса — человек: он задан явно или выведен по цепочке (заявитель → руководитель исполнителя → руководитель заявителя → администратор) (§6.1) | `dune exec --root . test/task_question_test.exe` | `q_addressee_resolved.sh` |
+| `needs-input-history` | Вопрос и ответ переживают смену статуса, а новый вопрос обнуляет прежний ответ (§6.1) | `dune exec --root . test/task_question_test.exe` | `q_previous_answer_cleared.sh` |
+| `needs-input-notification` | Постановка вопроса кладёт в outbox уведомление адресату: канал `mattermost_dm`, вид `needs_input`, состояние `pending` (§3.8) | `dune exec --root . test/task_question_test.exe` | `q_notification_enqueued.sh` |
+| `api-ask-answer-contract` | REST-контракт перехода с вопросом: `reason` — текст `question`, `answer` обязателен на выходе, карточка отдаёт `question`, `asked_to_id`, `asked_to`, `answer`, `answered_at` (§6.1) | `dune exec --root . test/task_question_test.exe` | `q_api_asked_to.sh` |
+| `needs-input-migration` | Миграция вопроса (006) идемпотентна: пять колонок добавляются через `IF NOT EXISTS`, значения журнала `questioned` и `answered` — тоже, поэтому повторное развёртывание не падает (§9.2, §4.2) | `sh test/check_task_question_migration.sh` | `q_migration_not_idempotent.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 69 claim'ов выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 79 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 

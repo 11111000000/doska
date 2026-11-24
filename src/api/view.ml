@@ -28,6 +28,11 @@ let task (t : Task.t) : Yojson.Safe.t =
       ("source", opt t.Task.source);
       ("source_ref", opt t.Task.source_ref);
       ("blocked_reason", opt t.Task.blocked_reason);
+      ("question", opt t.Task.question);
+      ("asked_to_id", opt t.Task.asked_to_id);
+      ("asked_to", opt t.Task.asked_to_name);
+      ("answer", opt t.Task.answer);
+      ("answered_at", opt t.Task.answered_at);
       ("version", `Int t.Task.version);
       ("created_at", `String t.Task.created_at);
       ("updated_at", `String t.Task.updated_at);
