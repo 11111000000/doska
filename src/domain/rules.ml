@@ -14,14 +14,21 @@ type permission =
   | Assignee_or_claimant
   | Assignee_or_human
   | Requester_or_supervisor
+  | Answerer_or_supervisor
   | Acceptance
 
-(** Что переход требует. [Evidence_preferred] — рекомендация, а не запрет. *)
+(** Что переход требует. [Evidence_preferred] — рекомендация, а не запрет.
+
+    [Question] — текст вопроса: он передаётся как [note] при переходе в
+    [needs_input]. [Addressee] — кому вопрос адресован, [Answer] — ответ на
+    открытый вопрос. *)
 type requirement =
   | Reason
   | Question
   | Summary
   | Evidence_preferred
+  | Addressee
+  | Answer
 
 (** Контекст решения: кто действует и в каких условиях. *)
 type context = {
@@ -41,11 +48,17 @@ type context = {
   (** Сколько детей задачи ещё открыто. Число считает владелец факта
       (сервис), решение принимает домен. *)
   open_children : int;
+  asked_to_id : string option;
+  (** Адресат вопроса: при входе в needs_input — кому адресуем вопрос;
+      при выходе — кому был адресован открытый вопрос. *)
+  answer : string option;
+  (** Ответ на открытый вопрос. *)
 }
 
 (** Конструктор контекста: собирает проверку из ролей и фактов. *)
 let make_context ~actor ~project_autonomy ~assignee_id ~is_requester ~is_supervisor
-    ~is_admin ~has_accept_right ~note ~has_evidence ~open_children : context =
+    ~is_admin ~has_accept_right ~note ~has_evidence ~open_children ~asked_to_id
+    ~answer : context =
   {
     actor;
     project_autonomy;
@@ -57,6 +70,8 @@ let make_context ~actor ~project_autonomy ~assignee_id ~is_requester ~is_supervi
     note;
     has_evidence;
     open_children;
+    asked_to_id;
+    answer;
   }
 
 (** Разрешённый переход: кому и что требуется. *)
@@ -77,12 +92,12 @@ let transition_table : (Status.t * Status.t * transition) list =
     (In_progress, Blocked, { permission = Anyone; requirements = [ Reason ] });
     ( In_progress,
       Needs_input,
-      { permission = Anyone; requirements = [ Question ] } );
+      { permission = Anyone; requirements = [ Question; Addressee ] } );
     (In_progress, In_review, { permission = Anyone; requirements = [ Summary ] });
     (In_progress, Todo, { permission = Assignee_or_human; requirements = [] });
     ( Needs_input,
       In_progress,
-      { permission = Requester_or_supervisor; requirements = [] } );
+      { permission = Answerer_or_supervisor; requirements = [ Answer ] } );
     (Needs_input, Cancelled, { permission = Human_only; requirements = [ Reason ] });
     (In_review, Done, { permission = Acceptance; requirements = [] });
     ( In_review,
@@ -119,6 +134,15 @@ let check_permission ctx permission =
       else if Actor.is_human ctx.actor && (ctx.has_accept_right || ctx.is_admin)
       then Ok ()
       else Error "Это действие доступно заявителю или руководителю"
+  | Answerer_or_supervisor ->
+      (* Отвечать на вопрос может только человек: вопрос ждёт живого
+         ответа, а не решения агента (ADR §4.1). *)
+      if not (Actor.is_human ctx.actor) then
+        Error "Ответить на вопрос может только человек"
+      else if ctx.asked_to_id = Some ctx.actor.id then Ok ()
+      else if ctx.is_requester || ctx.is_supervisor then Ok ()
+      else if ctx.has_accept_right || ctx.is_admin then Ok ()
+      else Error "Ответить на вопрос может адресат, заявитель или руководитель"
   | Acceptance ->
       (* R1: агент закрывает задачу сам только в доверенных проектах. *)
       if Actor.is_agent ctx.actor then
@@ -145,6 +169,14 @@ let check_requirement ctx = function
       match ctx.note with
       | Some s when String.trim s <> "" -> Ok ()
       | _ -> Error "Нужно указать резюме работы")
+  | Addressee -> (
+      match ctx.asked_to_id with
+      | Some _ -> Ok ()
+      | None -> Error "Нужно указать, кому адресован вопрос")
+  | Answer -> (
+      match ctx.answer with
+      | Some s when String.trim s <> "" -> Ok ()
+      | _ -> Error "Нужно указать ответ на вопрос")
   | Evidence_preferred -> Ok ()
 
 let check_requirements ctx requirements =

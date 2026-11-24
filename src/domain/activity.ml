@@ -6,6 +6,8 @@
 type action =
   | Created
   | Status_changed
+  | Questioned
+  | Answered
   | Assigned
   | Unassigned
   | Reassigned
@@ -43,6 +45,8 @@ type t = {
 let action_to_string : action -> string = function
   | Created -> "created"
   | Status_changed -> "status_changed"
+  | Questioned -> "questioned"
+  | Answered -> "answered"
   | Assigned -> "assigned"
   | Unassigned -> "unassigned"
   | Reassigned -> "reassigned"
@@ -65,6 +69,8 @@ let action_to_string : action -> string = function
 let action_of_string : string -> action option = function
   | "created" -> Some Created
   | "status_changed" -> Some Status_changed
+  | "questioned" -> Some Questioned
+  | "answered" -> Some Answered
   | "assigned" -> Some Assigned
   | "unassigned" -> Some Unassigned
   | "reassigned" -> Some Reassigned

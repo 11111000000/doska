@@ -9,10 +9,10 @@
 set -eu
 
 file=src/service/task.ml
-before='~to_value:(Some (Status.to_string target)) ~summary:note
-                        ~interface_ ()'
-after='~to_value:(Some (Status.to_string target)) ~summary:note
-                        ~interface_:Interface.Api ()'
+before='                    record_event conn ~actor ~interface_ ~task
+                      ~action:Activity.Status_changed ~from_:task.Task.status'
+after='                    record_event conn ~actor ~interface_:Interface.Api ~task
+                      ~action:Activity.Status_changed ~from_:task.Task.status'
 
 python3 - "$file" "$before" "$after" <<'PY'
 import pathlib, sys
