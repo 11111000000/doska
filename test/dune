@@ -18,7 +18,8 @@
   repo_test
   identity_db_test
   api_test
-  service_task_test)
+  service_task_test
+  service_overview_test)
  (modules
   domain_test
   domain_types_test
@@ -26,7 +27,8 @@
   repo_test
   identity_db_test
   api_test
-  service_task_test)
+  service_task_test
+  service_overview_test)
  (libraries
   support
   db

@@ -13,7 +13,8 @@
   repo_task
   repo_link
   repo_evidence
-  repo_activity)
+  repo_activity
+  repo_overview)
  (libraries
   lwt
   yojson

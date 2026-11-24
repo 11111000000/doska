@@ -55,6 +55,9 @@ let require_actor (handler : Dream.handler) : Dream.handler =
 
 let api_routes =
   [
+    (* Сводка — ресурс про трекер целиком, а не про задачу, поэтому она не
+       вложена в [/tasks]. *)
+    Dream.get "/overview" Overview.overview;
     Dream.get "/tasks" Tasks.list;
     Dream.post "/tasks" Tasks.create;
     (* Статический сегмент раньше параметризованного: [Dream] проверяет
