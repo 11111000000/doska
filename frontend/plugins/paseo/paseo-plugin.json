@@ -1,0 +1,8 @@
+{
+  "id": "doska",
+  "media": [],
+  "requirements": {
+    "paseo": ">=0.15.2"
+  },
+  "name": "Doska: мои задачи"
+}
