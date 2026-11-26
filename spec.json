@@ -16,12 +16,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636860,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -44,12 +44,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636860,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -75,12 +75,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636860,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -106,12 +106,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636860,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -137,12 +137,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636860,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -167,12 +167,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636860,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -198,12 +198,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -226,12 +226,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -254,12 +254,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -282,12 +282,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -310,12 +310,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -338,12 +338,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -369,12 +369,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -400,12 +400,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -428,12 +428,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -456,12 +456,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -486,12 +486,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -514,12 +514,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -547,12 +547,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -578,12 +578,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -609,12 +609,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -636,12 +636,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -733,12 +733,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -761,12 +761,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -789,12 +789,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -820,12 +820,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -852,12 +852,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -883,12 +883,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -914,12 +914,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -945,12 +945,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -977,12 +977,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1008,12 +1008,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1040,12 +1040,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1069,12 +1069,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1101,12 +1101,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1133,12 +1133,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1166,12 +1166,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1199,12 +1199,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1227,12 +1227,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1258,12 +1258,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1289,12 +1289,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1320,12 +1320,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1351,12 +1351,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1382,12 +1382,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1414,12 +1414,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1445,12 +1445,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1476,12 +1476,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1508,12 +1508,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1540,12 +1540,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1572,12 +1572,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672519,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1603,12 +1603,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1634,12 +1634,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1665,12 +1665,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1696,12 +1696,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1727,12 +1727,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1758,12 +1758,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1789,12 +1789,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636861,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1820,12 +1820,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1851,12 +1851,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1882,12 +1882,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1913,12 +1913,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1944,12 +1944,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -1975,12 +1975,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2006,12 +2006,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2037,12 +2037,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2068,12 +2068,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2099,12 +2099,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2130,12 +2130,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2161,12 +2161,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2192,12 +2192,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2223,12 +2223,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2254,12 +2254,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2285,12 +2285,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2316,12 +2316,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2347,12 +2347,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2379,12 +2379,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2410,12 +2410,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2441,12 +2441,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2473,12 +2473,12 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
         "review": {
           "by": "Peter",
-          "reason": "владелец (указание): ADR §10.1 приведён к данным estate — числа с датами, маппинг column→status, kind=task; §10.2 фиксирует границу upsert. Основание — прямое поручение от 25.11.2026 закрыть пять замечаний анализа",
-          "at": 1795636862,
-          "previous_digest": "97679416248b1e54291e118ef1e10dba9f59e689f9883762ef8fa4e8348569df"
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
         }
       },
       "owner": "Peter",
@@ -2504,8 +2504,13 @@
         "kind": "madr",
         "path": "docs/design/doska-architecture-2026-11-16.md",
         "section": null,
-        "digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce",
-        "review": null
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+        "review": {
+          "by": "Peter",
+          "reason": "владелец (указание): утверждён план волн для субагентов — ADR §6.4 дополнен общим TypeScript-слоем (D4-R), §7.1/§7.2 — собственный webhook бота и monorepo плагина Paseo (D3-R: плагин MM — волна 4), §11/§13 обновлены. Основание — прямое утверждение плана владельцем 26.11.2026",
+          "at": 1795672520,
+          "previous_digest": "9b90ab580b56e2b61575523c99c69e2cb6ed6661f2b0c17641474bd5c6c883ce"
+        }
       },
       "owner": "Peter",
       "requirements": [
