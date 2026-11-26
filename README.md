@@ -127,7 +127,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 84 claim'а, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 86 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -215,7 +215,7 @@ verifier падает и без control'а, он не проверяет нич�
 | `needs-input-migration` | Миграция вопроса (006) идемпотентна: пять колонок добавляются через `IF NOT EXISTS`, значения журнала `questioned` и `answered` — тоже, поэтому повторное развёртывание не падает (§9.2, §4.2) | `sh test/check_task_question_migration.sh` | `q_migration_not_idempotent.sh` |
 | `task-upsert-from-source` | Повторный импорт с той же парой (source, source_ref) обновляет контентные поля версионированной правкой с журналом и не плодит дубль; статус и исполнитель — только машиной переходов (§10.2) | `dune exec --root . test/service_task_test.exe` | `upsert_skips_update.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 84 claim'а выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 86 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 
