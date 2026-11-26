@@ -10,6 +10,7 @@
   mattermost
   import_actors
   failure
+  credential
   task
   overview)
  (libraries
@@ -18,4 +19,5 @@
   identity
   lwt
   yojson
+  digestif
   unix))

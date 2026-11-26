@@ -43,15 +43,24 @@ let version _req =
 
     Идентификация этапа 1 — заголовок [X-Doska-Actor] (см. [Auth]); это не
     аутентификация, её заменит этап 2. *)
+(* Дешёвая проверка перед обработчиком: запрос к [/api/v1] обязан предъявить
+   опознавательный заголовок, иначе правила приёмки не к кому привязать.
+
+   Подлинность токена и права проверяет обработчик ([Auth.actor_of]) — так
+   дешёвая проверка не подменяет настоящую. Основной путь —
+   [Authorization: Bearer], запасной — [X-Doska-Actor] до конца перехода
+   (см. [Auth]). *)
 let require_actor (handler : Dream.handler) : Dream.handler =
  fun req ->
-  match Dream.headers req Auth.header with
-  | [] ->
-      Errors.respond
-        (Errors.make Errors.Unauthorized
-           "не указан актор: пришлите заголовок X-Doska-Actor (временный механизм \
-            до этапа 2 — bearer-токены)")
-  | _handle :: _ -> handler req
+  match Dream.headers req Auth.authorization_header with
+  | _token :: _ -> handler req
+  | [] -> (
+      match Dream.headers req Auth.legacy_header with
+      | [] ->
+          Errors.respond
+            (Errors.make Errors.Unauthorized
+               "нет токена: пришлите Authorization: Bearer dsk_… (или X-Doska-Actor до конца перехода)")
+      | _handle :: _ -> handler req)
 
 let api_routes =
   [
@@ -79,6 +88,9 @@ let api_routes =
     Dream.get "/activity" Tasks.activity;
     Dream.get "/actors" Tasks.actors;
     Dream.post "/actors/resolve" Actors.resolve;
+    Dream.get "/credentials" Credentials.list;
+    Dream.post "/credentials" Credentials.issue;
+    Dream.delete "/credentials/:id" Credentials.revoke;
   ]
 
 let routes =

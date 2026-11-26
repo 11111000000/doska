@@ -9,6 +9,7 @@
   row
   repo_actor
   repo_actor_alias
+  repo_credential
   repo_project
   repo_task
   repo_link

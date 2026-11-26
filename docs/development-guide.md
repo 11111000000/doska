@@ -48,13 +48,13 @@
 Проверено, а не заявлено:
 
 - `dune build --root .` — зелёный; любое предупреждение компилятора — ошибка.
-- `dune runtest --root .` — 178 тестов: домен 26, типы домена 9, идентичность 9
-  (без БД), сервисный слой 28 (живая БД), сводка 10 (живая БД, своя база),
-  вопрос при `needs_input` 15 (живая БД, своя база), репозитории 13 (живая БД),
-  идентичность на БД 10, API 58 (живая БД).
-- `mathc --root . run` (прогон 26.11.2026, после правки ADR и пересмотра
-  источников) — `verdict: green`, 80/80 claim'ов
-  `holds`, 80/80 отрицательных control'а доказаны, `uncovered: 0`. Заявление
+- `dune runtest --root .` — 187 тестов: домен 26, типы домена 9, идентичность 9
+  (без БД), сервисный слой 28 (живая БД), учётки агентов 4 (живая БД), сводка
+  10 (живая БД, своя база), вопрос при `needs_input` 15 (живая БД, своя база),
+  репозитории 13 (живая БД), идентичность на БД 10, API 63 (живая БД).
+- `mathc --root . run` (прогон 26.11.2026, после среза учёток) —
+  `verdict: green`, 84/84 claim'ов
+  `holds`, 84/84 отрицательных control'а доказаны, `uncovered: 0`. Заявление
   привязано к прогону: если после него менялись `spec.json`, ADR или код,
   `mathc map` покажет `outdated`/`never-checked`, и оно перестаёт быть
   верным (§4).
@@ -70,6 +70,8 @@ REST. Всё под `/api/v1` требует заголовок актора:
 ```
 GET   /api/v1/tasks                 POST   /api/v1/tasks
 GET   /api/v1/tasks/mine            ← главный запрос: мои открытые задачи
+GET   /api/v1/credentials           POST   /api/v1/credentials → токен один раз
+DELETE/api/v1/credentials/:id       ← отзыв; bearer вытесняет X-Doska-Actor
 GET   /api/v1/tasks/:ref            PATCH  /api/v1/tasks/:ref
 POST  /api/v1/tasks/:ref/transition POST   /api/v1/tasks/:ref/assign
 POST  /api/v1/tasks/:ref/claim      POST   /api/v1/tasks/:ref/release
