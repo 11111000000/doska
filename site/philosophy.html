@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Философия — doska</title>
+<meta name="description" content="Почему doska устроен так: факт пересчитывается владельцем факта, суждение живёт в трекере, наблюдение — ссылка, а не копия. Принципы П1–П8, урок agent-kanban, не-цели.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='5' fill='%23a8541a'/%3E%3Crect x='5' y='6' width='14' height='4' rx='1.4' fill='%23fffdf6'/%3E%3Crect x='5' y='13' width='9' height='4' rx='1.4' fill='%23fffdf6' opacity='.7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="5" fill="#a8541a"/><rect x="5" y="6" width="14" height="4" rx="1.4" fill="#fffdf6"/><rect x="5" y="13" width="9" height="4" rx="1.4" fill="#fffdf6" opacity=".7"/></svg>
+      doska
+    </a>
+    <nav>
+      <a href="index.html">Главная</a>
+      <a href="philosophy.html" class="active">Философия</a>
+      <a href="architecture.html">Архитектура</a>
+      <a href="status.html">Состояние</a>
+      <a class="gh" href="https://github.com/11111000000/doska">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker">философия</p>
+    <h1>Суждение живёт в трекере. Факт — у своего владельца.</h1>
+    <p class="lede">Каждый принцип doska выведен из наблюдаемого дефекта, а не из вкуса:
+    в чате всё обсуждено, в git всё закоммичено — а ответ на вопрос
+    «кто кому что должен» приходится собирать руками. Это и есть дефект,
+    который трекер устраняет.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">главное правило</p>
+    <div class="callout">
+      Факт пересчитывается владельцем факта. Суждение живёт в трекере.
+      Наблюдение — ссылка, а не копия.
+    </div>
+    <p style="margin-top:20px; max-width:70ch">Это правило наследует принцип, который уже доказал
+    работоспособность в этом хозяйстве: <i>«факт пересчитывается, суждение пересматривается»</i>.
+    Трекер добавляет к нему третий слой — <b>ссылку на факт</b>. Git-факт нельзя скопировать в трекер:
+    копия протухнет при первом rebase. Нельзя и пересчитывать его самому — это работа git.
+    Остаётся ровно одно честное поведение: помнить ссылку и не претендовать на чужое.</p>
+
+    <figure>
+    <svg viewBox="0 0 900 270" role="img" aria-label="git — владелец факта, doska — владелец суждений; между ними evidence: ссылка на sha, ветку, PR, URL">
+      <defs>
+        <marker id="arr-p1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#7e3d0e"/>
+        </marker>
+      </defs>
+      <rect x="40" y="55" width="270" height="140" rx="13" class="bx"/>
+      <text x="175" y="88" text-anchor="middle" class="t1">git — владелец факта</text>
+      <text x="175" y="116" text-anchor="middle" class="t2">ветки · коммиты · PR · diff</text>
+      <text x="175" y="138" text-anchor="middle" class="t2">автор · дата · merge</text>
+      <text x="175" y="168" text-anchor="middle" class="t3">пересчитывается только git’ом</text>
+
+      <rect x="590" y="55" width="270" height="140" rx="13" class="bx bx-acc"/>
+      <text x="725" y="88" text-anchor="middle" class="t1">doska — владелец суждений</text>
+      <text x="725" y="116" text-anchor="middle" class="t2">обязательство · срок · статус</text>
+      <text x="725" y="138" text-anchor="middle" class="t2">кто кого принял и почему</text>
+      <text x="725" y="168" text-anchor="middle" class="t3">пересматривается человеком</text>
+
+      <path d="M 310 122 L 582 122" class="edge edge-acc" marker-end="url(#arr-p1)"/>
+      <text x="446" y="106" text-anchor="middle" class="tl-acc">evidence: sha · ветка · PR · URL</text>
+      <text x="446" y="146" text-anchor="middle" class="t3">наблюдение — ссылка, а не копия</text>
+      <text x="450" y="242" text-anchor="middle" class="t3">трекер хранит ссылку, git хранит правду — каждый при своём деле</text>
+    </svg>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">принципы</p>
+    <h2>П1–П8: каждый принцип — из дефекта</h2>
+    <div class="grid g2">
+      <div class="card">
+        <span class="num">П1</span>
+        <h3>Назначение — ссылка на актора, а не строка</h3>
+        <p><b>Дефект:</b> owner — свободный текст: «Пётр», «az», «human:operator», пусто — 85 карточек.
+        Вопрос «задачи Петра» не отвечаем. <b>→</b> <code class="inline">assignee_id</code> — внешний ключ,
+        свободного текста в поле назначения нет физически.</p>
+      </div>
+      <div class="card">
+        <span class="num">П2</span>
+        <h3>Люди и агенты — одна сущность</h3>
+        <p><b>Дефект:</b> агент стоял рядом с человеком в одном поле — неразличимы.
+        <b>→</b> Единая таблица <code class="inline">actor</code> с признаком <code class="inline">kind</code>
+        и связью <code class="inline">supervisor_id</code>: агент отвечает перед человеком.</p>
+      </div>
+      <div class="card">
+        <span class="num">П3</span>
+        <h3>Агент не закрывает свою задачу</h3>
+        <p><b>Дефект:</b> «закрыто» перестаёт быть проверяемым, если закрывающий совпадает с исполнителем.
+        <b>→</b> Машина состояний с правилами переходов, проверяемыми на сервере.</p>
+      </div>
+      <div class="card">
+        <span class="num">П4</span>
+        <h3>Каждое изменение оставляет след</h3>
+        <p><b>Дефект:</b> «кто и откуда плодит задачи» — неразрешимый вопрос.
+        <b>→</b> Append-only журнал <code class="inline">activity</code> с интерфейсом:
+        api · mcp · cli · web · mattermost · paseo · import · system.</p>
+      </div>
+      <div class="card">
+        <span class="num">П5</span>
+        <h3>Git — источник ссылок, а не состояния</h3>
+        <p><b>Дефект:</b> трекер-пересчёт git’а молча расходится с реальностью.
+        <b>→</b> Таблица <code class="inline">evidence</code>: sha, ветка, PR, файл, URL.
+        Трекер их не проверяет — он помнит, что было приложено.</p>
+      </div>
+      <div class="card">
+        <span class="num">П6</span>
+        <h3>У агента ровно одна точка входа</h3>
+        <p><b>Дефект:</b> три точки конфигурации убили предыдущий трекер агентов.
+        <b>→</b> Один <code class="inline">credentials</code>-реестр + один MCP-конфиг + один AGENTS.md бота.
+        Меньше — нельзя.</p>
+      </div>
+      <div class="card">
+        <span class="num">П7</span>
+        <h3>Польза в первый же день</h3>
+        <p><b>Дефект:</b> трекер, в который надо «сначала перенести всё», не будет adopted.
+        <b>→</b> Импорт существующих данных + ICS-календарь + команды в чате,
+        где человек и так находится.</p>
+      </div>
+      <div class="card">
+        <span class="num">П8</span>
+        <h3>Нет трекера для трекера</h3>
+        <p><b>Дефект:</b> сущности, размазанные между системами, врут по отдельности.
+        <b>→</b> Каждая сущность живёт в одном месте; Teamboard и doska
+        ссылаются друг на друга, а не делят «задачу».</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">урок, вбитый в конструкцию</p>
+    <h2>Провал предшественника и эпистемическая честность</h2>
+    <div class="grid g2">
+      <div class="card">
+        <span class="num">история</span>
+        <h3>Почему не kanban для агентов</h3>
+        <p>Предшественник — <b>agent-kanban</b> — умер не от недостатка функций,
+        а от конструкции: три точки конфигурации, и агенты уже работали в
+        worktree-ветках со своим протоколом координации. Трекер, который
+        заменяет git-протокол, конкурирует с ним и проигрывает. Поэтому doska
+        живёт <b>над</b> git-протоколом, а не вместо него.</p>
+      </div>
+      <div class="card">
+        <span class="num">честность</span>
+        <h3>Метрика «закрыто» должна быть проверяемой</h3>
+        <p>Если агент может закрыть свою задачу сам, «закрыто» значит
+        «исполнитель так решил» — это не проверка. Правило <b>R1</b> переносит
+        эпистемическую честность из отчётов в рабочий процесс: агент доходит
+        до <b>in_review</b> и просит приёмки; закрывает человек. Сервер не
+        позволяет иначе — независимо от настроения агента.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">не-цели</p>
+    <h2>Чего здесь не будет</h2>
+    <div class="card">
+      <ul class="clean">
+        <li><span class="li-t">Не заменять git-протокол координации агентов.</span>
+          <div class="li-d">Агенты уже работают в ветках с auto-commit и auto-merge. Трекер — над этим, а не вместо.</div></li>
+        <li><span class="li-t">Не быть ещё одним местом, куда надо сходить.</span>
+          <div class="li-d">Каждая функция доступна там, где человек или агент уже находится: чат, календарь, терминал, Paseo.</div></li>
+        <li><span class="li-t">Не быть общим чатом задач.</span>
+          <div class="li-d">Обсуждение — комментарии внутри задачи; разговор остаётся в Mattermost.</div></li>
+        <li><span class="li-t">Не тянуть больше, чем нужно.</span>
+          <div class="li-d">Postgres на том же инстансе, один процесс API + один воркер outbox. Никакого Redis и брокеров.</div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>doska — трекер обязательств · <a href="https://github.com/11111000000/doska/blob/main/LICENSE">MIT</a></span>
+    <span><a href="https://github.com/11111000000/doska/blob/main/docs/design/doska-architecture-2026-11-16.md">полная архитектура ↗</a> · <a href="https://github.com/11111000000/doska/blob/main/docs/decision-log.md">журнал решений ↗</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
