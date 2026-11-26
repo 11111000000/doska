@@ -3046,6 +3046,41 @@
    "register": "fact",
    "control": "sh test/break/web_app_entry_dropped.sh",
    "waiver": null
+  },
+  {
+   "id": "paseo-plugin-installed",
+   "text": "Плагин doska в Paseo установлен и running: панель задач через RPC, имя RPC в нижнем регистре, hook agent.closed освобождает claim (ADR §7.2)",
+   "scope": [
+    "frontend/plugins/paseo/client/doska.tsx",
+    "frontend/plugins/paseo/index.client.tsx",
+    "frontend/plugins/paseo/index.server.ts",
+    "frontend/plugins/paseo/package.json",
+    "frontend/plugins/paseo/paseo-plugin.json",
+    "frontend/plugins/paseo/server/doska.ts",
+    "frontend/plugins/paseo/shared/doska-rpc.ts",
+    "frontend/plugins/paseo/shared/doska-settings.ts",
+    "frontend/plugins/paseo/tsconfig.json",
+    "test/break/paseo_rpc_name_uppercase.sh",
+    "test/check_paseo_plugin.sh"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "sh test/check_paseo_plugin.sh"
+    }
+   ],
+   "falsifier": "имя RPC с заглавной буквой или отсутствие hookа: плагин не загружается или не выпускает claim",
+   "register": "fact",
+   "control": "sh test/break/paseo_rpc_name_uppercase.sh",
+   "waiver": null
   }
  ],
  "environment": "nix develop -c"
