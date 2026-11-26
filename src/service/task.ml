@@ -289,6 +289,75 @@ let patch conn ~actor ~interface_ ~ref_ ~version (fields : Db.Repo_task.patch) :
       | Ok None -> Lwt_result.lift (Error (stale_version ()))
       | Ok (Some id) -> refresh conn id ~ref_)
 
+(* ----------------------------------------------------------------- импорт --- *)
+
+(** Результат upsert: задача создана, обновлена или не тронута.
+
+    [Unchanged] — повторный импорт с теми же данными: поля совпадают, и
+    версия не растёт. Бездумный повтор поднимал бы версию у всей базы. *)
+type upsert =
+  | Created of Task.t
+  | Updated of Task.t
+  | Unchanged of Task.t
+
+(** Создать или обновить задачу по ключу источника (§10.2).
+
+    Путь импорта: одной паре (source, source_ref) соответствует одна задача —
+    повтор не плодит дубль, а обновляет контентные поля версионированной
+    правкой с записью в журнал. Статус и исполнитель сюда не входят: их
+    меняет машина переходов, и импорт не вправе обходить правила R1–R3.
+
+    Без пары (source, source_ref) — плохой запрос: upsert без внешнего ключа
+    не знает, что обновлять. *)
+let upsert conn ~actor ~interface_ (input : create_input) :
+    (upsert, Failure.t) result Lwt.t =
+  match (input.source, input.source_ref) with
+  | None, _ | _, None ->
+      Lwt_result.lift (Error (bad_request "upsert требует source и source_ref"))
+  | Some source, Some source_ref ->
+      let* existing =
+        storage_result (Db.Repo_task.by_source_ref conn ~source ~source_ref)
+      in
+      (match existing with
+      | Error e -> Lwt_result.lift (Error e)
+      | Ok None ->
+          let* outcome = create conn ~actor ~interface_ input in
+          (match outcome with
+          | Error e -> Lwt_result.lift (Error e)
+          | Ok (Db.Repo_task.Created task) -> Lwt_result.lift (Ok (Created task))
+          | Ok (Db.Repo_task.Existing task) ->
+              Lwt_result.lift (Ok (Unchanged task)))
+      | Ok (Some task) ->
+          let fields : Db.Repo_task.patch =
+            {
+              title =
+                (if String.equal task.Task.title input.title then None
+                 else Some input.title);
+              description =
+                (if String.equal task.Task.description input.description then None
+                 else Some input.description);
+              priority =
+                (if task.Task.priority = input.priority then None
+                 else Some input.priority);
+              due_at =
+                (if task.Task.due_at = input.due_at then None
+                 else Some input.due_at);
+              labels =
+                (if List.equal String.equal task.Task.labels input.labels then None
+                 else Some input.labels);
+            }
+          in
+          if changed_fields fields = [] then
+            Lwt_result.lift (Ok (Unchanged task))
+          else
+            let* outcome =
+              patch conn ~actor ~interface_ ~ref_:task.Task.ref_
+                ~version:task.Task.version fields
+            in
+            (match outcome with
+            | Error e -> Lwt_result.lift (Error e)
+            | Ok updated -> Lwt_result.lift (Ok (Updated updated))))
+
 (* --------------------------------------------------------------- переходы --- *)
 
 (** Режим приёмки проекта: в доверенном проекте агент закрывает задачу сам

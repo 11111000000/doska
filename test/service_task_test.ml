@@ -168,6 +168,106 @@ let test_patch_journal_is_updated () =
             (Interface.to_string event.Activity.interface_)
       | [] -> Alcotest.fail "правка не оставила следа в журнале")
 
+(* ------------------------------------------------------------------ импорт --- *)
+
+(** Повторный импорт обновляет контент, а не плодит дубль (§10.2): тот же
+    ключ источника, другие данные — та же задача с выросшей версией и
+    записью [updated] в журнале. *)
+let test_upsert_updates_existing_task () =
+  let task = create () in
+  let revised : Service.Task.create_input =
+    {
+      title = "Обновлённая импортом задача";
+      description = "новое описание из источника";
+      kind = Task.Task;
+      status = Status.Backlog;
+      priority = Task.P1;
+      due_at = None;
+      labels = [ "импорт" ];
+      source = task.Task.source;
+      source_ref = task.Task.source_ref;
+      project = Some project.Project.key;
+      assignee = None;
+      requester = None;
+      parent = None;
+    }
+  in
+  match
+    Support.run
+      (Service.Task.upsert conn ~actor:human ~interface_:Interface.Api revised)
+  with
+  | Error e -> Alcotest.fail ("upsert не прошёл: " ^ Service.Failure.to_string e)
+  | Ok (Service.Task.Created _) -> Alcotest.fail "существующая задача создана заново"
+  | Ok (Service.Task.Unchanged _) -> Alcotest.fail "изменения молча пропущены"
+  | Ok (Service.Task.Updated updated) ->
+      Alcotest.(check string) "ref" task.Task.ref_ updated.Task.ref_;
+      Alcotest.(check string) "title" revised.title updated.Task.title;
+      Alcotest.(check string) "description" revised.description
+        updated.Task.description;
+      Alcotest.(check string) "priority" "p1"
+        (Task.priority_to_string updated.Task.priority);
+      Alcotest.(check int) "version" (task.Task.version + 1) updated.Task.version;
+      match events_for task.Task.ref_ with
+      | event :: _ ->
+          Alcotest.(check string) "action" "updated"
+            (Activity.action_to_string event.Activity.action);
+          Alcotest.(check string) "summary"
+            "изменены поля: title, description, priority, labels"
+            (match event.Activity.summary with
+            | Some summary -> summary
+            | None -> "");
+          Alcotest.(check string) "interface" "api"
+            (Interface.to_string event.Activity.interface_)
+      | [] -> Alcotest.fail "upsert не оставил следа в журнале"
+
+(** Повторный импорт с теми же данными не трогает задачу: версия не растёт,
+    журнал не пополняется. Иначе повтор поднимал бы версию всей базы. *)
+let test_upsert_unchanged_data_keeps_version () =
+  let task = create () in
+  let same : Service.Task.create_input =
+    {
+      title = task.Task.title;
+      description = task.Task.description;
+      kind = task.Task.kind;
+      status = task.Task.status;
+      priority = task.Task.priority;
+      due_at = task.Task.due_at;
+      labels = task.Task.labels;
+      source = task.Task.source;
+      source_ref = task.Task.source_ref;
+      project = Some project.Project.key;
+      assignee = None;
+      requester = None;
+      parent = None;
+    }
+  in
+  match
+    Support.run (Service.Task.upsert conn ~actor:human ~interface_:Interface.Api same)
+  with
+  | Error e -> Alcotest.fail ("upsert не прошёл: " ^ Service.Failure.to_string e)
+  | Ok (Service.Task.Updated _) -> Alcotest.fail "без изменений версия выросла"
+  | Ok (Service.Task.Created _) -> Alcotest.fail "существующая задача создана заново"
+  | Ok (Service.Task.Unchanged unchanged) ->
+      Alcotest.(check string) "ref" task.Task.ref_ unchanged.Task.ref_;
+      Alcotest.(check int) "version" task.Task.version unchanged.Task.version;
+      match events_for task.Task.ref_ with
+      | event :: _ ->
+          Alcotest.(check string) "action" "created"
+            (Activity.action_to_string event.Activity.action)
+      | [] -> Alcotest.fail "создание не оставило следа в журнале"
+
+(** Upsert без ключа источника — плохой запрос: обновлять не по чему. *)
+let test_upsert_requires_source_pair () =
+  let bad = { (input ()) with source = None; source_ref = None } in
+  let failure =
+    expect_failure "upsert без ключа источника"
+      (Service.Task.upsert conn ~actor:human ~interface_:Interface.Api bad)
+  in
+  match failure with
+  | Service.Failure.Bad_request { message = _ } -> ()
+  | other ->
+      Alcotest.fail ("не тот отказ: " ^ Service.Failure.to_string other)
+
 (* ------------------------------------------------------------------ правила --- *)
 
 (** Агент не может назначить задачу другому: отказ приходит как запрет
@@ -623,6 +723,15 @@ let () =
             test_transition_records_interface;
           Alcotest.test_case "правка пишет updated" `Quick
             test_patch_journal_is_updated;
+        ] );
+      ( "импорт",
+        [
+          Alcotest.test_case "повтор обновляет задачу" `Quick
+            test_upsert_updates_existing_task;
+          Alcotest.test_case "без изменений версия не растёт" `Quick
+            test_upsert_unchanged_data_keeps_version;
+          Alcotest.test_case "без ключа источника — плохой запрос" `Quick
+            test_upsert_requires_source_pair;
         ] );
       ( "правила",
         [
