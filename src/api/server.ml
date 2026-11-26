@@ -95,6 +95,9 @@ let api_routes =
 
 let routes =
   [
+    (* Вебхук Mattermost аутентифицируется собственным токеном MM, а не
+       заголовком актора, поэтому живёт вне [/api/v1]. *)
+    Dream.post "/hooks/mattermost" Webhooks_mattermost.handle;
     Dream.get "/" version;
     Dream.get "/version" version;
     Dream.get "/healthz" healthz;

@@ -11,6 +11,7 @@
   import_actors
   failure
   credential
+  notify
   task
   overview)
  (libraries

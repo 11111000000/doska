@@ -164,3 +164,99 @@ let list_users ~base_url ~token : (user list, string) result Lwt.t =
       | json -> Lwt_result.lift (parse_users json)
       | exception Yojson.Json_error e ->
           Lwt_result.lift (Error ("ответ Mattermost не разобран: " ^ e)))
+
+(** POST с JSON-телом: тот же curl, тот же секрет в stdin-конфиге. Тело —
+    не секрет, поэтому уходит аргументом. *)
+let run_post ~url ~token ~body : (string, string) result =
+  let in_r, in_w = Unix.pipe () in
+  let out_r, out_w = Unix.pipe () in
+  let err_r, err_w = Unix.pipe () in
+  List.iter Unix.set_close_on_exec [ in_w; out_r; err_r ];
+  let argv =
+    [|
+      "curl";
+      "--silent";
+      "--show-error";
+      "--fail-with-body";
+      "--max-time";
+      "30";
+      "--config";
+      "-";
+      "--request";
+      "POST";
+      "--header";
+      "Content-Type: application/json";
+      "--data";
+      body;
+      "--url";
+      url;
+    |]
+  in
+  let env =
+    [|
+      "PATH="
+      ^ (match Sys.getenv_opt "PATH" with Some path -> path | None -> "/usr/bin:/bin");
+    |]
+  in
+  let pid = Unix.create_process_env "curl" argv env in_r out_w err_w in
+  Unix.close in_r;
+  Unix.close out_w;
+  Unix.close err_r;
+  (try
+     let config = Bytes.of_string (config_of token) in
+     let length = Bytes.length config in
+     let written = ref 0 in
+     while !written < length do
+       let n = Unix.write in_w config !written (length - !written) in
+       written := !written + n
+     done
+   with Unix.Unix_error _ -> ());
+  Unix.close in_w;
+  let response = read_all out_r in
+  let errors = read_all err_r in
+  let status = snd (Unix.waitpid [] pid) in
+  Unix.close out_r;
+  Unix.close err_r;
+  match status with
+  | Unix.WEXITED 0 -> Ok response
+  | Unix.WEXITED code ->
+      Error
+        (Printf.sprintf "curl завершился с кодом %d: %s" code (String.trim errors))
+  | Unix.WSIGNALED signal -> Error (Printf.sprintf "curl убит сигналом %d" signal)
+  | Unix.WSTOPPED signal -> Error (Printf.sprintf "curl остановлен сигналом %d" signal)
+
+let base_url_of = function
+  | "" -> "http://127.0.0.1:8065"
+  | base -> String.trim base
+
+(** Личный канал бота и пользователя: MM отдаёт его GET-ом, канал создаётся
+    неявно при первом чтении. *)
+let direct_channel ~base_url ~token ~me_id ~user_id : (string, string) result Lwt.t =
+  let base = base_url_of base_url in
+  let url = Printf.sprintf "%s/api/v4/channels/direct/%s/%s" base me_id user_id in
+  match run ~url ~token with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok body -> (
+      match Yojson.Safe.from_string body with
+      | json -> Lwt_result.lift (Ok (Db.Row.string_ json "id" ~default:""))
+      | exception Yojson.Json_error e ->
+          Lwt_result.lift (Error ("ответ Mattermost не разобран: " ^ e)))
+
+(** Отправить пользователю личное сообщение от имени бота. *)
+let send_dm ~base_url ~token ~me_id ~user_id ~text : (unit, string) result Lwt.t =
+  let* outcome = direct_channel ~base_url ~token ~me_id ~user_id in
+  match outcome with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok channel_id ->
+      if channel_id = "" then Lwt_result.lift (Error "MM не вернул канал")
+      else
+        let base = base_url_of base_url in
+        let url = Printf.sprintf "%s/api/v4/posts" base in
+        let body =
+          Yojson.Safe.to_string
+            (`Assoc
+              [ ("channel_id", `String channel_id); ("message", `String text) ])
+        in
+        match run_post ~url ~token ~body with
+        | Ok _ -> Lwt_result.lift (Ok ())
+        | Error e -> Lwt_result.lift (Error e)
