@@ -1,0 +1,5 @@
+{
+  "name": "doska-frontend",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*", "plugins/*"]
+}

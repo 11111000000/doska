@@ -20,6 +20,9 @@
   api_test
   service_task_test
   service_overview_test
+  service_credential_test
+  webhooks_test
+  mcp_test
   task_question_test)
  (modules
   domain_test
@@ -30,6 +33,9 @@
   api_test
   service_task_test
   service_overview_test
+  service_credential_test
+  webhooks_test
+  mcp_test
   task_question_test)
  (libraries
   support

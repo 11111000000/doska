@@ -22,7 +22,7 @@ import tempfile
 
 root = pathlib.Path.cwd()
 break_dir = root / "test" / "break"
-trees = ("src", "test", "migrations")
+trees = ("src", "test", "migrations", "frontend")
 
 spec = json.loads((root / "spec.json").read_text(encoding="utf-8"))
 declared = {}

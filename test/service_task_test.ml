@@ -501,6 +501,7 @@ let failure_class (failure : Service.Failure.t) =
   | Service.Failure.Forbidden _ -> "forbidden"
   | Service.Failure.Not_found _ -> "not_found"
   | Service.Failure.Conflict _ -> "conflict"
+  | Service.Failure.Unauthorized _ -> "unauthorized"
   | Service.Failure.Storage _ -> "storage"
 
 (** Связь между задачами — отдельная сущность: у неё свой идентификатор,

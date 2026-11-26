@@ -6,6 +6,8 @@
   errors
   params
   auth
+  credentials
+  webhooks_mattermost
   view
   context
   tasks
@@ -17,6 +19,7 @@
   domain
   identity
   service
+  mcp
   lwt
   version
   dream

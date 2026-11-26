@@ -63,7 +63,14 @@
           default = pkgs.mkShell {
             name = "doska-dev";
             # curl — HTTP-клиент импорта Mattermost (см. src/service/mattermost.ml).
-            packages = [ o.ocaml o.dune_3 o.findlib pkgs.curl ] ++ direct;
+            # nodejs — TypeScript-ядро фронтенда: tsc и node --test (D4-R).
+            packages = [
+              o.ocaml
+              o.dune_3
+              o.findlib
+              pkgs.curl
+              pkgs.nodejs_22
+            ] ++ direct;
             shellHook = ''
               export OCAMLPATH="${ocamlPath}"
               export PATH="${o.ocaml}/bin:${o.dune_3}/bin:$PATH"

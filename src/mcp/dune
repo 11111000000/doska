@@ -1,0 +1,13 @@
+(library
+ (name mcp)
+ (package doska)
+ (modules rpc tools server)
+ (libraries
+  domain
+  identity
+  db
+  service
+  version
+  lwt
+  yojson
+  dream))

@@ -43,15 +43,24 @@ let version _req =
 
     Идентификация этапа 1 — заголовок [X-Doska-Actor] (см. [Auth]); это не
     аутентификация, её заменит этап 2. *)
+(* Дешёвая проверка перед обработчиком: запрос к [/api/v1] обязан предъявить
+   опознавательный заголовок, иначе правила приёмки не к кому привязать.
+
+   Подлинность токена и права проверяет обработчик ([Auth.actor_of]) — так
+   дешёвая проверка не подменяет настоящую. Основной путь —
+   [Authorization: Bearer], запасной — [X-Doska-Actor] до конца перехода
+   (см. [Auth]). *)
 let require_actor (handler : Dream.handler) : Dream.handler =
  fun req ->
-  match Dream.headers req Auth.header with
-  | [] ->
-      Errors.respond
-        (Errors.make Errors.Unauthorized
-           "не указан актор: пришлите заголовок X-Doska-Actor (временный механизм \
-            до этапа 2 — bearer-токены)")
-  | _handle :: _ -> handler req
+  match Dream.headers req Auth.authorization_header with
+  | _token :: _ -> handler req
+  | [] -> (
+      match Dream.headers req Auth.legacy_header with
+      | [] ->
+          Errors.respond
+            (Errors.make Errors.Unauthorized
+               "нет токена: пришлите Authorization: Bearer dsk_… (или X-Doska-Actor до конца перехода)")
+      | _handle :: _ -> handler req)
 
 let api_routes =
   [
@@ -79,10 +88,28 @@ let api_routes =
     Dream.get "/activity" Tasks.activity;
     Dream.get "/actors" Tasks.actors;
     Dream.post "/actors/resolve" Actors.resolve;
+    Dream.get "/credentials" Credentials.list;
+    Dream.post "/credentials" Credentials.issue;
+    Dream.delete "/credentials/:id" Credentials.revoke;
   ]
 
+(** Веб-интерфейс раздаётся статикой из каталога сборки приложения
+    (D4-R: нативные ES-модули без сборщика). Переменной нет — веба нет,
+    REST продолжает работать. *)
+let static_routes =
+  match Sys.getenv_opt "DOSKA_STATIC_DIR" with
+  | Some dir when dir <> "" ->
+      [ Dream.get "/app/**" (Dream.static dir) ]
+  | _ -> []
+
 let routes =
-  [
+  static_routes
+  @ [
+    (* Вебхук Mattermost аутентифицируется собственным токеном MM, а не
+       заголовком актора, поэтому живёт вне [/api/v1]. MCP — bearer-токен
+       агента внутри обработчика, тоже вне [/api/v1]. *)
+    Dream.post "/hooks/mattermost" Webhooks_mattermost.handle;
+    Dream.post "/mcp" Mcp.Server.handler;
     Dream.get "/" version;
     Dream.get "/version" version;
     Dream.get "/healthz" healthz;

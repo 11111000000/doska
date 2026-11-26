@@ -284,3 +284,20 @@ let upsert_from_source conn ~source ~source_ref ~kind ~handle ~display_name ?ema
                   | Ok None ->
                       Lwt_result.lift
                         (Error "актор усыновлён источником, но не найден")))))
+
+(** Идентификатор актора в конкретном внешнем источнике — по нему строится
+    адрес доставки (личный канал Mattermost). [None] — актор из другого
+    источника или вовсе без идентификатора. *)
+let source_ref conn id ~source : (string option, string) result Lwt.t =
+  match Conn.uuid_literal id with
+  | None -> Lwt_result.lift (Ok None)
+  | Some literal ->
+      Conn.query_json_rows conn
+        (Printf.sprintf
+           "SELECT row_to_json(x)::text FROM (SELECT source_ref FROM actor \
+            WHERE id = %s AND source = %s) x"
+           literal
+           (Conn.quote source))
+      |> Lwt_result.map (function
+          | [] -> None
+          | json :: _ -> Row.opt_string json "source_ref")
