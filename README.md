@@ -34,7 +34,7 @@
 | Проверка | Результат |
 |---|---|
 | `dune build --root .` | без ошибок (любое включённое предупреждение — ошибка) |
-| `dune runtest --root .` | 175 тестов OK — домен 26, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 25, сводка 10, вопрос при `needs_input` 15, API 58 (живая БД) |
+| `dune runtest --root .` | 178 тестов OK — домен 26, идентичность 9, типы домена 9, репозитории 13, идентичность на базе 10, сервисный слой 28, сводка 10, вопрос при `needs_input` 15, API 58 (живая БД) |
 | `nix build .#doska` | успешно; checkPhase гоняет тесты без БД (в песочнице nix PostgreSQL нет) |
 | `doska migrate` | применены `001_init.sql` … `006_task_question.sql`; повторный запуск — «нечего применять» |
 | `doska health` | `ok` |
@@ -127,7 +127,7 @@ v5: он не заменяет тесты и CI, а строит поверх н
 nix develop -c bash -c 'mathc --root . run'
 ```
 
-Объявлено 79 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
+Объявлено 80 claim'ов, у каждого — свой verifier, falsifier и **отрицательный
 control**: control меняет предмет так, что verifier обязан упасть. Если
 verifier падает и без control'а, он не проверяет ничего — метод это
 показывает.
@@ -213,8 +213,9 @@ verifier падает и без control'а, он не проверяет нич�
 | `needs-input-notification` | Постановка вопроса кладёт в outbox уведомление адресату: канал `mattermost_dm`, вид `needs_input`, состояние `pending` (§3.8) | `dune exec --root . test/task_question_test.exe` | `q_notification_enqueued.sh` |
 | `api-ask-answer-contract` | REST-контракт перехода с вопросом: `reason` — текст `question`, `answer` обязателен на выходе, карточка отдаёт `question`, `asked_to_id`, `asked_to`, `answer`, `answered_at` (§6.1) | `dune exec --root . test/task_question_test.exe` | `q_api_asked_to.sh` |
 | `needs-input-migration` | Миграция вопроса (006) идемпотентна: пять колонок добавляются через `IF NOT EXISTS`, значения журнала `questioned` и `answered` — тоже, поэтому повторное развёртывание не падает (§9.2, §4.2) | `sh test/check_task_question_migration.sh` | `q_migration_not_idempotent.sh` |
+| `task-upsert-from-source` | Повторный импорт с той же парой (source, source_ref) обновляет контентные поля версионированной правкой с журналом и не плодит дубль; статус и исполнитель — только машиной переходов (§10.2) | `dune exec --root . test/service_task_test.exe` | `upsert_skips_update.sh` |
 
-Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 79 claim'ов выведены из
+Покрытие области цели закрыто: `uncovered: 0 file(s)`. Все 80 claim'ов выведены из
 `docs/design/doska-architecture-2026-11-16.md` как источника: правка
 архитектуры помечает их как `outdated` и требует пересмотра человеком.
 
