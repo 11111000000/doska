@@ -524,7 +524,7 @@ resolve(principal, raw) -> actor:
 | Источник | Что берём | Как |
 |---|---|---|
 | Mattermost API | 23 активных пользователя | `position != ''` **или** почта в домене `@localhost` ⇒ `kind='agent'`, иначе `kind='human'`; `handle` = username; `display_name` = first+last |
-| Teamboard `registry.json` | 54 проекта | `project.key` = id, `repo_path`, `asset_class` |
+| Teamboard `registry.json` | 58 проектов (на 25.11.2026) | `project.key` = id, `repo_path`, `asset_class` |
 | Teamboard `annotations.json` | 97 суждений | → задачи (см. §7) |
 | Git-конфиги | email → handle | alias namespace `git` |
 
@@ -1261,18 +1261,56 @@ src/
 
 | Источник | Объём | Куда |
 |---|---|---|
-| `Teamboard/data/board/registry.json` | 54 проекта | `project` |
-| `Teamboard/data/board/annotations.json` | 97 суждений | `task` (kind по `kind`, `assignee` ← канонизированный `owner`, `description` ← `why`, evidence ← `evidence`) |
-| `Teamboard/data/board/epics.json` | 20 инициатив, 75 критериев | `task(kind='decision')` + `task_link` |
+| `Teamboard/data/board/registry.json` | 58 проектов (на 25.11.2026) | `project` |
+| `Teamboard/data/board/annotations.json` | 97 суждений (на 24.11.2026) | `task` (`assignee` ← канонизированный `owner`, `description` ← `why`, `evidence` ← `evidence`, `status` ← `column` по таблице ниже) |
+| `Teamboard/data/board/epics.json` | 20 инициатив, 75 критериев | `task(kind='decision')` + `task_link`; статус инициативы — по таблице ниже |
 | `pm-global` планы | ~5 пунктов × 3 раза в день | `task` (idempotent по `source_ref`) |
 | Mattermost | 22 пользователя | `actor` + `actor_alias` |
 | `board.json` (192 карточки) | — | **не переносим**: это измерение git, не обязательства. Только ссылки на совпавшие задачи |
+
+Числа в таблице — факт на дату чтения файла, а не контракт: estate
+перегенерируется (`registry.json` вырос с 54 до 58 проектов уже после
+проектирования, `annotations.json` обновлён 24.11.2026). Импорт объёмы не
+зашивает: он читает файл, и сколько в нём строк, столько и переносит.
+Готовность этапа измеряется идемпотентностью, а не совпадением с константой.
+
+Поля `kind` в `annotations.json` нет — во всех строках оно пусто, — поэтому
+kind задачи при импорте всегда `task`. Статус приходит из `column`:
+
+| `column` Teamboard | статус doska | почему |
+|---|---|---|
+| `shipped` | `done` | слито и отгружено |
+| `review` | `in_review` | на ревью |
+| `wip` | `in_progress` | работа идёт |
+| `blocked` | `blocked` | явно ждёт разблокировки |
+| `planned` | `todo` | решено, но не начато |
+| `unverified` | `todo` | требует проверки человеком |
+| `stale` | `todo` | затухла — возвращается в очередь разбора |
+| пусто | `backlog` | суждения о статусе нет |
+
+Статус инициативы из `epics.json`:
+
+| статус эпика | статус doska |
+|---|---|
+| `planned` | `todo` |
+| `active` | `in_progress` |
+| `blocked` | `blocked` |
+| `done` | `done` |
+| `dropped` | `cancelled` |
 
 ### 10.2. Идемпотентность
 
 Каждый импорт имеет `source` + `source_ref` (уникальный ключ источника). Повторный
 запуск обновляет, а не дублирует. Импорт запускается как `doska import
 --source teamboard` и может выполняться сколько угодно раз.
+
+Граница обновления: контентные поля (заголовок, описание, приоритет, срок,
+метки) импорт обновляет версионированной правкой с записью в журнал.
+Смену статуса и исполнителя импорт напрямую не пишет: они идут через машину
+переходов и правила R1–R3, иначе импорт станет обходом правил. Поэтому
+`Repo_task.create` остаётся идемпотентным созданием (повтор — та же задача,
+это контракт REST), а обновление при повторном импорте живёт отдельным
+путём — `Service.Task.upsert`.
 
 ### 10.3. Канонизация владельцев
 
@@ -1922,7 +1960,7 @@ notification.kind  -- 'needs_input': уведомление адресату, д
 | Актив | Путь | Вердикт |
 |---|---|---|
 | Принцип двух слоёв | `Teamboard/AGENTS.md:16-107` | **Берём** — основа разграничения |
-| Реестр проектов | `Teamboard/data/board/registry.json` (54) | **Берём** — источник `project` |
+| Реестр проектов | `Teamboard/data/board/registry.json` (58, на 25.11.2026) | **Берём** — источник `project` |
 | Суждения по карточкам | `Teamboard/data/board/annotations.json` (97) | **Берём** — источник `task` |
 | Инициативы | `Teamboard/data/board/epics.json` (20/75) | **Берём** — в `decision` + связи |
 | Мост stdio→HTTP для MCP | `agent-kanban/src/agent_kanban/mcp_stdio_bridge.py` | **Берём идею, код переписываем на OCaml** — редкая удачная находка (пересылка stdin/stdout без своего протокола) |
