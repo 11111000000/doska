@@ -53,11 +53,14 @@ let resolvable =
 
 let client = Dream.test Api.Server.handler
 
-let call ?(method_ = `GET) ?(actor = None) ?(body = "") target =
+let call ?(method_ = `GET) ?(actor = None) ?(bearer = None) ?(body = "") target =
   let headers =
-    match actor with
-    | None -> []
-    | Some handle -> [ ("x-doska-actor", handle) ]
+    (match bearer with
+    | Some token -> [ ("authorization", "Bearer " ^ token) ]
+    | None -> [])
+    @ (match actor with
+      | None -> []
+      | Some handle -> [ ("x-doska-actor", handle) ])
   in
   let response = client (Dream.request ~method_ ~target ~headers body) in
   let status = Dream.status_to_int (Dream.status response) in
@@ -1070,6 +1073,108 @@ let test_overview_shows_actor_load () =
       Alcotest.(check bool) "есть открытые задачи" true
         (int_field "open_tasks" w >= 1)
 
+(* ---------------------------------------------------------------- токены --- *)
+
+(* Выпуск учётки на уровне сервиса: для HTTP-тестов нужен живой токен,
+   а сам выпуск и его свойства проверяет Service.Credential отдельно. *)
+let issue_token_for actor_id title =
+  match
+    Support.run
+      (Service.Credential.issue conn ~actor_id ~title ~created_by_id:actor_id ())
+  with
+  | Ok (cred, token) -> (cred, token)
+  | Error failure ->
+      failwith ("токен не выдан: " ^ Service.Failure.to_string failure)
+
+(* Ссылки задач из тела списка: для приоритета bearer над заголовком. *)
+let items_refs text =
+  match field "items" (json text) with
+  | Some (`List items) ->
+      List.filter_map
+        (fun item ->
+          match field "ref" item with
+          | Some (`String ref_) -> Some ref_
+          | _ -> None)
+        items
+  | _ -> []
+
+let test_bearer_authenticates () =
+  let _, token = issue_token_for agent.Actor.id "ключ для списка" in
+  let code, _ = call ~bearer:(Some token) "/api/v1/tasks" in
+  Alcotest.(check int) "запрос с bearer — 200" 200 code
+
+let test_credentials_routes () =
+  let _, token = issue_token_for agent.Actor.id "ключ учёток" in
+  let code, text =
+    call ~method_:`POST ~bearer:(Some token)
+      ~body:(Yojson.Safe.to_string (`Assoc [ ("title", `String "ключ из HTTP") ]))
+      "/api/v1/credentials"
+  in
+  Alcotest.(check int) "выпуск по маршруту — 201" 201 code;
+  Alcotest.(check bool) "токен приходит только в ответе выпуска" true
+    (match field "token" (json text) with
+    | Some (`String t) -> String.starts_with ~prefix:"dsk_" t
+    | _ -> false);
+  let code, text = call ~bearer:(Some token) "/api/v1/credentials" in
+  Alcotest.(check int) "список учёток — 200" 200 code;
+  (match json text with
+  | `List items ->
+      Alcotest.(check bool) "обе учётки актора в списке" true
+        (List.length items >= 2);
+      Alcotest.(check bool) "в списке нет открытых токенов" true
+        (List.for_all
+           (fun item -> field "token" item = None)
+           items)
+  | _ -> Alcotest.fail "список учёток — не массив")
+
+let test_revoked_bearer_is_unauthorized () =
+  let cred, token = issue_token_for agent.Actor.id "ключ на отзыв" in
+  let code, _ = call ~bearer:(Some token) "/api/v1/tasks" in
+  Alcotest.(check int) "живой токен — 200" 200 code;
+  (match
+     Support.run
+       (Service.Credential.revoke conn ~id:cred.id ~by_actor_id:agent.Actor.id
+          ~admin:false)
+   with
+  | Ok () -> ()
+  | Error failure -> Alcotest.fail ("отзыв не прошёл: " ^ Service.Failure.to_string failure));
+  let code, _ = call ~bearer:(Some token) "/api/v1/tasks" in
+  Alcotest.(check int) "отозванный токен — 401" 401 code
+
+let test_forged_bearer_is_unauthorized () =
+  let code, _ = call ~bearer:(Some ("dsk_" ^ String.make 64 'a')) "/api/v1/tasks" in
+  Alcotest.(check int) "выдуманный токен — 401" 401 code
+
+let test_bearer_wins_over_legacy_header () =
+  (* Оба заголовка сразу: bearer агента и запасной заголовок Петра.
+     «Мои» обязаны показать задачи агента — иначе запасной путь
+     подменял бы личность при живом токене. *)
+  let _, agent_token = issue_token_for agent.Actor.id "ключ приоритета" in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:
+        (create_body ~assignee:"api-legist" ~source_ref:"bearer-agent" ())
+      "/api/v1/tasks"
+  in
+  Alcotest.(check int) "задача агенту создана" 201 code;
+  let agent_ref = task_ref (json text) in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(create_body ~assignee:"api-petr" ~source_ref:"bearer-petr" ())
+      "/api/v1/tasks"
+  in
+  Alcotest.(check int) "задача Петру создана" 201 code;
+  let petr_ref = task_ref (json text) in
+  let code, text =
+    call ~bearer:(Some agent_token) ~actor:(Some "api-petr") "/api/v1/tasks/mine"
+  in
+  Alcotest.(check int) "«мои» с bearer — 200" 200 code;
+  let refs = items_refs text in
+  Alcotest.(check bool) "видна задача агента" true
+    (List.mem agent_ref refs);
+  Alcotest.(check bool) "задача Петра не подменяет личность" true
+    (not (List.mem petr_ref refs))
+
 (* --------------------------------------------------------------------- run --- *)
 
 let () =
@@ -1117,6 +1222,19 @@ let () =
             test_create_is_idempotent;
           Alcotest.test_case "карточка содержит комментарии и доказательства" `Quick
             test_task_card_has_comments_and_evidence;
+        ] );
+      ( "токены",
+        [
+          Alcotest.test_case "bearer опознаёт актора" `Quick
+            test_bearer_authenticates;
+          Alcotest.test_case "маршруты учёток работают" `Quick
+            test_credentials_routes;
+          Alcotest.test_case "отзыв гасит доступ" `Quick
+            test_revoked_bearer_is_unauthorized;
+          Alcotest.test_case "выдуманный токен — 401" `Quick
+            test_forged_bearer_is_unauthorized;
+          Alcotest.test_case "bearer важнее запасного заголовка" `Quick
+            test_bearer_wins_over_legacy_header;
         ] );
       ( "назначение",
         [

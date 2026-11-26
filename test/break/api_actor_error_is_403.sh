@@ -1,7 +1,7 @@
 #!/bin/sh
 # Отрицательный контроль для claim'а api-actor-required.
 #
-# Что ломает: обязательность актора. Правка переводит «нужна аутентификация»
+# Что ломает: обязательность аутентификации. Правка переводит «нет токена»
 # (401) в «правило запрещает» (403), поэтому клиент не может отличить
 # «я не представился» от «мне запретили» — а это разные ситуации.
 #
@@ -10,9 +10,9 @@ set -eu
 
 file=src/api/server.ml
 before='(Errors.make Errors.Unauthorized
-           "не указан актор:'
+               "нет токена: пришлите Authorization: Bearer'
 after='(Errors.make Errors.Forbidden
-           "не указан актор:'
+               "нет токена: пришлите Authorization: Bearer'
 
 python3 - "$file" "$before" "$after" <<'PY'
 import pathlib, sys

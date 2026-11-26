@@ -2523,6 +2523,111 @@
       "register": "fact",
       "control": "sh test/break/upsert_skips_update.sh",
       "waiver": null
+    },
+    {
+      "id": "credential-issue-roundtrip",
+      "text": "Выпущенный токен признаётся проверкой: в учётке хранится SHA-256 предъявленного токена, открытый текст возвращается только при выпуске (ADR §8)",
+      "scope": [
+        "src/service/credential.ml", "test/service_credential_test.ml",
+        "test/break/credential_issue_stores_wrong_hash.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+        "review": null
+      },
+      "owner": "Peter",
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_credential_test.exe"
+        }
+      ],
+      "falsifier": "выданный токен не опознаётся: в учётку записан хэш другого значения",
+      "register": "fact",
+      "control": "sh test/break/credential_issue_stores_wrong_hash.sh",
+      "waiver": null
+    },
+    {
+      "id": "credential-revoke-gates-access",
+      "text": "Отзыв учётки немедленно гасит её токен: проверка не проходит для отозванной учётки (ADR §8)",
+      "scope": [
+        "src/service/credential.ml", "src/db/repo_credential.ml",
+        "test/service_credential_test.ml",
+        "test/break/credential_verify_ignores_revocation.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+        "review": null
+      },
+      "owner": "Peter",
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_credential_test.exe"
+        }
+      ],
+      "falsifier": "отозванный токен продолжает проходить проверку",
+      "register": "fact",
+      "control": "sh test/break/credential_verify_ignores_revocation.sh",
+      "waiver": null
+    },
+    {
+      "id": "credential-foreign-revoke-needs-admin",
+      "text": "Чужую учётку отзывает только администратор; владелец отзывает свою (ADR §8)",
+      "scope": [
+        "src/service/credential.ml", "test/service_credential_test.ml",
+        "test/break/credential_foreign_revoke_without_admin.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+        "review": null
+      },
+      "owner": "Peter",
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/service_credential_test.exe"
+        }
+      ],
+      "falsifier": "чужая учётка отзывается без прав администратора",
+      "register": "fact",
+      "control": "sh test/break/credential_foreign_revoke_without_admin.sh",
+      "waiver": null
+    },
+    {
+      "id": "api-bearer-auth",
+      "text": "Bearer-токен проходит REST-путь: резолвится в актора с приоритетом над запасным заголовком, отозванный и подделанный дают 401, маршруты учёток работают (ADR §8)",
+      "scope": [
+        "src/api/auth.ml", "src/api/credentials.ml", "src/api/server.ml",
+        "test/api_test.ml", "test/break/api_bearer_ignored_by_server.sh"
+      ],
+      "source": {
+        "kind": "madr",
+        "path": "docs/design/doska-architecture-2026-11-16.md",
+        "section": null,
+        "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+        "review": null
+      },
+      "owner": "Peter",
+      "requirements": [
+        {
+          "kind": "verifier",
+          "spec": "dune exec --root . test/api_test.exe"
+        }
+      ],
+      "falsifier": "bearer не опознаётся сервером или теряет приоритет над запасным заголовком",
+      "register": "fact",
+      "control": "sh test/break/api_bearer_ignored_by_server.sh",
+      "waiver": null
     }
   ],
   "environment": "nix develop -c"

@@ -18,10 +18,10 @@
   repo_notification
   repo_overview)
  (libraries
- lwt
- yojson
- domain
- identity
- caqti
+  lwt
+  yojson
+  domain
+  identity
+  caqti
   caqti-lwt.unix
   caqti-driver-postgresql))
