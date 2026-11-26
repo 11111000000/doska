@@ -13,6 +13,7 @@ type t =
   | Forbidden of { message : string; details : (string * string) list }
   | Not_found of { message : string }
   | Conflict of { message : string }
+  | Unauthorized of { message : string }
   | Storage of { message : string }
 
 (** Класс отказа одной строкой: в логе и в тесте важно различать «правило
@@ -23,4 +24,5 @@ let to_string (failure : t) : string =
   | Forbidden { message; _ } -> "forbidden: " ^ message
   | Not_found { message } -> "not_found: " ^ message
   | Conflict { message } -> "conflict: " ^ message
+  | Unauthorized { message } -> "unauthorized: " ^ message
   | Storage { message } -> "storage: " ^ message

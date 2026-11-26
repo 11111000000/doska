@@ -47,6 +47,7 @@ let of_failure (failure : Service.Failure.t) : t =
         ~details:(List.map (fun (key, value) -> (key, `String value)) details)
   | Service.Failure.Not_found { message } -> make Not_found message
   | Service.Failure.Conflict { message } -> make Conflict message
+  | Service.Failure.Unauthorized { message } -> make Unauthorized message
   | Service.Failure.Storage { message } -> make Internal message
 
 let to_json (e : t) : Yojson.Safe.t =

@@ -6,6 +6,7 @@
   errors
   params
   auth
+  credentials
   view
   context
   tasks

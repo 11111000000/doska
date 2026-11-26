@@ -9,6 +9,7 @@
   row
   repo_actor
   repo_actor_alias
+  repo_credential
   repo_project
   repo_task
   repo_link
@@ -17,10 +18,10 @@
   repo_notification
   repo_overview)
  (libraries
-  lwt
-  yojson
-  domain
-  identity
-  caqti
+ lwt
+ yojson
+ domain
+ identity
+ caqti
   caqti-lwt.unix
   caqti-driver-postgresql))
