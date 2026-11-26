@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>doska — трекер обязательств для людей и агентов</title>
+<meta name="description" content="doska отвечает на один вопрос: кто кому что должен, в каком проекте, к какому сроку, в каком состоянии — и даёт людям и агентам один и тот же ответ.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='5' fill='%23a8541a'/%3E%3Crect x='5' y='6' width='14' height='4' rx='1.4' fill='%23fffdf6'/%3E%3Crect x='5' y='13' width='9' height='4' rx='1.4' fill='%23fffdf6' opacity='.7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="5" fill="#a8541a"/><rect x="5" y="6" width="14" height="4" rx="1.4" fill="#fffdf6"/><rect x="5" y="13" width="9" height="4" rx="1.4" fill="#fffdf6" opacity=".7"/></svg>
+      doska
+    </a>
+    <nav>
+      <a href="index.html" class="active">Главная</a>
+      <a href="philosophy.html">Философия</a>
+      <a href="architecture.html">Архитектура</a>
+      <a href="status.html">Состояние</a>
+      <a class="gh" href="https://github.com/11111000000/doska">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">трекер обязательств</p>
+      <h1>Кто кому что должен — <em>один ответ</em> для людей и агентов.</h1>
+      <p class="lede">doska отвечает на один вопрос: <b>кто кому что должен</b>, в каком проекте,
+      к какому сроку, в каком состоянии — и даёт всем сторонам один и тот же ответ.
+      Написан на OCaml, состояние — в PostgreSQL, для агентов — MCP и bearer-токены,
+      для людей — чат, веб и CLI.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="philosophy.html">Зачем он такой</a>
+        <a class="btn btn-ghost" href="architecture.html">Как устроен</a>
+        <a class="btn btn-ghost" href="https://github.com/11111000000/doska">Исходники</a>
+      </div>
+    </div>
+
+    <aside class="mock-wrap">
+      <div class="mock">
+        <div class="mock-top">
+          <span class="ref">DSK-42</span>
+          <span class="pill pill-review">in_review</span>
+        </div>
+        <div class="mock-title">Выпустить релиз Paseo-плагина</div>
+        <div class="mock-row">
+          <span class="k">заявитель</span> <b>@peter</b>
+          <span class="k">исполнитель</span> <b>@legist</b>
+          <span class="agent-tag">агент · подотчётен @peter</span>
+        </div>
+        <div class="mock-ev">
+          <span class="k">evidence</span>
+          <span class="chip">ветка feat/wave3</span>
+          <span class="chip">PR #12</span>
+          <span class="chip">b53220b</span>
+        </div>
+        <div class="mock-note">Агент дошёл до <code>in_review</code> и просит приёмки.
+        Закрыть задачу может только человек — правило R1.</div>
+      </div>
+      <p class="mock-cap">Иллюстративный пример карточки, а не живая задача трекера.</p>
+    </aside>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">правило, из которого выведено всё</p>
+    <div class="callout">
+      Факт пересчитывается владельцем факта. Суждение живёт в трекере.
+      Наблюдение — ссылка, а не копия.
+      <span class="who">Ветка, PR и коммит — это evidence внутри задачи. Задача — обязательство.</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">границы</p>
+    <h2>Жёсткие границы: doska не дублирует чужую работу</h2>
+    <p class="lede">git считает факты, Teamboard измеряет, Mattermost разговаривает.
+    doska — только обязательства. Наблюдение о внешнем мире — ссылка (evidence), а не копия.</p>
+
+    <figure>
+    <svg viewBox="0 0 900 330" role="img" aria-label="Границы систем: git, Teamboard и Mattermost — владельцы фактов; doska — владелец суждений; doska ссылается на них, не дублируя">
+      <defs>
+        <marker id="arr-b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#7e3d0e"/>
+        </marker>
+      </defs>
+
+      <text x="125" y="42" text-anchor="middle" class="t3">владелец факта</text>
+      <text x="350" y="42" text-anchor="middle" class="t3">владелец факта</text>
+      <text x="575" y="42" text-anchor="middle" class="t3">владелец факта</text>
+      <text x="790" y="42" text-anchor="middle" class="tl-acc">владелец суждений</text>
+
+      <rect x="15" y="58" width="200" height="160" rx="13" class="bx"/>
+      <text x="115" y="90" text-anchor="middle" class="t1">git</text>
+      <text x="115" y="118" text-anchor="middle" class="t2">ветки · коммиты · merge</text>
+      <text x="115" y="138" text-anchor="middle" class="t2">diff · автор</text>
+      <text x="115" y="164" text-anchor="middle" class="t3">пересчитывается git’ом</text>
+
+      <rect x="240" y="58" width="200" height="160" rx="13" class="bx"/>
+      <text x="350" y="90" text-anchor="middle" class="t1">Teamboard</text>
+      <text x="350" y="118" text-anchor="middle" class="t2">измерение по репозиториям</text>
+      <text x="350" y="138" text-anchor="middle" class="t2">отчёт инвестору</text>
+      <text x="350" y="164" text-anchor="middle" class="t3">доска, а не трекер</text>
+
+      <rect x="465" y="58" width="200" height="160" rx="13" class="bx"/>
+      <text x="575" y="90" text-anchor="middle" class="t1">Mattermost</text>
+      <text x="575" y="118" text-anchor="middle" class="t2">треды · реакции</text>
+      <text x="575" y="138" text-anchor="middle" class="t2">разговор команды</text>
+      <text x="575" y="164" text-anchor="middle" class="t3">переписка не хранится здесь</text>
+
+      <rect x="690" y="58" width="200" height="160" rx="13" class="bx bx-acc"/>
+      <text x="790" y="90" text-anchor="middle" class="t1">doska</text>
+      <text x="790" y="118" text-anchor="middle" class="t2">обязательства: кто · кому</text>
+      <text x="790" y="138" text-anchor="middle" class="t2">срок · статус</text>
+      <text x="790" y="164" text-anchor="middle" class="t3">доказательства — ссылки</text>
+
+      <path d="M 760 218 L 760 268 L 115 268 L 115 224" class="edge edge-dash" marker-end="url(#arr-b1)"/>
+      <path d="M 745 218 L 745 246 L 350 246 L 350 224" class="edge edge-dash" marker-end="url(#arr-b1)"/>
+      <path d="M 730 218 L 730 232 L 575 232 L 575 224" class="edge edge-dash" marker-end="url(#arr-b1)"/>
+      <text x="450" y="294" text-anchor="middle" class="tl-acc">ссылается · не дублирует · не пересчитывает</text>
+      <text x="450" y="318" text-anchor="middle" class="t3">копия факта протухает; пересчёт чужого факта — чужая работа</text>
+    </svg>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">решения владельца</p>
+    <h2>Три решения, на которых всё держится</h2>
+    <div class="grid g3">
+      <div class="card">
+        <span class="num">D1 · приёмка</span>
+        <h3>Агент не закрывает свою задачу сам</h3>
+        <p>Агент доходит до <b>in_review</b> и просит приёмки. Закрывает заявитель
+        или руководитель; для доверенных проектов — режим <b>autonomy='auto'</b>.
+        Правило R1 проверяется сервером, не честью.</p>
+      </div>
+      <div class="card">
+        <span class="num">D2 · единица работы</span>
+        <h3>Задача = обязательство</h3>
+        <p>Ветка, PR и коммит — <b>evidence</b> внутри задачи, а не отдельные единицы работы.
+        Если правка превращает ветку в «задачу» — это неверно по определению.</p>
+      </div>
+      <div class="card">
+        <span class="num">D3 · Mattermost</span>
+        <h3>Сначала бот-пут</h3>
+        <p>Собственный webhook <b>/hooks/mattermost</b>: команды в чате, карточки с кнопками,
+        личные сообщения из outbox. Go-плагин — поздняя волна, а не первый шаг.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">где проект сейчас</p>
+    <div class="metrics">
+      <div class="metric"><div class="v">199</div><div class="k">тестов — зелёные</div><div class="n">dune runtest</div></div>
+      <div class="metric"><div class="v">93</div><div class="k">claim’а под mathc</div><div class="n">каждый с verifier и control’ом</div></div>
+      <div class="metric"><div class="v">14</div><div class="k">переходов машины состояний</div><div class="n">правила R1–R3 в базе</div></div>
+      <div class="metric"><div class="v">0</div><div class="k">брокеров и Redis</div><div class="n">Postgres на том же инстансе</div></div>
+    </div>
+    <p style="margin-top:18px"><a class="btn btn-ghost" href="status.html">Подробнее о состоянии →</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">попробовать</p>
+    <h2>Поднять локально</h2>
+    <p class="lede">Нужен Nix с флэйками — остальное он принесёт сам: OCaml 5.3, dune, зависимости.</p>
+    <pre class="code"><span class="c"># сборка и тесты</span>
+nix develop
+dune build --root .
+dune runtest --root .
+
+<span class="c"># миграции и запуск</span>
+export DOSKA_DATABASE_URL="postgresql:///doska"
+doska migrate --migrations-dir migrations
+doska serve --port 8500
+
+<span class="c"># живой API</span>
+curl -s -H 'X-Doska-Actor: petr' http://[::1]:8500/api/v1/tasks</pre>
+    <p style="margin-top:16px">Как вести проект дальше — <a href="https://github.com/11111000000/doska/blob/main/docs/development-guide.md">development guide в репозитории ↗</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>doska — трекер обязательств · <a href="https://github.com/11111000000/doska/blob/main/LICENSE">MIT</a></span>
+    <span><a href="https://github.com/11111000000/doska/tree/main/docs">документация ↗</a> · <a href="https://github.com/11111000000/doska">исходники ↗</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

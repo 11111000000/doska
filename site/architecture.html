@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Архитектура — doska</title>
+<meta name="description" content="Как устроен doska: слои домен → сервис → интерфейсы, модель данных, машина состояний на 14 переходов с правилами R1–R3, интеграции и слой доказательств mathc.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='5' fill='%23a8541a'/%3E%3Crect x='5' y='6' width='14' height='4' rx='1.4' fill='%23fffdf6'/%3E%3Crect x='5' y='13' width='9' height='4' rx='1.4' fill='%23fffdf6' opacity='.7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="5" fill="#a8541a"/><rect x="5" y="6" width="14" height="4" rx="1.4" fill="#fffdf6"/><rect x="5" y="13" width="9" height="4" rx="1.4" fill="#fffdf6" opacity=".7"/></svg>
+      doska
+    </a>
+    <nav>
+      <a href="index.html">Главная</a>
+      <a href="philosophy.html">Философия</a>
+      <a href="architecture.html" class="active">Архитектура</a>
+      <a href="status.html">Состояние</a>
+      <a class="gh" href="https://github.com/11111000000/doska">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker">архитектура</p>
+    <h1>OCaml-сервер, PostgreSQL, границы держит компилятор</h1>
+    <p class="lede">Домен не знает про БД и HTTP — это обеспечено раздельными библиотеками dune,
+    а не соглашением. Предупреждения — ошибки. Ошибки — данные, не исключения.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">слои</p>
+    <h2>Домен → сервис → интерфейсы</h2>
+    <p class="lede">REST, MCP, CLI, веб, чат и Paseo — адаптеры над одним сервисным слоем.
+    Правила и транзакции живут не в HTTP-обработчике.</p>
+
+    <figure>
+    <svg viewBox="0 0 900 480" role="img" aria-label="Слои doska: интерфейсы над сервисным слоем; под ним домен и db, между доменом и db — нет зависимости">
+      <defs>
+        <marker id="arr-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#a39676"/>
+        </marker>
+      </defs>
+
+      <rect x="60"  y="40" width="128" height="64" rx="11" class="bx"/>
+      <text x="124" y="66" text-anchor="middle" class="t1">REST</text>
+      <text x="124" y="86" text-anchor="middle" class="t3">/api/v1</text>
+      <rect x="200" y="40" width="128" height="64" rx="11" class="bx"/>
+      <text x="264" y="66" text-anchor="middle" class="t1">MCP</text>
+      <text x="264" y="86" text-anchor="middle" class="t3">вход для агентов</text>
+      <rect x="340" y="40" width="128" height="64" rx="11" class="bx"/>
+      <text x="404" y="66" text-anchor="middle" class="t1">CLI</text>
+      <text x="404" y="86" text-anchor="middle" class="t3">tk</text>
+      <rect x="480" y="40" width="128" height="64" rx="11" class="bx"/>
+      <text x="544" y="66" text-anchor="middle" class="t1">Веб</text>
+      <text x="544" y="86" text-anchor="middle" class="t3">карточки · D3</text>
+      <rect x="620" y="40" width="128" height="64" rx="11" class="bx"/>
+      <text x="684" y="66" text-anchor="middle" class="t1">Mattermost</text>
+      <text x="684" y="86" text-anchor="middle" class="t3">/task · кнопки</text>
+      <rect x="760" y="40" width="128" height="64" rx="11" class="bx"/>
+      <text x="824" y="66" text-anchor="middle" class="t1">Paseo</text>
+      <text x="824" y="86" text-anchor="middle" class="t3">панель агентов</text>
+
+      <path d="M124 104 L124 166" class="edge" marker-end="url(#arr-a1)"/>
+      <path d="M264 104 L264 166" class="edge" marker-end="url(#arr-a1)"/>
+      <path d="M404 104 L404 166" class="edge" marker-end="url(#arr-a1)"/>
+      <path d="M544 104 L544 166" class="edge" marker-end="url(#arr-a1)"/>
+      <path d="M684 104 L684 166" class="edge" marker-end="url(#arr-a1)"/>
+      <path d="M824 104 L824 166" class="edge" marker-end="url(#arr-a1)"/>
+
+      <rect x="60" y="172" width="828" height="62" rx="12" class="bx"/>
+      <text x="474" y="198" text-anchor="middle" class="t1">сервисный слой</text>
+      <text x="474" y="218" text-anchor="middle" class="t3">координация · Lwt_result · правила приёмки · транзакции</text>
+
+      <path d="M245 234 L245 296" class="edge" marker-end="url(#arr-a1)"/>
+      <path d="M699 234 L699 296" class="edge" marker-end="url(#arr-a1)"/>
+
+      <rect x="60" y="300" width="370" height="72" rx="12" class="bx bx-acc"/>
+      <text x="245" y="326" text-anchor="middle" class="t1">домен</text>
+      <text x="245" y="346" text-anchor="middle" class="t2">чистые правила · Result вместо исключений</text>
+      <text x="245" y="363" text-anchor="middle" class="t3">домен не бросает и не знает про БД и HTTP</text>
+
+      <rect x="510" y="300" width="378" height="72" rx="12" class="bx"/>
+      <text x="699" y="326" text-anchor="middle" class="t1">db</text>
+      <text x="699" y="346" text-anchor="middle" class="t2">SQL · мигратор · PostgreSQL</text>
+      <text x="699" y="363" text-anchor="middle" class="t3">правила переходов — тоже в базе</text>
+
+      <circle cx="470" cy="336" r="10" fill="none" stroke="#b23c30" stroke-width="2"/>
+      <path d="M463 343 L477 329" stroke="#b23c30" stroke-width="2"/>
+      <text x="470" y="392" text-anchor="middle" class="t3">нет зависимости — её невозможно собрать</text>
+
+      <text x="450" y="440" text-anchor="middle" class="t3">границы держит dune: отдельные библиотеки · любое включённое предупреждение — ошибка сборки</text>
+    </svg>
+    </figure>
+
+    <div class="grid g2" style="margin-top:22px">
+      <div class="card">
+        <span class="num">правила кода</span>
+        <h3>Result вместо исключений</h3>
+        <p>«Переход запрещён» — это <b>Error (Forbidden_by_rules …)</b>, не исключение.
+        Домен не бросает. Промиссы в db и api — Lwt_result.t, связка — явный Lwt.bind.</p>
+      </div>
+      <div class="card">
+        <span class="num">правила кода</span>
+        <h3>Предупреждения — ошибки</h3>
+        <p>В корневом dune включено <b>-warn-error +a</b>: неполный match по статусам
+        не собирается. Добавил статус — обнови все места, где он разбирается,
+        компилятор сам перечислит.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">модель данных</p>
+    <h2>Сущности</h2>
+    <div class="t-wrap">
+    <table>
+      <thead><tr><th>Сущность</th><th>Что держит</th><th>Ключевое правило</th></tr></thead>
+      <tbody>
+        <tr><td><code>actor</code></td><td>люди и агенты: kind, supervisor_id, алиасы</td><td>агент отвечает перед человеком; один канонический актор — без дублей</td></tr>
+        <tr><td><code>task</code></td><td>обязательство: заявитель, исполнитель, срок, статус, ref <code>DSK-N</code></td><td>назначение — внешний ключ, не строка (П1); создание идемпотентно по (source, source_ref)</td></tr>
+        <tr><td><code>evidence</code></td><td>мост к git: sha, ветка, PR, файл, URL</td><td>ссылка, а не копия; трекер не пересчитывает git-факты (П5)</td></tr>
+        <tr><td><code>activity</code></td><td>append-only журнал изменений с интерфейсом</td><td>api · mcp · cli · web · mattermost · paseo · import · system (П4)</td></tr>
+        <tr><td><code>credential</code></td><td>учётки агентов: bearer-токены вида <code>dsk_…</code></td><td>хэш вместо токена; токен показывается один раз</td></tr>
+        <tr><td><code>notification</code></td><td>outbox: что и кому доставить</td><td>уведомление адресату при needs_input (R2)</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">машина состояний</p>
+    <h2>14 переходов, правила R1–R3 на сервере</h2>
+    <p class="lede">Статус задачи меняется только законным переходом. Кто может его сделать
+    и что он обязан приложить — проверяет сервер, а не доверие.</p>
+
+    <figure>
+    <svg viewBox="0 0 900 620" role="img" aria-label="Машина состояний задачи: восемь состояний и 14 переходов; терракотовые стрелки — переходы, за которыми стоят правила R1–R3">
+      <defs>
+        <marker id="arr-s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#8a7d60"/>
+        </marker>
+        <marker id="arr-s2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#7e3d0e"/>
+        </marker>
+      </defs>
+
+      <rect x="40" y="90" width="150" height="54" rx="12" class="bx"/>
+      <text x="115" y="113" text-anchor="middle" class="t1">backlog</text>
+      <text x="115" y="131" text-anchor="middle" class="t3">пул</text>
+
+      <rect x="330" y="90" width="150" height="54" rx="12" class="bx"/>
+      <text x="405" y="113" text-anchor="middle" class="t1">todo</text>
+      <text x="405" y="131" text-anchor="middle" class="t3">к работе</text>
+
+      <rect x="330" y="300" width="150" height="54" rx="12" class="bx bx-acc" fill="#f4e4d2"/>
+      <text x="405" y="323" text-anchor="middle" class="t1">in_progress</text>
+      <text x="405" y="341" text-anchor="middle" class="t3">в работе</text>
+
+      <rect x="660" y="40" width="150" height="54" rx="12" class="bx"/>
+      <text x="735" y="63" text-anchor="middle" class="t1">blocked</text>
+      <text x="735" y="81" text-anchor="middle" class="t3">стоит · с причиной</text>
+
+      <rect x="660" y="190" width="150" height="54" rx="12" fill="#f3e8cd" stroke="#a97517" stroke-width="2"/>
+      <text x="735" y="213" text-anchor="middle" class="t1">needs_input</text>
+      <text x="735" y="231" text-anchor="middle" class="t3">ждёт ответа (R2)</text>
+
+      <rect x="330" y="480" width="150" height="54" rx="12" class="bx"/>
+      <text x="405" y="503" text-anchor="middle" class="t1">in_review</text>
+      <text x="405" y="521" text-anchor="middle" class="t3">просит приёмки</text>
+
+      <rect x="660" y="430" width="150" height="54" rx="12" fill="#e3eee0" stroke="#3e7d46" stroke-width="2"/>
+      <text x="735" y="453" text-anchor="middle" class="t1">done</text>
+      <text x="735" y="471" text-anchor="middle" class="t3">принято человеком</text>
+
+      <rect x="40" y="480" width="150" height="54" rx="12" class="bx" stroke-dasharray="6 5"/>
+      <text x="115" y="503" text-anchor="middle" class="t1">cancelled</text>
+      <text x="115" y="521" text-anchor="middle" class="t3">снято</text>
+
+      <path d="M190 104 L326 104" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="258" y="96" text-anchor="middle" class="tl">взять в работу</text>
+      <path d="M330 130 L194 130" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="258" y="150" text-anchor="middle" class="tl">вернуть</text>
+
+      <path d="M405 144 L405 296" class="edge edge-acc" marker-end="url(#arr-s2)"/>
+      <text x="415" y="222" class="tl-acc">claim / accept</text>
+      <path d="M365 300 L365 148" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="355" y="230" text-anchor="end" class="tl">release</text>
+
+      <path d="M480 312 C 570 300, 590 74, 656 70" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="578" y="148" text-anchor="end" class="tl">blocked · причина</text>
+
+      <path d="M480 316 C 560 300, 610 240, 656 222" class="edge edge-acc" marker-end="url(#arr-s2)"/>
+      <text x="568" y="262" text-anchor="end" class="tl-acc">вопрос + адресат (R2)</text>
+      <path d="M660 240 C 600 275, 570 330, 484 344" class="edge edge-acc" marker-end="url(#arr-s2)"/>
+      <text x="568" y="316" text-anchor="end" class="tl-acc">ответ человека</text>
+
+      <path d="M405 354 L405 476" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="415" y="420" class="tl">резюме + evidence</text>
+      <path d="M365 480 L365 358" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="355" y="426" text-anchor="end" class="tl">отклонить</text>
+
+      <path d="M480 500 C 550 488, 600 466, 656 458" class="edge edge-acc" marker-end="url(#arr-s2)"/>
+      <text x="570" y="486" text-anchor="middle" class="tl-acc">приёмка (R1: человек)</text>
+      <path d="M690 430 C 645 402, 565 368, 484 344" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="628" y="416" text-anchor="middle" class="tl">reopen · human</text>
+
+      <path d="M90 144 L90 476" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="78" y="310" text-anchor="middle" class="tl" transform="rotate(-90 78 310)">отменить · human</text>
+      <path d="M140 480 L140 148" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="154" y="330" text-anchor="middle" class="tl" transform="rotate(-90 154 330)">вернуть · human</text>
+
+      <path d="M810 217 L850 217 L850 560 L115 560 L115 538" class="edge" marker-end="url(#arr-s1)"/>
+      <text x="600" y="552" text-anchor="middle" class="tl">отменить · human</text>
+
+      <text x="450" y="602" text-anchor="middle" class="t3">терракотовые стрелки — переходы, за которыми стоят правила R1–R3</text>
+    </svg>
+    </figure>
+
+    <details class="fold">
+      <summary>Полная таблица переходов: из → в, кто может, требования</summary>
+      <div class="t-wrap">
+      <table>
+        <thead><tr><th>Из</th><th>В</th><th>Кто может</th><th>Требования</th></tr></thead>
+        <tbody>
+          <tr><td>backlog</td><td>todo</td><td>human, agent</td><td>—</td></tr>
+          <tr><td>backlog</td><td>cancelled</td><td>human</td><td>причина</td></tr>
+          <tr><td>todo</td><td>in_progress</td><td><b>agent</b> (claim) / human (accept)</td><td>назначенный или претендент</td></tr>
+          <tr><td>todo</td><td>backlog</td><td>human, agent</td><td>—</td></tr>
+          <tr><td>in_progress</td><td>blocked</td><td>agent, human</td><td>причина</td></tr>
+          <tr><td>in_progress</td><td>needs_input</td><td>agent, human</td><td>вопрос + адресат; уведомление адресату</td></tr>
+          <tr><td>in_progress</td><td>in_review</td><td>agent, human</td><td>резюме; желательно evidence</td></tr>
+          <tr><td>in_progress</td><td>todo</td><td>agent (release), human</td><td>—</td></tr>
+          <tr><td>needs_input</td><td>in_progress</td><td><b>human</b> (адресат, заявитель, руководитель, приёмщик, администратор)</td><td>непустой ответ</td></tr>
+          <tr><td>needs_input</td><td>cancelled</td><td>human</td><td>причина</td></tr>
+          <tr><td>in_review</td><td>done</td><td><b>заявитель / руководитель / человек</b></td><td>приёмка; агент — только при autonomy='auto'</td></tr>
+          <tr><td>in_review</td><td>in_progress</td><td>заявитель / руководитель</td><td>причина (отклонение)</td></tr>
+          <tr><td>done</td><td>in_progress</td><td>human</td><td>reopened</td></tr>
+          <tr><td>cancelled</td><td>backlog</td><td>human</td><td>—</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </details>
+
+    <div class="grid g3" style="margin-top:24px">
+      <div class="card">
+        <span class="num">R1 · приёмка</span>
+        <h3>Агент не закрывает свою задачу</h3>
+        <p>Переход in_review → done доступен агенту только при <b>autonomy='auto'</b>.
+        Иначе закрывает заявитель, руководитель или человек с правом приёмки.</p>
+      </div>
+      <div class="card">
+        <span class="num">R2 · адресный вопрос</span>
+        <h3>needs_input — не «застрял»</h3>
+        <p>Это явное «жду конкретного ответа»: вопрос + <b>asked_to_id</b>.
+        Адресат явный или выведенный (заявитель → руководитель → администратор);
+        выйти может только человек, ответ обязан быть непустым.</p>
+      </div>
+      <div class="card">
+        <span class="num">R3 · без заявителя</span>
+        <h3>Задачи из чата не висят вечно</h3>
+        <p>Если заявителя нет (бота попросили в чате), приёмку делает руководитель
+        актора-исполнителя, а если и его нет — любой человек-администратор.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">интеграции</p>
+    <h2>Каждая функция — там, где ты уже находишься</h2>
+
+    <figure>
+    <svg viewBox="0 0 900 470" role="img" aria-label="Интеграции doska: Mattermost, Paseo, MCP, веб, CLI и календарь ICS вокруг ядра REST /api/v1">
+      <defs>
+        <marker id="arr-i1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#a39676"/>
+        </marker>
+      </defs>
+
+      <rect x="30" y="40" width="190" height="76" rx="12" class="bx"/>
+      <text x="125" y="66" text-anchor="middle" class="t1">Mattermost</text>
+      <text x="125" y="86" text-anchor="middle" class="t2">чат: /task · кнопки · DM</text>
+      <text x="125" y="104" text-anchor="middle" class="t3">бот готов · Go-плагин — волна 4</text>
+
+      <rect x="680" y="40" width="190" height="76" rx="12" class="bx"/>
+      <text x="775" y="66" text-anchor="middle" class="t1">Paseo</text>
+      <text x="775" y="86" text-anchor="middle" class="t2">плагин: панель агентов</text>
+      <text x="775" y="104" text-anchor="middle" class="t3">волна 3 — в работе</text>
+
+      <rect x="30" y="197" width="190" height="76" rx="12" class="bx"/>
+      <text x="125" y="223" text-anchor="middle" class="t1">MCP</text>
+      <text x="125" y="243" text-anchor="middle" class="t2">инструменты для агентов</text>
+      <text x="125" y="261" text-anchor="middle" class="t3">одна точка входа (П6)</text>
+
+      <rect x="680" y="197" width="190" height="76" rx="12" class="bx"/>
+      <text x="775" y="223" text-anchor="middle" class="t1">Веб</text>
+      <text x="775" y="243" text-anchor="middle" class="t2">карточки · доска · D3</text>
+      <text x="775" y="261" text-anchor="middle" class="t3">веб-компоненты, realtime</text>
+
+      <rect x="30" y="354" width="190" height="76" rx="12" class="bx"/>
+      <text x="125" y="380" text-anchor="middle" class="t1">CLI</text>
+      <text x="125" y="400" text-anchor="middle" class="t2">tk — терминал</text>
+      <text x="125" y="418" text-anchor="middle" class="t3">для тех, кто в шелле</text>
+
+      <rect x="680" y="354" width="190" height="76" rx="12" class="bx"/>
+      <text x="775" y="380" text-anchor="middle" class="t1">Календарь ICS</text>
+      <text x="775" y="400" text-anchor="middle" class="t2">план дня</text>
+      <text x="775" y="418" text-anchor="middle" class="t3">польза с первого дня (П7)</text>
+
+      <rect x="370" y="195" width="160" height="80" rx="14" class="bx-dark"/>
+      <text x="450" y="228" text-anchor="middle" class="t1l">doska</text>
+      <text x="450" y="250" text-anchor="middle" class="t3l">REST /api/v1 · домен</text>
+
+      <path d="M220 78 C 300 92, 380 152, 428 191" class="edge" marker-end="url(#arr-i1)"/>
+      <path d="M680 78 C 600 92, 520 152, 472 191" class="edge" marker-end="url(#arr-i1)"/>
+      <path d="M220 235 L366 231" class="edge" marker-end="url(#arr-i1)"/>
+      <path d="M680 235 L534 231" class="edge" marker-end="url(#arr-i1)"/>
+      <path d="M220 392 C 300 380, 380 318, 428 279" class="edge" marker-end="url(#arr-i1)"/>
+      <path d="M680 392 C 600 380, 520 318, 472 279" class="edge" marker-end="url(#arr-i1)"/>
+
+      <text x="450" y="458" text-anchor="middle" class="t3">все пути — над одним сервисным слоем; агент входит один раз: credentials-реестр + один MCP-конфиг</text>
+    </svg>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">слой доказательств</p>
+    <h2>mathc: каждое обязательство — с проверяемым доказательством</h2>
+
+    <figure>
+    <svg viewBox="0 0 900 290" role="img" aria-label="mathc: claim — обязательство, verifier — проверка, control — ломает предмет и заставляет verifier упасть; зелёный засчитывается только с работающим контролем">
+      <defs>
+        <marker id="arr-m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#7e3d0e"/>
+        </marker>
+      </defs>
+
+      <rect x="40" y="70" width="250" height="110" rx="13" class="bx"/>
+      <text x="165" y="102" text-anchor="middle" class="t1">claim</text>
+      <text x="165" y="128" text-anchor="middle" class="t2">обязательство: свойство</text>
+      <text x="165" y="148" text-anchor="middle" class="t2">должно быть истинным</text>
+
+      <rect x="330" y="50" width="240" height="110" rx="13" class="bx bx-acc"/>
+      <text x="450" y="82" text-anchor="middle" class="t1">verifier</text>
+      <text x="450" y="108" text-anchor="middle" class="t2">проверка прогоном:</text>
+      <text x="450" y="128" text-anchor="middle" class="t2">зелёный или красный</text>
+
+      <rect x="610" y="70" width="250" height="110" rx="13" class="bx"/>
+      <text x="735" y="102" text-anchor="middle" class="t1">control</text>
+      <text x="735" y="128" text-anchor="middle" class="t2">ломает предмет в test/break —</text>
+      <text x="735" y="148" text-anchor="middle" class="t2">ровно одно место</text>
+
+      <path d="M290 118 L326 108" class="edge edge-acc" marker-end="url(#arr-m1)"/>
+      <text x="308" y="42" text-anchor="middle" class="tl">проверяет</text>
+      <path d="M610 118 L574 108" class="edge edge-acc" marker-end="url(#arr-m1)"/>
+      <text x="592" y="42" text-anchor="middle" class="tl">verifier обязан упасть</text>
+
+      <text x="450" y="228" text-anchor="middle" class="t2">Зелёный = verifier прошёл и control реально заставил его упасть.</text>
+      <text x="450" y="252" text-anchor="middle" class="t3">вместе с verdict всегда сообщается список uncovered: непокрытое — непроверенное</text>
+    </svg>
+    </figure>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card">
+        <span class="num">правило</span>
+        <h3>Claim без control’а — не claim</h3>
+        <p>Control обязан менять предмет и заставлять verifier падать. Падение от синтаксиса
+        или отсутствия базы — не доказательство.</p>
+      </div>
+      <div class="card">
+        <span class="num">правило</span>
+        <h3>След не редактируется</h3>
+        <p><b>.math/</b> — evidence прогонов, не содержимое. Verifier не ослабляется
+        и control не меняется ради зелёного результата.</p>
+      </div>
+      <div class="card">
+        <span class="num">правило</span>
+        <h3>Человеческое — за человеком</h3>
+        <p>waive, record, authorize — решения владельца. Агент не присваивает себе
+        человеческий review и не создаёт waiver без разрешения.</p>
+      </div>
+    </div>
+    <p style="margin-top:16px; color:var(--muted); font-size:14.5px">Сегодня в проекте 93 claim’а: правило приёмки, идемпотентность миграций,
+    защита применённых файлов, разрешение идентичности и другие обязательства архитектуры.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">стек</p>
+    <h2>Почему именно так</h2>
+    <div class="grid g3">
+      <div class="card">
+        <span class="num">язык</span>
+        <h3>OCaml</h3>
+        <p>Сильная статическая типизация ловит неполные match’и по статусам ещё на сборке;
+        Lwt даёт однопоточные промиссы без гонок; результат — один статический бинарь.</p>
+      </div>
+      <div class="card">
+        <span class="num">хранилище</span>
+        <h3>PostgreSQL</h3>
+        <p>Состояние и правила переходов — в базе. Миграции идемпотентны, применяются
+        целиком в одной транзакции, с контрольной суммой; применённый файл защищён от правки.</p>
+      </div>
+      <div class="card">
+        <span class="num">сборка</span>
+        <h3>Nix + dune</h3>
+        <p>Флэйк фиксирует тулчейн: OCaml 5.3, dune 3.20, зависимости. dune держит границы
+        библиотек — домен физически не может импортировать db или api.</p>
+      </div>
+    </div>
+    <p style="margin-top:16px">Полная архитектура с DDL и обоснованиями —
+    <a href="https://github.com/11111000000/doska/blob/main/docs/design/doska-architecture-2026-11-16.md">в документе по архитектуре ↗</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>doska — трекер обязательств · <a href="https://github.com/11111000000/doska/blob/main/LICENSE">MIT</a></span>
+    <span><a href="https://github.com/11111000000/doska/tree/main/docs">документация ↗</a> · <a href="https://github.com/11111000000/doska">исходники ↗</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

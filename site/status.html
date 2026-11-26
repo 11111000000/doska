@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Состояние проекта — doska</title>
+<meta name="description" content="Где находится проект doska: закрытые этапы, живые проверки, план волн интеграций и открытые вопросы.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1' y='1' width='22' height='22' rx='5' fill='%23a8541a'/%3E%3Crect x='5' y='6' width='14' height='4' rx='1.4' fill='%23fffdf6'/%3E%3Crect x='5' y='13' width='9' height='4' rx='1.4' fill='%23fffdf6' opacity='.7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="5" fill="#a8541a"/><rect x="5" y="6" width="14" height="4" rx="1.4" fill="#fffdf6"/><rect x="5" y="13" width="9" height="4" rx="1.4" fill="#fffdf6" opacity=".7"/></svg>
+      doska
+    </a>
+    <nav>
+      <a href="index.html">Главная</a>
+      <a href="philosophy.html">Философия</a>
+      <a href="architecture.html">Архитектура</a>
+      <a href="status.html" class="active">Состояние</a>
+      <a class="gh" href="https://github.com/11111000000/doska">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker">состояние · конец ноября 2026</p>
+    <h1>Что уже работает — и что дальше</h1>
+    <p class="lede">Этапы 0 и 1 закрыты, от этапа 2 взяты семь срезов. Работает связка
+    «мигратор → схема → REST /api/v1»: задачи создаются, читаются, переводятся,
+    комментируются, заявляются и отпускаются — в том числе из чата командой /task.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">цифры</p>
+    <div class="metrics">
+      <div class="metric"><div class="v">199</div><div class="k">тестов OK</div><div class="n">dune runtest</div></div>
+      <div class="metric"><div class="v">93</div><div class="k">claim’а mathc</div><div class="n">verifier + control каждый</div></div>
+      <div class="metric"><div class="v">6</div><div class="k">миграций применено</div><div class="n">001_init … 006_task_question</div></div>
+      <div class="metric"><div class="v">14</div><div class="k">переходов статуса</div><div class="n">правила R1–R3 проверяет сервер</div></div>
+    </div>
+
+    <h2 style="margin-top:34px">Живые проверки</h2>
+    <div class="t-wrap">
+    <table>
+      <thead><tr><th>Проверка</th><th>Результат</th></tr></thead>
+      <tbody>
+        <tr><td><code>dune build --root .</code></td><td><span class="pill pill-done">без ошибок</span> любое включённое предупреждение — ошибка</td></tr>
+        <tr><td><code>dune runtest --root .</code></td><td><span class="pill pill-done">199 OK</span> домен, идентичность, сервисный слой, API на живой БД</td></tr>
+        <tr><td><code>nix build .#doska</code></td><td><span class="pill pill-done">успешно</span> checkPhase гоняет тесты без БД</td></tr>
+        <tr><td><code>doska migrate</code></td><td><span class="pill pill-done">001–006</span> повторный запуск — «нечего применять»</td></tr>
+        <tr><td><code>doska health</code></td><td><span class="pill pill-done">ok</span></td></tr>
+        <tr><td><code>doska serve</code> → <code>/healthz</code></td><td><span class="pill pill-done">200</span> {"status":"ok"}</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="margin-top:12px; color:var(--muted); font-size:14px">Каждый билд в CI повторяет этот набор и запускает <code>mathc run</code> —
+    проверку слоя доказательств против живого PostgreSQL.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">пройдено</p>
+    <h2>Семь срезов этапа 2</h2>
+    <div class="card">
+      <ul class="clean">
+        <li><span class="li-t">Идентичность</span> <div class="li-d">акторы, алиасы, разрешение имён — люди и агенты в одной таблице.</div></li>
+        <li><span class="li-t">Сервисный слой (D5)</span> <div class="li-d">правила и транзакции — не в HTTP-обработчике; REST, MCP и CLI — адаптеры.</div></li>
+        <li><span class="li-t">Главный запрос /tasks/mine</span> <div class="li-d">«что моё» одним запросом, для человека и агента.</div></li>
+        <li><span class="li-t">Заявка и отпуск (claim / release)</span> <div class="li-d">агент берёт задачу и освобождает её; конкурс претендентов решает сервер.</div></li>
+        <li><span class="li-t">Иерархия и связи</span> <div class="li-d">родитель, зависимости — задачи делятся на части и ссылаются друг на друга.</div></li>
+        <li><span class="li-t">Сводка /overview</span> <div class="li-d">одним запросом: где застряло и кто перегружен.</div></li>
+        <li><span class="li-t">Вопрос при needs_input</span> <div class="li-d">адресный вопрос, уведомление адресату, выход — только через человека (R2).</div></li>
+      </ul>
+    </div>
+    <p style="margin-top:16px">Учётки агентов и bearer-токены работают (срез этапа 4); MCP-сервер и веб-ядро — в main;
+    Mattermost принимает <code>/task</code> с кнопками и личными сообщениями из outbox.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">план волн · от 26.11.2026</p>
+    <h2>Интеграции: Mattermost, Paseo и веб</h2>
+    <div class="t-wrap">
+    <table>
+      <thead><tr><th>Волна</th><th>Работа</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td><code>0</code></td><td>решения D4-R/D3-R, правка ADR, журнал решений</td><td><span class="pill pill-done">сделано</span></td></tr>
+        <tr><td><code>1</code></td><td>учётки и bearer-токены; TypeScript-ядро фронтенда</td><td><span class="pill pill-done">сделано</span></td></tr>
+        <tr><td><code>2</code></td><td>веб-срез 1 «Мои задачи»; Mattermost-бот; MCP-сервер</td><td><span class="pill pill-wip">в работе</span> бот и MCP в main, веб досматривается</td></tr>
+        <tr><td><code>3</code></td><td>Paseo-плагин: панель, Command Center, hooks; веб-срез 2: доска на D3, realtime</td><td><span class="pill pill-wip">в работе</span></td></tr>
+        <tr><td><code>4</code></td><td>плагин Mattermost (Go + webapp); деплой NixOS-модулем</td><td><span class="pill pill-todo">ждёт</span> после бот-пута (D3-R)</td></tr>
+        <tr><td><code>∥</code></td><td>этап 3: импорт из Teamboard — проекты, суждения, инициативы</td><td><span class="pill pill-todo">параллельная дорожка</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="margin-top:14px; color:var(--muted); font-size:14px">Границы этапов: <code>subroutine</code> удаляется на этапе 9 и не раньше —
+    пока трекер пуст, он держит мост авторизации и bridge с Paseo.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="sec-kicker">открытое</p>
+    <h2>Вопросы, которые решает владелец</h2>
+    <div class="grid g2">
+      <div class="card">
+        <span class="num">вопрос 1</span>
+        <h3>Один workspace или персональные пространства</h3>
+        <p>Старт не блокирует: разделение по project уже заложено в схеме.</p>
+      </div>
+      <div class="card">
+        <span class="num">вопрос 2</span>
+        <h3>Заглушки из импорта</h3>
+        <p><b>az, yaz, human:operator, «администратор сервера»…</b> — кто стоит за этими именами.
+        Связывание заглушки с актором — ручная операция; автоматически сопоставлять нечего.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px">Следить за ходом: <a href="https://github.com/11111000000/doska/blob/main/docs/development-guide.md">development guide ↗</a> ·
+    <a href="https://github.com/11111000000/doska/blob/main/docs/decision-log.md">журнал решений ↗</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>doska — трекер обязательств · <a href="https://github.com/11111000000/doska/blob/main/LICENSE">MIT</a></span>
+    <span><a href="https://github.com/11111000000/doska/tree/main/docs">документация ↗</a> · <a href="https://github.com/11111000000/doska">исходники ↗</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
