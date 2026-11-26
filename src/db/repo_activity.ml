@@ -34,7 +34,7 @@ let of_json (json : Yojson.Safe.t) : Activity.t =
     from_value = Row.opt_string json "from_value";
     to_value = Row.opt_string json "to_value";
     summary = Row.opt_string json "summary";
-    interface_ = Row.string_ json "interface" ~default:"api";
+    interface_ = Interface.of_string_default (Row.string_ json "interface" ~default:"api");
     request_id = Row.opt_string json "request_id";
     created_at = Row.string_ json "created_at" ~default:"";
   }
@@ -66,7 +66,7 @@ let record_sql ~action ~task_id ~project_id ~actor_id ~from_value ~to_value ~sum
        (match from_value with None -> "NULL" | Some v -> Conn.quote v)
        (match to_value with None -> "NULL" | Some v -> Conn.quote v)
        (match summary with None -> "NULL" | Some s -> Conn.quote s)
-       (Conn.quote interface_))
+       (Conn.quote (Interface.to_string interface_)))
 
 let record conn ~action ~task_id ~project_id ~actor_id ~from_value ~to_value ~summary
     ~interface_ () : (Activity.t, string) result Lwt.t =

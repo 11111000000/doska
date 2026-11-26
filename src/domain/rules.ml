@@ -12,15 +12,23 @@ type permission =
   | Anyone
   | Human_only
   | Assignee_or_claimant
+  | Assignee_or_human
   | Requester_or_supervisor
+  | Answerer_or_supervisor
   | Acceptance
 
-(** Что переход требует. [Evidence_preferred] — рекомендация, а не запрет. *)
+(** Что переход требует. [Evidence_preferred] — рекомендация, а не запрет.
+
+    [Question] — текст вопроса: он передаётся как [note] при переходе в
+    [needs_input]. [Addressee] — кому вопрос адресован, [Answer] — ответ на
+    открытый вопрос. *)
 type requirement =
   | Reason
   | Question
   | Summary
   | Evidence_preferred
+  | Addressee
+  | Answer
 
 (** Контекст решения: кто действует и в каких условиях. *)
 type context = {
@@ -37,11 +45,20 @@ type context = {
   (** Причина, вопрос или резюме — в зависимости от перехода. *)
   note : string option;
   has_evidence : bool;
+  (** Сколько детей задачи ещё открыто. Число считает владелец факта
+      (сервис), решение принимает домен. *)
+  open_children : int;
+  asked_to_id : string option;
+  (** Адресат вопроса: при входе в needs_input — кому адресуем вопрос;
+      при выходе — кому был адресован открытый вопрос. *)
+  answer : string option;
+  (** Ответ на открытый вопрос. *)
 }
 
 (** Конструктор контекста: собирает проверку из ролей и фактов. *)
 let make_context ~actor ~project_autonomy ~assignee_id ~is_requester ~is_supervisor
-    ~is_admin ~has_accept_right ~note ~has_evidence : context =
+    ~is_admin ~has_accept_right ~note ~has_evidence ~open_children ~asked_to_id
+    ~answer : context =
   {
     actor;
     project_autonomy;
@@ -52,6 +69,9 @@ let make_context ~actor ~project_autonomy ~assignee_id ~is_requester ~is_supervi
     has_accept_right;
     note;
     has_evidence;
+    open_children;
+    asked_to_id;
+    answer;
   }
 
 (** Разрешённый переход: кому и что требуется. *)
@@ -72,12 +92,12 @@ let transition_table : (Status.t * Status.t * transition) list =
     (In_progress, Blocked, { permission = Anyone; requirements = [ Reason ] });
     ( In_progress,
       Needs_input,
-      { permission = Anyone; requirements = [ Question ] } );
+      { permission = Anyone; requirements = [ Question; Addressee ] } );
     (In_progress, In_review, { permission = Anyone; requirements = [ Summary ] });
-    (In_progress, Todo, { permission = Anyone; requirements = [] });
+    (In_progress, Todo, { permission = Assignee_or_human; requirements = [] });
     ( Needs_input,
       In_progress,
-      { permission = Requester_or_supervisor; requirements = [] } );
+      { permission = Answerer_or_supervisor; requirements = [ Answer ] } );
     (Needs_input, Cancelled, { permission = Human_only; requirements = [ Reason ] });
     (In_review, Done, { permission = Acceptance; requirements = [] });
     ( In_review,
@@ -104,11 +124,25 @@ let check_permission ctx permission =
       else if ctx.assignee_id = None then Ok ()
       else if ctx.assignee_id = Some ctx.actor.id then Ok ()
       else Error "Задача назначена другому исполнителю"
+  | Assignee_or_human ->
+      (* Отпустить задачу может её исполнитель-агент или любой человек. *)
+      if Actor.is_human ctx.actor then Ok ()
+      else if ctx.assignee_id = Some ctx.actor.id then Ok ()
+      else Error "Отпустить задачу может её исполнитель или человек"
   | Requester_or_supervisor ->
       if ctx.is_requester || ctx.is_supervisor then Ok ()
       else if Actor.is_human ctx.actor && (ctx.has_accept_right || ctx.is_admin)
       then Ok ()
       else Error "Это действие доступно заявителю или руководителю"
+  | Answerer_or_supervisor ->
+      (* Отвечать на вопрос может только человек: вопрос ждёт живого
+         ответа, а не решения агента (ADR §4.1). *)
+      if not (Actor.is_human ctx.actor) then
+        Error "Ответить на вопрос может только человек"
+      else if ctx.asked_to_id = Some ctx.actor.id then Ok ()
+      else if ctx.is_requester || ctx.is_supervisor then Ok ()
+      else if ctx.has_accept_right || ctx.is_admin then Ok ()
+      else Error "Ответить на вопрос может адресат, заявитель или руководитель"
   | Acceptance ->
       (* R1: агент закрывает задачу сам только в доверенных проектах. *)
       if Actor.is_agent ctx.actor then
@@ -135,6 +169,14 @@ let check_requirement ctx = function
       match ctx.note with
       | Some s when String.trim s <> "" -> Ok ()
       | _ -> Error "Нужно указать резюме работы")
+  | Addressee -> (
+      match ctx.asked_to_id with
+      | Some _ -> Ok ()
+      | None -> Error "Нужно указать, кому адресован вопрос")
+  | Answer -> (
+      match ctx.answer with
+      | Some s when String.trim s <> "" -> Ok ()
+      | _ -> Error "Нужно указать ответ на вопрос")
   | Evidence_preferred -> Ok ()
 
 let check_requirements ctx requirements =
@@ -146,6 +188,23 @@ let check_requirements ctx requirements =
     (Ok ())
     requirements
 
+(** Родитель не закрывается, пока открыты дети (D7).
+
+    Отменять родителя можно: это отказ от ветки целиком. Закрывать —
+    нельзя, пока живы дети: закрытый родитель с открытыми детьми обманывает
+    читателя сводки. *)
+
+let check_parent_closed ctx to_ =
+  match to_ with
+  | Done ->
+      if ctx.open_children = 0 then Ok ()
+      else
+        Error
+          (Printf.sprintf
+             "у задачи открытых детей: %d — родителя закрывают после детей"
+             ctx.open_children)
+  | _ -> Ok ()
+
 (** Проверка перехода. Возвращает причину отказа — её можно показать. *)
 let check ctx from_ to_ : (unit, string) result =
   match find_transition from_ to_ with
@@ -155,7 +214,45 @@ let check ctx from_ to_ : (unit, string) result =
            (Status.to_string from_) (Status.to_string to_))
   | Some tr ->
       Result.bind (check_permission ctx tr.permission) (fun () ->
-          check_requirements ctx tr.requirements)
+          Result.bind (check_requirements ctx tr.requirements) (fun () ->
+              check_parent_closed ctx to_))
+
+(** Исходный статус для заявки.
+
+    Заявка имеет смысл, только пока задача не в работе: из [in_progress]
+    претендентов нет, из [done] или [cancelled] — тоже. Возвращает причину
+    отказа — её показывает клиент. *)
+let check_claim_source (status : Status.t) : (unit, string) result =
+  if status = Todo then Ok ()
+  else
+    Error
+      (Printf.sprintf "задача в статусе %s: заявка — только из статуса todo"
+         (Status.to_string status))
+
+(** Исходный статус для отпуска: отпустить можно только то, что в работе. *)
+let check_release_source (status : Status.t) : (unit, string) result =
+  if status = In_progress then Ok ()
+  else
+    Error
+      (Printf.sprintf "задача в статусе %s: отпуск — только из статуса in_progress"
+         (Status.to_string status))
+
+(** Право назначать задачу.
+
+    На этапе 1 у агента нет ни учётной записи, ни флага [can_assign]: агент
+    назначает задачу только себе, а человек — кого угодно. На этапе 4 правило
+    переедёт на scope учётной записи.
+
+    Правило живёт в домене, а не в HTTP-обработчике: назначать будут пять
+    интерфейсов, и право должно быть одно. *)
+let may_assign ~(actor : Actor.t) ~(target : Actor.t) : (unit, string) result =
+  if Actor.is_agent actor then
+    if target.Actor.id = actor.Actor.id then Ok ()
+    else
+      Error
+        "агент не может назначать задачу другому человеку: право can_assign \
+         появится вместе с учётными записями на этапе 2"
+  else Ok ()
 
 (** Необязательные замечания: не блокируют переход, но видны. *)
 let advisory ctx from_ to_ : string list =

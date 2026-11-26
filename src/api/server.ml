@@ -55,16 +55,30 @@ let require_actor (handler : Dream.handler) : Dream.handler =
 
 let api_routes =
   [
+    (* Сводка — ресурс про трекер целиком, а не про задачу, поэтому она не
+       вложена в [/tasks]. *)
+    Dream.get "/overview" Overview.overview;
     Dream.get "/tasks" Tasks.list;
     Dream.post "/tasks" Tasks.create;
+    (* Статический сегмент раньше параметризованного: [Dream] проверяет
+       маршруты по порядку, и "/tasks/:ref" иначе перехватил бы "mine". *)
+    Dream.get "/tasks/mine" Tasks.mine;
     Dream.get "/tasks/:ref" Tasks.get;
     Dream.patch "/tasks/:ref" Tasks.patch;
     Dream.post "/tasks/:ref/transition" Tasks.transition;
+    Dream.post "/tasks/:ref/claim" Tasks.claim;
+    Dream.post "/tasks/:ref/release" Tasks.release;
+    (* Связи и родитель — отдельные сущности со своими идентификаторами, поэтому
+       у них нет [version] задачи. *)
+    Dream.post "/tasks/:ref/links" Tasks.link;
+    Dream.delete "/tasks/:ref/links/:link_id" Tasks.unlink;
+    Dream.post "/tasks/:ref/parent" Tasks.set_parent;
     Dream.post "/tasks/:ref/assign" Tasks.assign;
     Dream.post "/tasks/:ref/comment" Tasks.comment;
     Dream.post "/tasks/:ref/evidence" Tasks.evidence;
     Dream.get "/activity" Tasks.activity;
     Dream.get "/actors" Tasks.actors;
+    Dream.post "/actors/resolve" Actors.resolve;
   ]
 
 let routes =

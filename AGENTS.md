@@ -1,6 +1,6 @@
 # AGENTS.md — doska
 
-Трекер обязательств для людей и агентов. OCaml-сервер, React-фронтенд, PostgreSQL.
+Трекер обязательств для людей и агентов. OCaml-сервер, веб-фронтенд на веб-компонентах (чистый JavaScript + D3.js), PostgreSQL.
 
 Документация и обсуждения — на русском. Код, комментарии, идентификаторы и
 коммиты — по-русски или по-английски, как в соседних файлах; главное —
@@ -163,11 +163,11 @@ nix develop -c bash -c 'mathc --root . run'
 
 Каждое обязательство из принятой архитектуры doska связано с проверяемым доказательством
 
-23 claim(s).
+80 claim(s).
 
 ```sh
 mathc run
 ```
 
-Every verb: mathc help mathc init mathc goal mathc add mathc run mathc map mathc next mathc context mathc waive mathc record mathc install mathc doctor mathc adopt mathc import-adr mathc import-junit mathc authorize mathc re-evaluate mathc review-source mathc mcp
+Every verb: mathc help mathc init mathc goal mathc add mathc run mathc map mathc next mathc context mathc waive mathc record mathc install mathc doctor mathc adopt mathc import-adr mathc import-junit mathc authorize mathc approve mathc re-evaluate mathc review-source mathc review-decision mathc migrate mathc mcp
 <!-- math-coding:end -->

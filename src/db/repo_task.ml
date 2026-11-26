@@ -67,6 +67,12 @@ let of_json (json : Yojson.Safe.t) : Task.t =
     created_by_id = Row.opt_string json "created_by_id";
     due_at = Row.opt_string json "due_at";
     blocked_reason = Row.opt_string json "blocked_reason";
+    question = Row.opt_string json "question";
+    asked_to_id = Row.opt_string json "asked_to_id";
+    asked_to_name = Row.opt_string json "asked_to_name";
+    answer = Row.opt_string json "answer";
+    answered_at = Row.opt_string json "answered_at";
+    answered_by = Row.opt_string json "answered_by";
     labels = Row.string_list json "labels";
     source = Row.opt_string json "source";
     source_ref = Row.opt_string json "source_ref";
@@ -77,13 +83,15 @@ let of_json (json : Yojson.Safe.t) : Task.t =
     completed_at = Row.opt_string json "completed_at";
   }
 
-(** Общий подзапрос задачи: сама задача плюс ключ проекта и имя исполнителя —
-    то, что человек читает в списке. *)
+(** Общий подзапрос задачи: сама задача плюс ключ проекта, имя исполнителя и
+    handle адресата вопроса — то, что человек читает в списке. Адресат
+    приходит как handle, а не uuid: карточка показывает человека. *)
 let task_select =
   "SELECT row_to_json(x)::text FROM (SELECT t.*, p.key AS project_key, \
-   a.display_name AS assignee_name FROM task t \
+   a.display_name AS assignee_name, q.handle AS asked_to_name FROM task t \
    LEFT JOIN project p ON p.id = t.project_id \
-   LEFT JOIN actor a ON a.id = t.assignee_id"
+   LEFT JOIN actor a ON a.id = t.assignee_id \
+   LEFT JOIN actor q ON q.id = t.asked_to_id"
 
 let by_id conn id : (Task.t option, string) result Lwt.t =
   match Conn.uuid_literal id with
@@ -199,10 +207,106 @@ let list conn (f : filters) : (page, string) result Lwt.t =
          in
          { items = page_items; next_cursor })
 
+(* ------------------------------------------------------------ главный запрос --- *)
+
+(** Корзина срочности: 0 — просрочено, 1 — срок в ближайшие сутки, 2 — срок
+    позже, 3 — срока нет. Считается от [now()], поэтому один и тот же запрос
+    внутри транзакции всегда видит одну и ту же картину. *)
+let mine_bucket alias =
+  Printf.sprintf
+    "CASE WHEN %s.due_at IS NULL THEN 3 WHEN %s.due_at < now() THEN 0 \
+     WHEN %s.due_at < now() + interval '1 day' THEN 1 ELSE 2 END"
+    alias alias alias
+
+(** Ключ порядка главного запроса: корзина, срок, приоритет, давность и
+    идентификатор. Идентификатор в конце нужен, чтобы порядок был полным:
+    без него равные строки переставлялись бы между страницами.
+
+    [COALESCE] вместо пустого срока — не вкус: в сравнении кортежей NULL даёт
+    «неизвестно», а не «больше», и задачи без срока тогда нельзя было бы
+    расставить между собой. [infinity] больше любого настоящего момента, то
+    же, что [NULLS LAST]. *)
+let mine_key alias =
+  Printf.sprintf
+    "(%s, COALESCE(%s.due_at, 'infinity'::timestamptz), %s.priority, %s.created_at, \
+     %s.id)"
+    (mine_bucket alias) alias alias alias alias
+
+(** Тот же ключ отдельными колонками: подзапрос курсора должен отдавать
+    столько же колонок, сколько их в сравниваемом кортеже. *)
+let mine_key_columns alias =
+  Printf.sprintf
+    "%s, COALESCE(%s.due_at, 'infinity'::timestamptz), %s.priority, %s.created_at, \
+     %s.id"
+    (mine_bucket alias) alias alias alias alias
+
+(** Главный запрос: мои задачи по всем проектам (ADR §6.1).
+
+    Открытые задачи исполнителя, отсортированные по срочности: просроченные
+    первыми, потом срок в ближайшие сутки, потом остальные, потом без срока;
+    внутри — по сроку, приоритету и давности.
+
+    Курсор — идентификатор последней выданной задачи. Следующая страница
+    начинается со строго следующей по порядку, поэтому строки не теряются и не
+    повторяются. Неверный курсор игнорируется, а курсор на несуществующую
+    задачу даёт пустую страницу — так же, как в [list]. *)
+let mine conn ~assignee_id ~limit ~cursor : (page, string) result Lwt.t =
+  match Conn.uuid_literal assignee_id with
+  | None -> Lwt_result.lift (Error "идентификатор исполнителя — не uuid")
+  | Some assignee ->
+      let conditions =
+        ref
+          [
+            Printf.sprintf "t.assignee_id = %s" assignee;
+            "t.deleted_at IS NULL";
+            "t.completed_at IS NULL";
+            "t.status NOT IN ('done','cancelled')";
+          ]
+      in
+      (match cursor with
+      | Some c -> (
+          match Conn.uuid_literal c with
+          | Some literal ->
+              conditions :=
+                Printf.sprintf
+                  "(%s > (SELECT %s FROM task c WHERE c.id = %s))"
+                  (mine_key "t") (mine_key_columns "c") literal
+                :: !conditions
+          | None -> ())
+      | None -> ());
+      let where = String.concat " AND " (List.rev !conditions) in
+      let sql =
+        Printf.sprintf
+          "SELECT row_to_json(x)::text FROM (SELECT t.*, p.key AS project_key, \
+           a.display_name AS assignee_name, q.handle AS asked_to_name FROM task t \
+           LEFT JOIN project p ON p.id = t.project_id \
+           LEFT JOIN actor a ON a.id = t.assignee_id \
+           LEFT JOIN actor q ON q.id = t.asked_to_id \
+           WHERE %s ORDER BY %s ASC, COALESCE(t.due_at, 'infinity'::timestamptz) ASC, \
+           t.priority ASC, t.created_at ASC, t.id ASC LIMIT %d) x"
+          where (mine_bucket "t") (limit + 1)
+      in
+      Conn.query_json_rows conn sql
+      |> Lwt_result.map (fun rows ->
+             let items = List.map of_json rows in
+             let rec take n l =
+               if n <= 0 then [] else match l with [] -> [] | x :: rest -> x :: take (n - 1) rest
+             in
+             let page_items = take limit items in
+             let next_cursor =
+               if List.length items > limit then
+                 match List.rev page_items with
+                 | last :: _ -> Some last.Task.id
+                 | [] -> None
+               else None
+             in
+             { items = page_items; next_cursor })
+
 type create_args = {
   title : string;
   description : string;
   project_id : string option;
+  parent_id : string option;
   kind : Task.kind;
   status : Status.t;
   priority : Task.priority;
@@ -239,18 +343,20 @@ let labels_sql labels =
 let insert_sql (a : create_args) : (string, string) result =
   let ( let* ) = Result.bind in
   let* project_id = uuid_sql a.project_id in
+  let* parent_id = uuid_sql a.parent_id in
   let* assignee_id = uuid_sql a.assignee_id in
   let* requester_id = uuid_sql a.requester_id in
   let* reporter_id = uuid_sql a.reporter_id in
   let* created_by_id = uuid_sql a.created_by_id in
   let sql =
     Printf.sprintf
-      "INSERT INTO task (ref, project_id, kind, status, priority, title, description, \
-       assignee_id, requester_id, reporter_id, created_by_id, due_at, labels, source, \
-       source_ref) VALUES ('DSK-' || nextval('task_ref_seq'), %s, %s::task_kind, \
+      "INSERT INTO task (ref, project_id, parent_id, kind, status, priority, title, \
+       description, assignee_id, requester_id, reporter_id, created_by_id, due_at, labels, \
+       source, source_ref) VALUES ('DSK-' || nextval('task_ref_seq'), %s, %s, %s::task_kind, \
        %s::task_status, %s::task_priority, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) \
        RETURNING id::text"
       project_id
+      parent_id
       (Conn.quote (Task.kind_to_string a.kind))
       (Conn.quote (Status.to_string a.status))
       (Conn.quote (Task.priority_to_string a.priority))
@@ -302,10 +408,15 @@ let create conn (a : create_args) : (created, string) result Lwt.t =
           | Ok (Some task) -> Lwt_result.lift (Ok (Created task))
           | Ok None -> Lwt_result.lift (Error "задача создана, но не прочитана"))
 
-(** Смена статуса с проверкой версии: [version] — оптимистичная блокировка
-    (§3.3 архитектуры). Пустой результат означает «строка не обновлена»: либо
-    задачи нет, либо версия устарела. *)
-let set_status conn ~ref_ ~status ~version ~note :
+(** Смена статуса и исполнителя одной записью: [version] — оптимистичная
+    блокировка (§3.3 архитектуры). Пустой результат означает «строка не
+    обновлена»: либо задачи нет, либо версия устарела.
+
+    [assignee] — «опция внутри опции»: [None] — исполнителя не трогать,
+    [Some None] — снять, [Some (Some id)] — назначить. Заявка и отпуск меняют
+    исполнителя вместе со статусом: двумя записями между ними задача была бы
+    в работе без исполнителя. *)
+let set_status_and_assignee conn ~ref_ ~status ~assignee ~version ~note :
     (string option, string) result Lwt.t =
   let started =
     match status with
@@ -324,20 +435,73 @@ let set_status conn ~ref_ ~status ~version ~note :
         | Some reason -> Conn.quote reason)
     | _ -> "NULL"
   in
-  let sql =
-    Printf.sprintf
-      "UPDATE task SET status = %s::task_status, version = version + 1, \
-       updated_at = now(), started_at = %s, completed_at = %s, blocked_reason = %s \
-       WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
-      (Conn.quote (Status.to_string status))
-      started
-      completed
-      blocked
-      (Conn.quote ref_)
-      version
+  let assignee_fragment =
+    match assignee with
+    | None -> Ok ""
+    | Some None -> Ok ", assignee_id = NULL"
+    | Some (Some id) -> (
+        match uuid_sql (Some id) with
+        | Error e -> Error e
+        | Ok literal -> Ok (", assignee_id = " ^ literal))
   in
-  Conn.query_strings conn sql
-  |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+  match assignee_fragment with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok fragment ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET status = %s::task_status, version = version + 1, \
+           updated_at = now(), started_at = %s, completed_at = %s, blocked_reason = %s%s \
+           WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
+          (Conn.quote (Status.to_string status))
+          started
+          completed
+          blocked
+          fragment
+          (Conn.quote ref_)
+          version
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+
+(** Смена статуса без изменения исполнителя. *)
+let set_status conn ~ref_ ~status ~version ~note =
+  set_status_and_assignee conn ~ref_ ~status ~assignee:None ~version ~note
+
+(** Записать вопрос и его адресата. Версию не проверяет и не увеличивает:
+    смену статуса и версию ведёт [set_status_and_assignee] в той же
+    транзакции, а этот вызов идёт следом.
+
+    Прежний ответ обнуляется: новый вопрос — это новое ожидание, и старый
+    ответ на него не подходит. Иначе карточка показывала бы ответ на
+    прошлый вопрос как будто он отвечает на текущий. *)
+let set_question conn ~ref_ ~question ~asked_to_id : (string option, string) result Lwt.t =
+  match uuid_sql asked_to_id with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok asked_to ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET question = %s, asked_to_id = %s, answer = NULL, \
+           answered_at = NULL, answered_by = NULL, updated_at = now() \
+           WHERE ref = %s AND deleted_at IS NULL RETURNING id::text"
+          (Conn.quote question) asked_to (Conn.quote ref_)
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+
+(** Записать ответ на вопрос: текст, кто ответил и когда. Версию не трогает —
+    по той же причине, что и [set_question]. *)
+let set_answer conn ~ref_ ~answer ~answered_by : (string option, string) result Lwt.t =
+  match uuid_sql answered_by with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok answered ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET answer = %s, answered_by = %s, answered_at = now(), \
+           updated_at = now() WHERE ref = %s AND deleted_at IS NULL RETURNING id::text"
+          (Conn.quote answer) answered (Conn.quote ref_)
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
 
 (** Назначение исполнителя. *)
 let set_assignee conn ~ref_ ~assignee_id ~version :
@@ -350,6 +514,70 @@ let set_assignee conn ~ref_ ~assignee_id ~version :
           "UPDATE task SET assignee_id = %s, version = version + 1, updated_at = now() \
            WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
           assignee
+          (Conn.quote ref_)
+          version
+      in
+      Conn.query_strings conn sql
+      |> Lwt_result.map (function [] -> None | id :: _ -> Some id)
+
+(** Дети задачи: ветка дерева ниже [parent_id]. *)
+let children conn ~parent_id : (Task.t list, string) result Lwt.t =
+  match Conn.uuid_literal parent_id with
+  | None -> Lwt_result.lift (Ok [])
+  | Some literal ->
+      Conn.query_json_rows conn
+        (Printf.sprintf
+           "%s WHERE t.parent_id = %s AND t.deleted_at IS NULL ORDER BY t.ref) x"
+           task_select literal)
+      |> Lwt_result.map (List.map of_json)
+
+(** Сколько детей задачи ещё открыто.
+
+    Открыта задача, которая не в [done] и не в [cancelled]: пока живы её
+    дети, родителя закрывать рано (D7). *)
+let open_children_count conn ~parent_id : (int, string) result Lwt.t =
+  match Conn.uuid_literal parent_id with
+  | None -> Lwt_result.lift (Ok 0)
+  | Some literal ->
+      Conn.query_int64s conn
+        (Printf.sprintf
+           "SELECT count(*) FROM task WHERE parent_id = %s AND deleted_at IS NULL \
+            AND status NOT IN ('done','cancelled')"
+           literal)
+      |> Lwt_result.map (fun counts ->
+          match counts with [] -> 0 | count :: _ -> Int64.to_int count)
+
+(** Родитель задачи — на один уровень вверх. Нужен для проверки цикла:
+    цепочка родителей поднимается от предполагаемого родителя вверх. *)
+let parent_id_of conn id : (string option, string) result Lwt.t =
+  match Conn.uuid_literal id with
+  | None -> Lwt_result.lift (Ok None)
+  | Some literal ->
+      Conn.query_json_rows conn
+        (Printf.sprintf
+           "SELECT row_to_json(x)::text FROM (SELECT parent_id::text AS parent_id FROM task \
+            WHERE id = %s AND deleted_at IS NULL) x"
+           literal)
+      |> Lwt_result.map (function
+          | [] -> None
+          | json :: _ -> Row.opt_string json "parent_id")
+
+(** Смена родителя. [parent_id = None] — отвязать задачу от родителя. *)
+let set_parent conn ~ref_ ~parent_id ~version :
+    (string option, string) result Lwt.t =
+  let parent_fragment =
+    match parent_id with
+    | None -> Ok "NULL"
+    | Some id -> uuid_sql (Some id)
+  in
+  match parent_fragment with
+  | Error e -> Lwt_result.lift (Error e)
+  | Ok literal ->
+      let sql =
+        Printf.sprintf
+          "UPDATE task SET parent_id = %s, version = version + 1, updated_at = now() \
+           WHERE ref = %s AND version = %d AND deleted_at IS NULL RETURNING id::text"
+          literal
           (Conn.quote ref_)
           version
       in

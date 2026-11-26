@@ -5,6 +5,7 @@
  (libraries
   api
   db
+  service
   version
   cmdliner
   yojson))

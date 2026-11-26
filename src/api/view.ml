@@ -18,6 +18,7 @@ let task (t : Task.t) : Yojson.Safe.t =
       ("kind", `String (Task.kind_to_string t.Task.kind));
       ("priority", `String (Task.priority_to_string t.Task.priority));
       ("project", opt t.Task.project_key);
+      ("parent_id", opt t.Task.parent_id);
       ("assignee_id", opt t.Task.assignee_id);
       ("assignee", opt t.Task.assignee_name);
       ("requester_id", opt t.Task.requester_id);
@@ -27,11 +28,34 @@ let task (t : Task.t) : Yojson.Safe.t =
       ("source", opt t.Task.source);
       ("source_ref", opt t.Task.source_ref);
       ("blocked_reason", opt t.Task.blocked_reason);
+      ("question", opt t.Task.question);
+      ("asked_to_id", opt t.Task.asked_to_id);
+      ("asked_to", opt t.Task.asked_to_name);
+      ("answer", opt t.Task.answer);
+      ("answered_at", opt t.Task.answered_at);
       ("version", `Int t.Task.version);
       ("created_at", `String t.Task.created_at);
       ("updated_at", `String t.Task.updated_at);
       ("started_at", opt t.Task.started_at);
       ("completed_at", opt t.Task.completed_at);
+    ]
+
+(** Задача или пусто: родителя может не быть. *)
+let opt_task (t : Task.t option) : Yojson.Safe.t =
+  match t with
+  | None -> `Null
+  | Some t -> task t
+
+(** Связь между задачами: своя сущность со своим идентификатором. *)
+let link (l : Db.Repo_link.t) : Yojson.Safe.t =
+  `Assoc
+    [
+      ("id", `String l.Db.Repo_link.id);
+      ("from_id", `String l.Db.Repo_link.from_id);
+      ("to_id", `String l.Db.Repo_link.to_id);
+      ("kind", `String (Link.to_string l.Db.Repo_link.kind));
+      ("created_by_id", opt l.Db.Repo_link.created_by_id);
+      ("created_at", `String l.Db.Repo_link.created_at);
     ]
 
 let comment (c : Comment.t) : Yojson.Safe.t =
@@ -90,6 +114,6 @@ let activity (a : Activity.t) : Yojson.Safe.t =
       ("from_value", opt a.Activity.from_value);
       ("to_value", opt a.Activity.to_value);
       ("summary", opt a.Activity.summary);
-      ("interface", `String a.Activity.interface_);
+      ("interface", `String (Interface.to_string a.Activity.interface_));
       ("created_at", `String a.Activity.created_at);
     ]

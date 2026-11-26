@@ -8,11 +8,11 @@
 # Ожидание: verifier (test/api_test.exe) после этой правки падает.
 set -eu
 
-file=src/api/tasks.ml
-before='(Errors.make Errors.Forbidden message
-                  ~details:'
-after='(Errors.make Errors.Internal message
-                  ~details:'
+file=src/api/errors.ml
+before='      make Forbidden message
+        ~details:(List.map (fun (key, value) -> (key, `String value)) details)'
+after='      make Internal message
+        ~details:(List.map (fun (key, value) -> (key, `String value)) details)'
 
 python3 - "$file" "$before" "$after" <<'PY'
 import pathlib, sys

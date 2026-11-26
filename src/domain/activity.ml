@@ -6,6 +6,8 @@
 type action =
   | Created
   | Status_changed
+  | Questioned
+  | Answered
   | Assigned
   | Unassigned
   | Reassigned
@@ -23,6 +25,7 @@ type action =
   | Cancelled
   | Deleted
   | Restored
+  | Updated
 
 type t = {
   id : int64;
@@ -33,8 +36,8 @@ type t = {
   from_value : string option;
   to_value : string option;
   summary : string option;
-  (** Откуда пришло: [api | mcp | cli | web | mattermost | paseo | import | system]. *)
-  interface_ : string;
+  (** Откуда пришло: REST, MCP, CLI, веб, чат, Paseo, импорт или система. *)
+  interface_ : Interface.t;
   request_id : string option;
   created_at : string;
 }
@@ -42,6 +45,8 @@ type t = {
 let action_to_string : action -> string = function
   | Created -> "created"
   | Status_changed -> "status_changed"
+  | Questioned -> "questioned"
+  | Answered -> "answered"
   | Assigned -> "assigned"
   | Unassigned -> "unassigned"
   | Reassigned -> "reassigned"
@@ -59,10 +64,13 @@ let action_to_string : action -> string = function
   | Cancelled -> "cancelled"
   | Deleted -> "deleted"
   | Restored -> "restored"
+  | Updated -> "updated"
 
 let action_of_string : string -> action option = function
   | "created" -> Some Created
   | "status_changed" -> Some Status_changed
+  | "questioned" -> Some Questioned
+  | "answered" -> Some Answered
   | "assigned" -> Some Assigned
   | "unassigned" -> Some Unassigned
   | "reassigned" -> Some Reassigned
@@ -80,4 +88,5 @@ let action_of_string : string -> action option = function
   | "cancelled" -> Some Cancelled
   | "deleted" -> Some Deleted
   | "restored" -> Some Restored
+  | "updated" -> Some Updated
   | _ -> None

@@ -5,25 +5,15 @@
     актора. Это **не** аутентификация: заголовок подделывается тривиально,
     и сервер до этапа 2 должен слушать только доверенную сеть.
 
-    Право администратора на этом этапе задаётся переменной окружения
-    [DOSKA_ADMIN_HANDLES] — списком логинов людей-администраторов. *)
+    Право администратора задаётся переменной окружения
+    [DOSKA_ADMIN_HANDLES] и живёт в [Identity.Admin]: сервисный слой решает
+    по нему, может ли агент закрыть задачу сам. *)
 
 open Domain
 
 let ( let* ) t f = Lwt.bind t f
 
 let header = "x-doska-actor"
-
-let admin_handles () : string list =
-  match Sys.getenv_opt "DOSKA_ADMIN_HANDLES" with
-  | None -> []
-  | Some raw ->
-      String.split_on_char ',' raw
-      |> List.map String.trim
-      |> List.filter (fun handle -> handle <> "")
-
-let is_admin (actor : Actor.t) : bool =
-  List.mem actor.Actor.handle (admin_handles ())
 
 (** Актор запроса по заголовку. *)
 let actor_of conn req : (Actor.t, Errors.t) result Lwt.t =
