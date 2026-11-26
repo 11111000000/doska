@@ -24,3 +24,4 @@ _build/
 # Зависимости и сборка TypeScript-ядра (D4-R): воспроизводимы из package.json.
 node_modules/
 frontend/packages/core/dist/
+frontend/apps/web/dist/

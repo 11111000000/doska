@@ -166,7 +166,7 @@ nix develop -c bash -c 'mathc --root . run'
 
 Каждое обязательство из принятой архитектуры doska связано с проверяемым доказательством
 
-86 claim(s).
+92 claim(s).
 
 ```sh
 mathc run

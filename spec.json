@@ -2876,6 +2876,176 @@
    "register": "fact",
    "control": "sh test/break/frontend_urgency_bucket_stuck.sh",
    "waiver": null
+  },
+  {
+   "id": "webhook-token-auth",
+   "text": "Вебхук Mattermost не принимает команды с неверным токеном интеграции: 401, и секрет не в коде (D3, §8)",
+   "scope": [
+    "src/api/webhooks_mattermost.ml",
+    "test/webhooks_test.ml",
+    "test/break/webhook_token_not_checked.sh"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "dune exec --root . test/webhooks_test.exe"
+    }
+   ],
+   "falsifier": "вебхук обрабатывает команды с любым токеном",
+   "register": "fact",
+   "control": "sh test/break/webhook_token_not_checked.sh",
+   "waiver": null
+  },
+  {
+   "id": "task-from-chat-idempotent",
+   "text": "Задача из чата создается с source=mattermost и source_ref=cmd:<trigger_id>: повтор команды возвращает ту же задачу, дубль не плодится (D2, §10.2)",
+   "scope": [
+    "src/api/webhooks_mattermost.ml",
+    "test/webhooks_test.ml",
+    "test/break/webhook_source_ref_dropped.sh"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "dune exec --root . test/webhooks_test.exe"
+    }
+   ],
+   "falsifier": "повтор команды создает вторую задачу",
+   "register": "fact",
+   "control": "sh test/break/webhook_source_ref_dropped.sh",
+   "waiver": null
+  },
+  {
+   "id": "outbox-delivery",
+   "text": "Доставка outbox помечает уведомление sent после успешной отправки адресату по его source_ref=mattermost (§3.8)",
+   "scope": [
+    "src/service/notify.ml",
+    "src/db/repo_notification.ml",
+    "test/webhooks_test.ml",
+    "test/break/notify_sent_not_marked.sh"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "dune exec --root . test/webhooks_test.exe"
+    }
+   ],
+   "falsifier": "уведомление доставлено адресату, но остается pending",
+   "register": "fact",
+   "control": "sh test/break/notify_sent_not_marked.sh",
+   "waiver": null
+  },
+  {
+   "id": "mcp-protocol",
+   "text": "MCP initialize согласует protocolVersion 2024-11-05 и возвращает serverInfo (§6.2)",
+   "scope": [
+    "src/mcp/rpc.ml",
+    "src/mcp/server.ml",
+    "test/break/mcp_version_mismatched.sh",
+    "test/mcp_test.ml"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "dune exec --root . test/mcp_test.exe"
+    }
+   ],
+   "falsifier": "initialize возвращает искаженную версию протокола",
+   "register": "fact",
+   "control": "sh test/break/mcp_version_mismatched.sh",
+   "waiver": null
+  },
+  {
+   "id": "mcp-tools-contract",
+   "text": "tools/list отдает все 16 инструментов ADR §6.2 с их схемами из одного описания (§6.2)",
+   "scope": [
+    "src/mcp/dune",
+    "src/mcp/server.ml",
+    "src/mcp/tools.ml",
+    "test/break/mcp_tools_list_short.sh",
+    "test/mcp_test.ml"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "dune exec --root . test/mcp_test.exe"
+    }
+   ],
+   "falsifier": "tools/list теряет инструмент: список короче 16",
+   "register": "fact",
+   "control": "sh test/break/mcp_tools_list_short.sh",
+   "waiver": null
+  },
+  {
+   "id": "frontend-web-app",
+   "text": "Веб-приложение собирается из исходников в dist, index.html подключает входную точку, ядро и экраны на месте: без сборки и точки входа веб — пустая страница (D4-R)",
+   "scope": [
+    "frontend/apps/web/index.html",
+    "frontend/apps/web/app.js",
+    "frontend/apps/web/tasks-view.js",
+    "frontend/apps/web/card-view.js",
+    "frontend/apps/web/build.sh",
+    "test/check_frontend_web.sh",
+    "test/break/web_app_entry_dropped.sh"
+   ],
+   "source": {
+    "kind": "madr",
+    "path": "docs/design/doska-architecture-2026-11-16.md",
+    "section": null,
+    "digest": "4f67000ec5f6dcafd1ef5eb05044c9cf5b69080294f9b0df6b9902b55f76d748",
+    "review": null
+   },
+   "owner": "Peter",
+   "requirements": [
+    {
+     "kind": "verifier",
+     "spec": "sh test/check_frontend_web.sh"
+    }
+   ],
+   "falsifier": "index.html теряет подключение app.js: сборка проходит, приложение не работает",
+   "register": "fact",
+   "control": "sh test/break/web_app_entry_dropped.sh",
+   "waiver": null
   }
  ],
  "environment": "nix develop -c"
