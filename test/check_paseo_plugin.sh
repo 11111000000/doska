@@ -4,8 +4,9 @@
 # База не нужна. Работает из корня репозитория.
 set -eu
 
+cd frontend
 npm ci --no-audit --no-fund > /dev/null 2>&1
-cd frontend/plugins/paseo
+cd plugins/paseo
 npx tsc --noEmit
 grep -q 'doska.my_tasks' shared/doska-rpc.ts
 grep -q 'doska.claim' shared/doska-rpc.ts
