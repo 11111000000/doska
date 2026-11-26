@@ -19,6 +19,7 @@
   domain
   identity
   service
+  mcp
   lwt
   version
   dream

@@ -93,11 +93,23 @@ let api_routes =
     Dream.delete "/credentials/:id" Credentials.revoke;
   ]
 
+(** Веб-интерфейс раздаётся статикой из каталога сборки приложения
+    (D4-R: нативные ES-модули без сборщика). Переменной нет — веба нет,
+    REST продолжает работать. *)
+let static_routes =
+  match Sys.getenv_opt "DOSKA_STATIC_DIR" with
+  | Some dir when dir <> "" ->
+      [ Dream.get "/app/**" (Dream.static dir) ]
+  | _ -> []
+
 let routes =
-  [
+  static_routes
+  @ [
     (* Вебхук Mattermost аутентифицируется собственным токеном MM, а не
-       заголовком актора, поэтому живёт вне [/api/v1]. *)
+       заголовком актора, поэтому живёт вне [/api/v1]. MCP — bearer-токен
+       агента внутри обработчика, тоже вне [/api/v1]. *)
     Dream.post "/hooks/mattermost" Webhooks_mattermost.handle;
+    Dream.post "/mcp" Mcp.Server.handler;
     Dream.get "/" version;
     Dream.get "/version" version;
     Dream.get "/healthz" healthz;
