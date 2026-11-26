@@ -125,6 +125,17 @@ let run_import uri source : (unit, string) result =
           | Error e -> Error (Printf.sprintf "ошибка импорта: %s" e)))
   | other -> Error ("неизвестный источник импорта: " ^ other)
 
+(** MCP over stdio: агент без HTTP говорит JSON-RPC через stdin/stdout.
+    Токен агента — DOSKA_MCP_TOKEN, секрет только из окружения. *)
+let run_mcp_stdio () : (unit, string) result =
+  Mcp.Server.run_stdio ();
+  Ok ()
+
+let cmd_mcp =
+  Cmd.v
+    (Cmd.info "mcp" ~doc:"MCP-сервер через stdio (токен: DOSKA_MCP_TOKEN).")
+    Term.(const run_mcp_stdio $ const ())
+
 let cmd_migrate =
   Cmd.v
     (Cmd.info "migrate" ~doc:"Применить миграции к базе данных.")
@@ -159,4 +170,4 @@ let () =
   in
   exit
     (Cmd.eval_result
-       (Cmd.group info [ cmd_migrate; cmd_health; cmd_serve; cmd_version; cmd_import ]))
+       (Cmd.group info [ cmd_migrate; cmd_health; cmd_serve; cmd_version; cmd_import; cmd_mcp ]))

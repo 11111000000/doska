@@ -4,6 +4,7 @@
  (package doska)
  (libraries
   api
+  mcp
   db
   service
   version
