@@ -43,7 +43,7 @@
   <div class="wrap">
     <p class="sec-kicker">цифры</p>
     <div class="metrics">
-      <div class="metric"><div class="v">203</div><div class="k">тестов OK</div><div class="n">dune runtest + 13 node-тестов ядра</div></div>
+      <div class="metric"><div class="v">205</div><div class="k">тестов OK</div><div class="n">dune runtest + 13 node-тестов ядра</div></div>
       <div class="metric"><div class="v">98</div><div class="k">claim’ов mathc</div><div class="n">verifier + control каждый</div></div>
       <div class="metric"><div class="v">6</div><div class="k">миграций применено</div><div class="n">001_init … 006_task_question</div></div>
       <div class="metric"><div class="v">14</div><div class="k">переходов статуса</div><div class="n">правила R1–R3 проверяет сервер</div></div>
@@ -55,7 +55,7 @@
       <thead><tr><th>Проверка</th><th>Результат</th></tr></thead>
       <tbody>
         <tr><td><code>dune build --root .</code></td><td><span class="pill pill-done">без ошибок</span> любое включённое предупреждение — ошибка</td></tr>
-        <tr><td><code>dune runtest --root .</code></td><td><span class="pill pill-done">203 OK</span> домен, идентичность, сервисный слой, API на живой БД + 13 node-тестов ядра</td></tr>
+        <tr><td><code>dune runtest --root .</code></td><td><span class="pill pill-done">205 OK</span> домен, идентичность, сервисный слой, API на живой БД + 13 node-тестов ядра</td></tr>
         <tr><td><code>nix build .#doska</code></td><td><span class="pill pill-done">успешно</span> checkPhase гоняет тесты без БД</td></tr>
         <tr><td><code>doska migrate</code></td><td><span class="pill pill-done">001–006</span> повторный запуск — «нечего применять»</td></tr>
         <tr><td><code>doska health</code></td><td><span class="pill pill-done">ok</span></td></tr>
