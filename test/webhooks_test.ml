@@ -68,6 +68,39 @@ let task_ref_of s =
   | Some i -> String.sub s i (String.length s - i)
   | None -> ""
 
+(* Замена всех вхождений подстроки. *)
+let replace_all needle by hay =
+  let n = String.length needle and len = String.length hay in
+  let buf = Buffer.create (len + 16) in
+  let i = ref 0 in
+  while !i < len do
+    if !i + n <= len && String.sub hay !i n = needle then (
+      Buffer.add_string buf by;
+      i := !i + n)
+    else (
+      Buffer.add_char buf hay.[!i];
+      incr i)
+  done;
+  Buffer.contents buf
+
+(* Форма как её шлёт настоящий клиент: application/x-www-form-urlencoded
+   кодирует пробел знаком «+», а не %20. *)
+let form_plus fields =
+  String.concat "&"
+    (List.map
+       (fun (k, v) -> k ^ "=" ^ replace_all "%20" "+" (Dream.to_percent_encoded v))
+       fields)
+
+(* Задача по номеру — как её видит API. *)
+let fetch_task ref_ =
+  let request =
+    Dream.request ~method_:`GET ~target:("/api/v1/tasks/" ^ ref_)
+      ~headers:[ ("x-doska-actor", "wht-fields") ] ""
+  in
+  let response = client request in
+  let body = Support.run (Dream.body response) in
+  Yojson.Safe.Util.(member "task" (Yojson.Safe.from_string body))
+
 let test_wrong_token_is_rejected () =
   let code, text = call (form [ ("token", "неверный") ; ("command", "/tasks") ]) in
   Alcotest.(check int) "неверный токен — 401" 401 code;
@@ -293,6 +326,30 @@ let test_task_command_fields () =
     (Some assignee.Actor.id)
     (Yojson.Safe.Util.(member "assignee_id" task |> to_string_option))
 
+let test_form_plus_is_space () =
+  (* Настоящий клиент (Mattermost) шлёт форму form-urlencoded: пробел приходит
+     знаком «+». Заголовок задачи должен получиться с пробелами, а не с
+     плюсами — иначе команда из чата не работает вовсе. *)
+  let a = mm_actor "plus" in
+  let body =
+    form_plus
+      [
+        ("token", "test-token");
+        ("command", "/task");
+        ("text", "Задача с пробелом");
+        ("user_id", a.Domain.Actor.id);
+        ("user_name", "wht-plus");
+        ( "trigger_id",
+          Printf.sprintf "plus-%d-%.6f" (Unix.getpid ()) (Unix.gettimeofday ()) );
+      ]
+  in
+  let code, text = call body in
+  Alcotest.(check int) "команда — 200" 200 code;
+  let ref_ = field "text" (Yojson.Safe.from_string text) |> task_ref_of in
+  let task = fetch_task ref_ in
+  Alcotest.(check (option string)) "пробел разобран" (Some "Задача с пробелом")
+    (Yojson.Safe.Util.(member "title" task |> to_string_option))
+
 let () =
   let open Alcotest in
   run "вебхук mattermost"
@@ -314,6 +371,8 @@ let () =
       ( "разбор команды",
         [ test_case "проект, исполнитель и срок по позициям" `Quick
             test_task_command_fields ] );
+      ( "форма",
+        [ test_case "пробел приходит как «+»" `Quick test_form_plus_is_space ] );
       ( "доставка",
         [ test_case "pending уходит адресату" `Quick test_notify_delivers_pending ] );
     ]
