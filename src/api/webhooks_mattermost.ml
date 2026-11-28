@@ -57,7 +57,12 @@ let respond_mm ?(status = `OK) text =
 
 (* ------------------------------------------------------------- разбор --- *)
 
-let urldecode = Dream.from_percent_encoded
+(* Процентное декодирование умеет %XX, но не знает правила
+   application/x-www-form-urlencoded: там пробел приходит как «+». Настоящий
+   клиент (Mattermost) шлёт форму именно так, поэтому «+» — это пробел, а не
+   знак плюс. *)
+let urldecode s =
+  Dream.from_percent_encoded (String.map (function '+' -> ' ' | c -> c) s)
 
 (** form-encoded тело: пары [k=v], разделённые [&]. *)
 let parse_form (body : string) : (string * string) list =
