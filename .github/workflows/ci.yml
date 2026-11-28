@@ -75,12 +75,15 @@ jobs:
       # релиза math-coding и сверяется с хешем, зашитым в workflow: версия
       # из «последнего релиза» недопустима, потому что проверка должна быть
       # воспроизводимой.
+      # Версия обязана читать формат спецификации проекта: spec.json живёт
+      # в схеме 6, а v5.x падает с «unsupported schema_version 6» и роняет
+      # весь гейт.
       - name: Install mathc
         run: |
           set -eu
-          version=v5.0.7
+          version=v6.0.0
           asset="mathc-${version}-linux-x86_64"
-          expected="4df95e52bd4f3b8289fed0851198f43a0aad97ea9274a3f324cb112fc0945f35"
+          expected="7215d242e95a0f0653d4ecf77226ce9fa060aec369dcb66b0253675c1155c050"
           base="https://github.com/11111000000/math-coding/releases/download/${version}"
           dir="$RUNNER_TEMP/mathc"
           mkdir -p "$dir"

@@ -32,9 +32,10 @@
   <div class="wrap">
     <p class="kicker">состояние · конец ноября 2026</p>
     <h1>Что уже работает — и что дальше</h1>
-    <p class="lede">Этапы 0 и 1 закрыты, от этапа 2 взяты семь срезов. Работает связка
-    «мигратор → схема → REST /api/v1»: задачи создаются, читаются, переводятся,
-    комментируются, заявляются и отпускаются — в том числе из чата командой /task.</p>
+    <p class="lede">Этапы 0 и 1 закрыты, этап 2 — семь срезов, импорт из Teamboard — первый срез.
+    Работает связка «мигратор → схема → REST /api/v1»: задачи создаются, читаются, переводятся,
+    комментируются, заявляются и отпускаются — в том числе из чата командой /task.
+    Живыми стали доска с колонками по статусам, обзор на D3 и плагин Paseo.</p>
   </div>
 </section>
 
@@ -42,8 +43,8 @@
   <div class="wrap">
     <p class="sec-kicker">цифры</p>
     <div class="metrics">
-      <div class="metric"><div class="v">199</div><div class="k">тестов OK</div><div class="n">dune runtest</div></div>
-      <div class="metric"><div class="v">93</div><div class="k">claim’а mathc</div><div class="n">verifier + control каждый</div></div>
+      <div class="metric"><div class="v">203</div><div class="k">тестов OK</div><div class="n">dune runtest + 13 node-тестов ядра</div></div>
+      <div class="metric"><div class="v">98</div><div class="k">claim’ов mathc</div><div class="n">verifier + control каждый</div></div>
       <div class="metric"><div class="v">6</div><div class="k">миграций применено</div><div class="n">001_init … 006_task_question</div></div>
       <div class="metric"><div class="v">14</div><div class="k">переходов статуса</div><div class="n">правила R1–R3 проверяет сервер</div></div>
     </div>
@@ -54,11 +55,12 @@
       <thead><tr><th>Проверка</th><th>Результат</th></tr></thead>
       <tbody>
         <tr><td><code>dune build --root .</code></td><td><span class="pill pill-done">без ошибок</span> любое включённое предупреждение — ошибка</td></tr>
-        <tr><td><code>dune runtest --root .</code></td><td><span class="pill pill-done">199 OK</span> домен, идентичность, сервисный слой, API на живой БД</td></tr>
+        <tr><td><code>dune runtest --root .</code></td><td><span class="pill pill-done">203 OK</span> домен, идентичность, сервисный слой, API на живой БД + 13 node-тестов ядра</td></tr>
         <tr><td><code>nix build .#doska</code></td><td><span class="pill pill-done">успешно</span> checkPhase гоняет тесты без БД</td></tr>
         <tr><td><code>doska migrate</code></td><td><span class="pill pill-done">001–006</span> повторный запуск — «нечего применять»</td></tr>
         <tr><td><code>doska health</code></td><td><span class="pill pill-done">ok</span></td></tr>
         <tr><td><code>doska serve</code> → <code>/healthz</code></td><td><span class="pill pill-done">200</span> {"status":"ok"}</td></tr>
+        <tr><td><code>mathc --root . run</code></td><td><span class="pill pill-wip">обязательный гейт CI</span> 98 claim'ов; зелёный вердикт всегда сообщается вместе со списком <code>uncovered</code></td></tr>
       </tbody>
     </table>
     </div>
@@ -70,20 +72,27 @@
 <section>
   <div class="wrap">
     <p class="sec-kicker">пройдено</p>
-    <h2>Семь срезов этапа 2</h2>
-    <div class="card">
-      <ul class="clean">
-        <li><span class="li-t">Идентичность</span> <div class="li-d">акторы, алиасы, разрешение имён — люди и агенты в одной таблице.</div></li>
-        <li><span class="li-t">Сервисный слой (D5)</span> <div class="li-d">правила и транзакции — не в HTTP-обработчике; REST, MCP и CLI — адаптеры.</div></li>
-        <li><span class="li-t">Главный запрос /tasks/mine</span> <div class="li-d">«что моё» одним запросом, для человека и агента.</div></li>
-        <li><span class="li-t">Заявка и отпуск (claim / release)</span> <div class="li-d">агент берёт задачу и освобождает её; конкурс претендентов решает сервер.</div></li>
-        <li><span class="li-t">Иерархия и связи</span> <div class="li-d">родитель, зависимости — задачи делятся на части и ссылаются друг на друга.</div></li>
-        <li><span class="li-t">Сводка /overview</span> <div class="li-d">одним запросом: где застряло и кто перегружен.</div></li>
-        <li><span class="li-t">Вопрос при needs_input</span> <div class="li-d">адресный вопрос, уведомление адресату, выход — только через человека (R2).</div></li>
-      </ul>
+    <h2>Этапы 0–3</h2>
+    <div class="t-wrap">
+    <table>
+      <thead><tr><th>Этап</th><th>Состояние</th><th>Что сделано</th></tr></thead>
+      <tbody>
+        <tr><td>0. Каркас</td><td><span class="pill pill-done">закрыт</span></td><td>репозиторий, OCaml-тулчейн, nix-сборка, свой мигратор, <code>/healthz</code></td></tr>
+        <tr><td>1. Схема и API</td><td><span class="pill pill-done">закрыт</span></td><td>12 таблиц, REST <code>/api/v1</code>, переходы и R1</td></tr>
+        <tr><td>2. Идентичность</td><td><span class="pill pill-done">первый срез</span></td><td>импорт Mattermost (23 актора), алиасы, резолвер, <code>POST /actors/resolve</code></td></tr>
+        <tr><td>2+. Сервисный слой (D5)</td><td><span class="pill pill-done">первый срез</span></td><td>use case'ы задач в <code>src/service/task.ml</code>; REST — тонкий адаптер; отказ — значение</td></tr>
+        <tr><td>2+. Главный запрос</td><td><span class="pill pill-done">закрыт</span></td><td><code>GET /api/v1/tasks/mine</code> — открытые задачи по срочности, курсорная пагинация</td></tr>
+        <tr><td>2+. Заявка и отпуск</td><td><span class="pill pill-done">закрыт</span></td><td><code>claim</code> и <code>release</code> — агент берёт свободную задачу и возвращает её в пул</td></tr>
+        <tr><td>2+. Иерархия и связи (D7)</td><td><span class="pill pill-done">закрыт</span></td><td>дерево задач и граф связей; кольца блокировок и по родителю запрещены</td></tr>
+        <tr><td>2+. Сводка</td><td><span class="pill pill-done">закрыт</span></td><td><code>GET /api/v1/overview</code> — счётчики, нагрузка, застрявшие и ждущие ответа задачи</td></tr>
+        <tr><td>2+. Вопрос при needs_input</td><td><span class="pill pill-done">закрыт</span></td><td>вопрос и адресат в задаче, ответ обязателен, отвечает только человек, уведомление в outbox</td></tr>
+        <tr><td>3. Импорт Teamboard</td><td><span class="pill pill-done">первый срез</span></td><td>76 проектов, 97 суждений, 20 инициатив; повторный запуск обновляет и не плодит дубли</td></tr>
+      </tbody>
+    </table>
     </div>
-    <p style="margin-top:16px">Учётки агентов и bearer-токены работают (срез этапа 4); MCP-сервер и веб-ядро — в main;
-    Mattermost принимает <code>/task</code> с кнопками и личными сообщениями из outbox.</p>
+    <p style="margin-top:14px; color:var(--muted); font-size:14px">Состояние этапов — из
+    <a href="https://github.com/11111000000/doska/blob/main/docs/development-guide.md">docs/development-guide.md ↗</a>.
+    «Закрыт» — значит срез принят по правилам проекта (D1: приёмку даёт человек), а не «код дописан».</p>
   </div>
 </section>
 
@@ -96,15 +105,16 @@
       <thead><tr><th>Волна</th><th>Работа</th><th>Статус</th></tr></thead>
       <tbody>
         <tr><td><code>0</code></td><td>решения D4-R/D3-R, правка ADR, журнал решений</td><td><span class="pill pill-done">сделано</span></td></tr>
-        <tr><td><code>1</code></td><td>учётки и bearer-токены; TypeScript-ядро фронтенда</td><td><span class="pill pill-done">сделано</span></td></tr>
-        <tr><td><code>2</code></td><td>веб-срез 1 «Мои задачи»; Mattermost-бот; MCP-сервер</td><td><span class="pill pill-wip">в работе</span> бот и MCP в main, веб досматривается</td></tr>
-        <tr><td><code>3</code></td><td>Paseo-плагин: панель, Command Center, hooks; веб-срез 2: доска на D3, realtime</td><td><span class="pill pill-wip">в работе</span></td></tr>
-        <tr><td><code>4</code></td><td>плагин Mattermost (Go + webapp); деплой NixOS-модулем</td><td><span class="pill pill-todo">ждёт</span> после бот-пута (D3-R)</td></tr>
-        <tr><td><code>∥</code></td><td>этап 3: импорт из Teamboard — проекты, суждения, инициативы</td><td><span class="pill pill-todo">параллельная дорожка</span></td></tr>
+        <tr><td><code>1</code></td><td>учётки и bearer-токены; TypeScript-ядро <code>frontend/packages/core</code></td><td><span class="pill pill-done">сделано</span> токен выдаётся, работает и отзывается</td></tr>
+        <tr><td><code>2</code></td><td>веб-срез 1 «Мои задачи»; Mattermost-бот; MCP-сервер</td><td><span class="pill pill-wip">в main</span> бот <code>/task</code> с кнопками и DM, MCP-сервер, карточка веба</td></tr>
+        <tr><td><code>3</code></td><td>плагин Paseo (панель, Command Center, hooks); веб-срез 2: доска, обзор на D3</td><td><span class="pill pill-wip">в main</span> плагин и доска с обзором; realtime — следующим шагом</td></tr>
+        <tr><td><code>4</code></td><td>плагин Mattermost (Go + webapp на ядре); деплой</td><td><span class="pill pill-todo">ждёт</span> по D3-R — после бота</td></tr>
+        <tr><td><code>∥</code></td><td>этап 3: импорт из Teamboard</td><td><span class="pill pill-done">закрыт</span> 76 проектов · 97 суждений · 20 инициатив</td></tr>
       </tbody>
     </table>
     </div>
-    <p style="margin-top:14px; color:var(--muted); font-size:14px">Границы этапов: <code>subroutine</code> удаляется на этапе 9 и не раньше —
+    <p style="margin-top:14px; color:var(--muted); font-size:14px">Статусы — по плану волн от 26.11.2026. «В main» означает, что код уже в основной ветке,
+    а не что волна принята: приёмку даёт человек (D1). Границы этапов: <code>subroutine</code> удаляется на этапе 9 и не раньше —
     пока трекер пуст, он держит мост авторизации и bridge с Paseo.</p>
   </div>
 </section>
