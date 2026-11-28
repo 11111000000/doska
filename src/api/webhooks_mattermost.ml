@@ -23,8 +23,24 @@ type config = { base_url : string; token : string; bot_id : string }
     дольше обработки. [Error] — интеграция не настроена. *)
 let config () : (config, string) result =
   let read name = match Sys.getenv_opt name with Some v -> String.trim v | None -> "" in
-  let token = read "DOSKA_MATTERMOST_TOKEN" in
-  if token = "" then Error "DOSKA_MATTERMOST_TOKEN не задана"
+  (* Токен — из окружения; если дан путь к файлу (nix-секрет в
+     /etc/secrets), читаем оттуда: значение секрета не попадает ни в
+     переменные окружения, ни в список процессов. *)
+  let token =
+    match read "DOSKA_MATTERMOST_TOKEN" with
+    | "" -> (
+        match read "DOSKA_MATTERMOST_TOKEN_FILE" with
+        | "" -> ""
+        | path -> (
+            try
+              let ic = open_in path in
+              let value = String.trim (input_line ic) in
+              close_in ic;
+              value
+            with _ -> ""))
+    | value -> value
+  in
+  if token = "" then Error "DOSKA_MATTERMOST_TOKEN (или ..._TOKEN_FILE) не задана"
   else
     Ok
       {
@@ -89,15 +105,15 @@ let task_from_chat conn ~actor ~text ~trigger_id =
       Lwt_result.lift
         (Error (Service.Failure.Bad_request { message = "формат: /task заголовок | проект | исполнитель | срок" }))
   | title -> (
-      let optional name = function
-        | [] | [ _ ] -> None
-        | _ :: second :: more -> (
-            let value = if name = "assignee" then second else List.nth more 0 in
-            if String.trim value = "" then None else Some (String.trim value))
+      (* Позиции фиксированы: заголовок | проект | исполнитель | срок. *)
+      let at index =
+        match List.nth_opt parts index with
+        | Some value when String.trim value <> "" -> Some (String.trim value)
+        | _ -> None
       in
-      let project = optional "project" parts in
-      let assignee = optional "assignee" parts in
-      let due_at = optional "due_at" parts in
+      let project = at 1 in
+      let assignee = at 2 in
+      let due_at = at 3 in
       let input : Service.Task.create_input =
         {
           title;

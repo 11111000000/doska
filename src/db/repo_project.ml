@@ -51,13 +51,21 @@ let list conn : (Project.t list, string) result Lwt.t =
   Conn.query_json_rows conn (select ^ " ORDER BY p.key")
   |> Lwt_result.map (List.map of_json)
 
-let create conn ~key ~name ~autonomy : (Project.t, string) result Lwt.t =
+let create conn ~key ~name ~autonomy ?repo_path ?asset_class ?external_ref () :
+    (Project.t, string) result Lwt.t =
+  (* Путь репозитория, класс актива и внешний ключ приходят из импорта
+     (registry.json): проект из трекера должен помнить, откуда он взят, иначе
+     связь с источником теряется. *)
   let sql =
     Printf.sprintf
-      "INSERT INTO project (key, name, autonomy) VALUES (%s, %s, %s) RETURNING id::text"
+      "INSERT INTO project (key, name, autonomy, repo_path, asset_class, external_ref) \
+       VALUES (%s, %s, %s, %s, %s, %s) RETURNING id::text"
       (Conn.quote key)
       (Conn.quote name)
       (Conn.quote (Actor.autonomy_to_string autonomy))
+      (match repo_path with None -> "NULL" | Some path -> Conn.quote path)
+      (match asset_class with None -> "NULL" | Some asset -> Conn.quote asset)
+      (match external_ref with None -> "NULL" | Some ref_ -> Conn.quote ref_)
   in
   let* outcome = Conn.query_strings conn sql in
   match outcome with
@@ -69,3 +77,21 @@ let create conn ~key ~name ~autonomy : (Project.t, string) result Lwt.t =
       | Error e -> Lwt_result.lift (Error e)
       | Ok (Some project) -> Lwt_result.lift (Ok project)
       | Ok None -> Lwt_result.lift (Error "проект создан, но не найден")
+
+
+(** Обновить путь репозитория и класс актива.
+
+    Импорт повторяет эти поля из registry.json: реестр меняется, и проект
+    в трекере должен смотреть в тот же репозиторий. Имя и ключ не трогаем —
+    они идентичность проекта. *)
+let update_sources conn ~id ~repo_path ~asset_class : (unit, string) result Lwt.t =
+  match Conn.uuid_literal id with
+  | None -> Lwt_result.lift (Error "неверный идентификатор проекта")
+  | Some literal ->
+      Conn.exec_sql conn
+        (Printf.sprintf
+           "UPDATE project SET repo_path = %s, asset_class = %s, updated_at = now() \
+            WHERE id = %s"
+           (Conn.quote repo_path)
+           (Conn.quote asset_class)
+           literal)

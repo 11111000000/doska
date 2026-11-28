@@ -41,17 +41,47 @@
     button.primary { background: var(--accent); border-color: var(--accent); color: #fff; cursor: pointer; }
     button.danger { border-color: var(--danger); color: var(--danger); cursor: pointer; }
     .error { color: var(--danger); margin-top: 8px; white-space: pre-wrap; }
+    nav a { color: var(--muted); cursor: pointer; text-decoration: none; margin-right: 12px; }
+    nav a.active { color: var(--foreground); font-weight: 600; }
+    .board-filters { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .board { display: flex; gap: 12px; align-items: flex-start; overflow-x: auto; }
+    .board-column { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px; min-width: 220px; flex: 1 0 220px; }
+    .board-column h3 { margin: 4px 6px 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+    .board-cards { min-height: 40px; display: flex; flex-direction: column; gap: 8px; }
+    .board-card { background: var(--background); border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px; cursor: grab; }
+    .board-card-ref { font-size: 11px; color: var(--accent); }
+    .board-card-title { margin: 2px 0 4px; }
+    .board-card-meta, .board-card-hint { font-size: 11px; color: var(--muted); }
+    .metrics { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 18px; }
+    .metric { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; min-width: 96px; }
+    .metric-value { font-size: 22px; font-weight: 600; }
+    .metric-label { font-size: 12px; color: var(--muted); }
+    .charts { display: flex; gap: 20px; flex-wrap: wrap; }
+    .charts figure { margin: 0; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px; flex: 1 1 420px; }
+    .charts figcaption { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .lists { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 18px; }
+    .lists section { flex: 1 1 380px; }
+    .muted { color: var(--muted); }
   </style>
 </head>
 <body>
   <header>
     <strong>doska</strong>
-    <a id="nav-mine">мои задачи</a>
+    <nav id="nav">
+      <a data-screen="mine" href="#mine">мои задачи</a>
+      <a data-screen="board" href="#board">доска</a>
+      <a data-screen="overview" href="#overview">обзор</a>
+    </nav>
     <span id="who"></span>
     <span style="margin-left:auto"></span>
     <button id="logout" title="забыть токен">выйти</button>
   </header>
   <div id="view">загрузка…</div>
+  <script src="./vendor/d3.min.js"></script>
   <script type="module" src="./app.js"></script>
 </body>
 </html>

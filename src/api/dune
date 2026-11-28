@@ -12,6 +12,7 @@
   context
   tasks
   actors
+  projects
   overview
   server)
  (libraries

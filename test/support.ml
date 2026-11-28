@@ -89,7 +89,7 @@ let ensure_project conn ~prefix ~key ~name ~autonomy : Domain.Project.t =
   match run (Db.Repo_project.by_key conn key) with
   | Ok (Some project) -> project
   | Ok None -> (
-      match run (Db.Repo_project.create conn ~key ~name ~autonomy) with
+      match run (Db.Repo_project.create conn ~key ~name ~autonomy ()) with
       | Ok project -> project
       | Error e -> failwith ("проект не создан: " ^ e))
   | Error e -> failwith ("проект не прочитан: " ^ e)

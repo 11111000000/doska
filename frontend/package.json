@@ -1,5 +1,13 @@
 {
   "name": "doska-frontend",
   "private": true,
-  "workspaces": ["packages/*", "apps/*", "plugins/*"]
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "plugins/*"
+  ],
+  "dependencies": {
+    "d3": "^7.9.0"
+  },
+  "type": "module"
 }

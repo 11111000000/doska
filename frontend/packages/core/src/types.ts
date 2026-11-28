@@ -187,7 +187,14 @@ export interface Overview {
   generated_at: string;
   stuck_days: number;
   limit: number;
-  totals: Record<string, number>;
+  totals: {
+    open_tasks: number;
+    in_progress: number;
+    blocked: number;
+    needs_input: number;
+    unassigned: number;
+    without_project: number;
+  };
   wip_by_actor: Array<{
     actor_id: string;
     handle: string;
@@ -200,9 +207,14 @@ export interface Overview {
   by_project: Array<{
     project_id: string;
     key: string;
+    name: string;
     open_tasks: number;
+    stuck: number;
   }>;
-  stuck_tasks: Task[];
+  /** Застрявшие задачи: задача и сколько суток она лежит. */
+  stuck: Array<{ task: Task; age_days: number }>;
+  /** Задачи, ждущие ответа: задача и возраст ожидания. */
+  needs_input: Array<{ task: Task; age_days: number }>;
 }
 
 /** Действия журнала: одно множество значений с src/domain/activity.ml. */

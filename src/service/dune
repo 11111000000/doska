@@ -9,6 +9,7 @@
   resolve
   mattermost
   import_actors
+  import_teamboard
   failure
   credential
   notify
