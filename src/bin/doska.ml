@@ -27,8 +27,36 @@ let port =
   Arg.(value & opt int 8500 & info [ "port" ] ~docv:"PORT" ~doc)
 
 let source =
-  let doc = "Источник импорта: mattermost." in
+  let doc = "Источник импорта: mattermost | teamboard." in
   Arg.(value & opt string "mattermost" & info [ "source" ] ~docv:"SOURCE" ~doc)
+
+(** Каталог данных Teamboard: переменная окружения или путь по умолчанию.
+    Путь в коде — соглашение, а не секрет: файлы читаются, а не пишутся. *)
+let teamboard_dir () =
+  match Sys.getenv_opt "DOSKA_TEAMB0ARD_DIR" with
+  | Some dir when String.trim dir <> "" -> String.trim dir
+  | _ -> "/home/az/Projects/Teamboard/data/board"
+
+let registry_path =
+  let doc = "Файл реестра проектов Teamboard (registry.json)." in
+  Arg.(
+    value
+    & opt string (Filename.concat (teamboard_dir ()) "registry.json")
+    & info [ "registry" ] ~docv:"FILE" ~doc)
+
+let annotations_path =
+  let doc = "Файл суждений по карточкам Teamboard (annotations.json)." in
+  Arg.(
+    value
+    & opt string (Filename.concat (teamboard_dir ()) "annotations.json")
+    & info [ "annotations" ] ~docv:"FILE" ~doc)
+
+let epics_path =
+  let doc = "Файл инициатив Teamboard (epics.json)." in
+  Arg.(
+    value
+    & opt string (Filename.concat (teamboard_dir ()) "epics.json")
+    & info [ "epics" ] ~docv:"FILE" ~doc)
 
 (** Адрес Mattermost: сервер Mattermost на этой машине слушает 8065.
 
@@ -92,8 +120,34 @@ let run_version () : (unit, string) result =
 
     Импорт идемпотентен: ключ актёра — пара (source, source_ref), поэтому
     повторный запуск обновляет те же строки, а не создаёт новые (§10.2). *)
-let run_import uri source : (unit, string) result =
+let run_import uri source ~registry ~annotations ~epics : (unit, string) result =
   match source with
+  | "teamboard" -> (
+      let outcome =
+        with_db uri (fun conn ->
+            let* report =
+              Service.Import_teamboard.import_all conn ~registry ~annotations ~epics
+            in
+            match report with
+            | Error failure ->
+                Lwt_result.lift (Error (Service.Failure.to_string failure))
+            | Ok report ->
+                Printf.printf
+                  "teamboard: проектов %d, задач %d (создано %d, обновлено %d); \
+                   связей %d; заглушек %d\n"
+                  report.Service.Import_teamboard.projects report.tasks
+                  report.created report.updated report.links
+                  report.Service.Import_teamboard.placeholders;
+                (match report.Service.Import_teamboard.unresolved_owners with
+                | [] -> ()
+                | owners ->
+                    Printf.printf "неразрешённые владельцы: %s\n"
+                      (String.concat ", " owners));
+                Lwt_result.lift (Ok ()))
+      in
+      (match outcome with
+      | Ok () -> Ok ()
+      | Error e -> Error (Printf.sprintf "ошибка импорта: %s" e)))
   | "mattermost" -> (
       match mattermost_token () with
       | Error e -> Error e
@@ -158,10 +212,17 @@ let cmd_version =
        остальных: в cmdliner тип команды — это тип её терма. *)
     Term.(const run_version $ Term.const ())
 
+(* Обёртка безымянными аргументами: cmdliner соединяет термы только с
+   позиционными параметрами, а у run_import часть — помеченная. *)
+let run_import_cmd db_url src registry annotations epics =
+  run_import db_url src ~registry ~annotations ~epics
+
 let cmd_import =
   Cmd.v
     (Cmd.info "import" ~doc:"Импортировать данные из внешнего источника.")
-    Term.(const run_import $ db_uri $ source)
+    Term.(
+      const run_import_cmd $ db_uri $ source $ registry_path $ annotations_path
+      $ epics_path)
 
 let () =
   let info =

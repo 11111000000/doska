@@ -1177,6 +1177,63 @@ let test_bearer_wins_over_legacy_header () =
 
 (* --------------------------------------------------------------------- run --- *)
 
+
+(* --------------------------------------------------------------- проекты --- *)
+
+(** Проекты: список и создание. Ключ уникален, неверный ключ — 400, повтор
+    ключа — конфликт, а не сбой. *)
+let test_projects_list_and_create () =
+  (* Ключ уникален в пределах секунды: прогоны подряд не должны
+     столкнуться на одном проекте. *)
+  let key =
+    Printf.sprintf "prj%d%d" (Unix.getpid ())
+      (int_of_float (Unix.gettimeofday ()))
+  in
+  let code, text =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(Yojson.Safe.to_string (`Assoc [ ("key", `String key); ("name", `String "Проект доськи") ]))
+      "/api/v1/projects"
+  in
+  Alcotest.(check int) "создание проекта — 201" 201 code;
+  let created = json text in
+  Alcotest.(check string) "ключ проекта" key (text_field "key" created);
+  Alcotest.(check string) "режим приёмки по умолчанию" "human_gate"
+    (text_field "autonomy" created);
+  let code, text = call ~actor:(Some "api-petr") "/api/v1/projects" in
+  Alcotest.(check int) "список проектов — 200" 200 code;
+  let keys =
+    match json text with
+    | `List items ->
+        List.filter_map
+          (fun item -> match field "key" item with Some (`String k) -> Some k | _ -> None)
+          items
+    | _ -> []
+  in
+  Alcotest.(check bool) "созданный проект в списке" true (List.mem key keys)
+
+let test_project_key_is_validated () =
+  let code, _ =
+    call ~method_:`POST ~actor:(Some "api-petr")
+      ~body:(Yojson.Safe.to_string (`Assoc [ ("key", `String "Плохой Ключ") ]))
+      "/api/v1/projects"
+  in
+  Alcotest.(check int) "неверный ключ — 400" 400 code
+
+let test_project_key_is_unique () =
+  let key =
+    Printf.sprintf "dup%d%d" (Unix.getpid ())
+      (int_of_float (Unix.gettimeofday ()))
+  in
+  let body = Yojson.Safe.to_string (`Assoc [ ("key", `String key) ]) in
+  let code, _ =
+    call ~method_:`POST ~actor:(Some "api-petr") ~body "/api/v1/projects"
+  in
+  Alcotest.(check int) "первое создание — 201" 201 code;
+  let code, _ =
+    call ~method_:`POST ~actor:(Some "api-petr") ~body "/api/v1/projects"
+  in
+  Alcotest.(check int) "повтор ключа — 409" 409 code
+
 let () =
   Alcotest.run "api"
     [
@@ -1235,6 +1292,15 @@ let () =
             test_forged_bearer_is_unauthorized;
           Alcotest.test_case "bearer важнее запасного заголовка" `Quick
             test_bearer_wins_over_legacy_header;
+        ] );
+      ( "проекты",
+        [
+          Alcotest.test_case "список и создание" `Quick
+            test_projects_list_and_create;
+          Alcotest.test_case "неверный ключ — 400" `Quick
+            test_project_key_is_validated;
+          Alcotest.test_case "повтор ключа — 409" `Quick
+            test_project_key_is_unique;
         ] );
       ( "назначение",
         [

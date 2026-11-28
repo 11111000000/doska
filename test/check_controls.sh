@@ -14,6 +14,7 @@ cd "$root"
 
 python3 - <<'PY'
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -51,18 +52,36 @@ if problems:
     sys.exit(1)
 
 
+IGNORED = ("node_modules", "dist", ".git")
+
+
+def _ignored(path):
+    return any(part in IGNORED for part in path.parts)
+
+
+def _walk_files(root):
+    """Файлы дерева без игнорируемых каталогов.
+
+    Обход идёт с отсечением: node_modules весит сотни мегабайт, и сплошной
+    rglob по нему для каждого control'а превращал проверку в минуты."""
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in IGNORED]
+        for name in filenames:
+            yield pathlib.Path(dirpath) / name
+
+
 def changed_files(base, other):
     """Файлы, которые отличаются в двух деревьях, и файлы, добавленные в other."""
     changed = []
-    for path in sorted(base.rglob("*")):
-        if not path.is_file():
-            continue
-        mirror = other / path.relative_to(base)
+    for path in sorted(_walk_files(base)):
+        rel = path.relative_to(base)
+        mirror = other / rel
         if not mirror.is_file() or mirror.read_bytes() != path.read_bytes():
-            changed.append(path.relative_to(base).as_posix())
-    for path in sorted(other.rglob("*")):
-        if path.is_file() and not (base / path.relative_to(other)).is_file():
-            changed.append(path.relative_to(other).as_posix())
+            changed.append(rel.as_posix())
+    for path in sorted(_walk_files(other)):
+        rel = path.relative_to(other)
+        if path.is_file() and not (base / rel).is_file():
+            changed.append(rel.as_posix())
     return changed
 
 
@@ -80,7 +99,14 @@ with tempfile.TemporaryDirectory() as tmp:
             shutil.rmtree(case)
         case.mkdir()
         for tree in trees:
-            shutil.copytree(root / tree, case / tree)
+            # node_modules и dist не нужны для проверки и весят сотни
+            # мегабайт: без игнора копия каждого control'а съедала бы
+            # диск и время.
+            shutil.copytree(
+                root / tree,
+                case / tree,
+                ignore=shutil.ignore_patterns("node_modules", "dist", ".git"),
+            )
 
         applied = subprocess.run(["sh", rel], cwd=case, capture_output=True, text=True)
         if applied.returncode != 0:

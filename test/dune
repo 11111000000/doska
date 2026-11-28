@@ -22,6 +22,7 @@
   service_overview_test
   service_credential_test
   webhooks_test
+  import_teamboard_test
   mcp_test
   task_question_test)
  (modules
@@ -35,6 +36,7 @@
   service_overview_test
   service_credential_test
   webhooks_test
+  import_teamboard_test
   mcp_test
   task_question_test)
  (libraries

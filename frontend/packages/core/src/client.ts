@@ -11,11 +11,22 @@ import {
   actorPageSchema,
   actorSchema,
   issuedCredentialSchema,
+  overviewSchema,
   pageSchema,
+  projectSchema,
   taskPageSchema,
   taskSchema,
 } from "./schemas.js";
-import type { ApiErrorBody, Credential, IssuedCredential, Page, Project, Task, TaskDetails } from "./types.js";
+import type {
+  ApiErrorBody,
+  Credential,
+  IssuedCredential,
+  Overview,
+  Page,
+  Project,
+  Task,
+  TaskDetails,
+} from "./types.js";
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: ApiError };
 
@@ -198,8 +209,13 @@ export class DoskaClient {
     );
   }
 
-  overview(stuckDays?: number, limit?: number): Promise<Result<unknown>> {
-    return this.request("GET", `/api/v1/overview${query({ stuck_days: stuckDays, limit })}`);
+  overview(stuckDays?: number, limit?: number): Promise<Result<Overview>> {
+    return this.request(
+      "GET",
+      `/api/v1/overview${query({ stuck_days: stuckDays, limit })}`,
+      undefined,
+      overviewSchema,
+    );
   }
 
   actors(cursor?: string, limit?: number): Promise<Result<Page<unknown>>> {
@@ -228,6 +244,6 @@ export class DoskaClient {
   }
 
   projects(): Promise<Result<Project[]>> {
-    return this.request("GET", "/api/v1/projects");
+    return this.request("GET", "/api/v1/projects", undefined, z.array(projectSchema));
   }
 }

@@ -120,3 +120,44 @@ export function pageSchema<T extends z.ZodTypeAny>(item: T) {
 
 export const taskPageSchema = pageSchema(taskSchema);
 export const actorPageSchema = pageSchema(actorSchema);
+
+/** Сводка GET /api/v1/overview: нагрузка, застрявшие, возраст needs_input. */
+export const overviewSchema = z.object({
+  generated_at: z.string(),
+  stuck_days: z.number().int(),
+  limit: z.number().int(),
+  totals: z.object({
+    open_tasks: z.number().int(),
+    in_progress: z.number().int(),
+    blocked: z.number().int(),
+    needs_input: z.number().int(),
+    unassigned: z.number().int(),
+    without_project: z.number().int(),
+  }),
+  wip_by_actor: z.array(
+    z.object({
+      actor_id: z.string(),
+      handle: z.string(),
+      display_name: z.string(),
+      kind: enumSchema(ACTOR_KINDS),
+      open_tasks: z.number().int(),
+      in_progress: z.number().int(),
+      needs_input: z.number().int(),
+    }),
+  ),
+  by_project: z.array(
+    z.object({
+      project_id: z.string(),
+      key: z.string(),
+      name: z.string(),
+      open_tasks: z.number().int(),
+      stuck: z.number().int(),
+    }),
+  ),
+  stuck: z.array(
+    z.object({ task: taskSchema, age_days: z.number().int() }),
+  ),
+  needs_input: z.array(
+    z.object({ task: taskSchema, age_days: z.number().int() }),
+  ),
+});

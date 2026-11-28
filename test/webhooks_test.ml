@@ -66,7 +66,12 @@ let test_task_from_chat_is_created () =
   let a = mm_actor "bot" in
   (* trigger_id уникален на прогон: бот-задачи с source=mattermost не
      удаляются уборкой теста, и старый id нашёл бы вчерашнюю задачу. *)
-  let trigger = Printf.sprintf "trg-%d" (int_of_float (Unix.gettimeofday ())) in
+  (* Триггер уникален и в пределах секунды: прогоны подряд не должны
+     упираться в задачу прошлого прогона. *)
+  let trigger =
+    Printf.sprintf "trg-%d-%d" (Unix.getpid ())
+      (int_of_float (Unix.gettimeofday ()))
+  in
   let body =
     form
       [
@@ -216,6 +221,56 @@ let test_notify_delivers_pending () =
                  mm_user_id = "mm-user-4" && has_sub text "билинга")
                !sent))
 
+
+(** Позиции команды: заголовок | проект | исполнитель | срок.
+
+    Разбор позиционный, и это проверяется: однажды проект и исполнитель
+    поменялись местами, и задача уходила в несуществующий проект. *)
+let test_task_command_fields () =
+  let a = mm_actor "fields" ~ref_:"mm-fields" in
+  (* Проект создаём сами: тест не должен зависеть от чужого состояния
+     в общей базе. *)
+  (* Ключ уникален в пределах секунды: два прогона подряд (чистый и после
+     control'а) не должны столкнуться на одном проекте. *)
+  let key =
+    Printf.sprintf "prjfields%d%d" (Unix.getpid ())
+      (int_of_float (Unix.gettimeofday ()))
+  in
+  let create_project =
+    client (Dream.request ~method_:`POST ~target:"/api/v1/projects"
+      ~headers:[ ("x-doska-actor", "wht-fields") ]
+      (Yojson.Safe.to_string (`Assoc [ ("key", `String key) ])))
+  in
+  let status = Dream.status_to_int (Dream.status create_project) in
+  Alcotest.(check int) "проект для команды создан" 201 status;
+  let body =
+    form
+      [
+        ("token", "test-token");
+        ("command", "/task");
+        ("text", "Задача с полями | " ^ key ^ " | api-petr | 2026-12-24");
+        ("user_id", a.Domain.Actor.id);
+        ("user_name", "wht-fields");
+        ("trigger_id", "fields-1");
+      ]
+  in
+  let code, text = call body in
+  Alcotest.(check int) "команда — 200" 200 code;
+  Alcotest.(check bool) "задача создана" true (has_sub text "создано DSK-");
+  let code, text =
+    call
+      (form
+         [
+           ("token", "test-token");
+           ("command", "/tasks");
+           ("user_id", a.Domain.Actor.id);
+           ("user_name", "wht-fields");
+         ])
+  in
+  Alcotest.(check int) "список — 200" 200 code;
+  Alcotest.(check bool) "проект из команды виден в задаче" true
+    (has_sub text key)
+
 let () =
   let open Alcotest in
   run "вебхук mattermost"
@@ -234,6 +289,9 @@ let () =
           test_case "закрытие агентом отказано (R1)" `Quick
             test_button_done_by_agent_is_refused;
         ] );
+      ( "разбор команды",
+        [ test_case "проект, исполнитель и срок по позициям" `Quick
+            test_task_command_fields ] );
       ( "доставка",
         [ test_case "pending уходит адресату" `Quick test_notify_delivers_pending ] );
     ]
