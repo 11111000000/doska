@@ -17,18 +17,23 @@ let ( let* ) t f = Lwt.bind t f
 
 (* ------------------------------------------------------------- разбор --- *)
 
+(* Поле arguments по спецификации MCP необязательно: отсутствие или null —
+   не повод ронять сервер на исключении разбора, а пустой набор аргументов. *)
+let arg_member (args : Yojson.Safe.t) name : Yojson.Safe.t =
+  match args with `Assoc _ -> Yojson.Safe.Util.member name args | _ -> `Null
+
 let arg_string (args : Yojson.Safe.t) name : string option =
-  match Yojson.Safe.Util.member name args with
+  match arg_member args name with
   | `String s when String.trim s <> "" -> Some (String.trim s)
   | _ -> None
 
 let arg_int (args : Yojson.Safe.t) name : int option =
-  match Yojson.Safe.Util.member name args with
+  match arg_member args name with
   | `Int n -> Some n
   | _ -> None
 
 let arg_list_string (args : Yojson.Safe.t) name : string list option =
-  match Yojson.Safe.Util.member name args with
+  match arg_member args name with
   | `List items ->
       Some (List.filter_map (function `String s -> Some s | _ -> None) items)
   | _ -> None
