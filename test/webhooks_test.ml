@@ -22,7 +22,10 @@ let _ =
 
 (* Актор с привязкой к Mattermost: идентичность вебхука ищет по
    [source=mattermost, source_ref=user_id]. *)
-let mm_actor ?(ref_ = "mm-user-1") handle =
+let mm_actor ?ref_ handle =
+  (* У каждого чат-актора свой source_ref: при общем upsert возвращает первого
+     созданного, и handle следующего вызова в базе не существует. *)
+  let ref_ = match ref_ with Some r -> r | None -> "mm-" ^ handle in
   match
     Support.run
       (Db.Repo_actor.upsert_from_source conn ~source:"mattermost" ~source_ref:ref_
@@ -33,7 +36,8 @@ let mm_actor ?(ref_ = "mm-user-1") handle =
 
 let has_sub s sub =
   let n = String.length sub in
-  let rec loop i = i + n > String.length s || String.sub s i n = sub || loop (i + 1) in
+  let len = String.length s in
+  let rec loop i = i + n <= len && (String.sub s i n = sub || loop (i + 1)) in
   loop 0
 
 let client = Dream.test Api.Server.handler
@@ -55,6 +59,14 @@ let field name value =
   match Yojson.Safe.Util.member name value with
   | `String s -> s
   | _ -> ""
+
+(* Номер задачи из ответа: ответ начинается либо с «создано », либо с
+   «уже существует » — режем по первому вхождению DSK-, а не по длине
+   префикса. *)
+let task_ref_of s =
+  match String.index_opt s 'D' with
+  | Some i -> String.sub s i (String.length s - i)
+  | None -> ""
 
 let test_wrong_token_is_rejected () =
   let code, text = call (form [ ("token", "неверный") ; ("command", "/tasks") ]) in
@@ -109,18 +121,17 @@ let test_tasks_lists_mine () =
       [
         ("token", "test-token");
         ("command", "/task");
-        ("text", "Задача для списка");
+        ("text", "Задача для списка | | wht-bot2");
         ("user_id", a.Domain.Actor.id);
         ("user_name", "wht-bot2");
-        ("trigger_id", "trg-2");
+        ("trigger_id", Printf.sprintf "trg2-%d-%.6f" (Unix.getpid ())
+           (Unix.gettimeofday ()));
       ]
   in
   let _, created = call body in
   let ref_ =
-    field "text" (Yojson.Safe.from_string created) |> fun s ->
-    String.sub s 8 (String.length s - 8)
+    field "text" (Yojson.Safe.from_string created) |> task_ref_of
   in
-  let body = form [ ("token", "test-token") ; ("command", "/tasks") ; ("user_id", a.Domain.Actor.id) ; ("user_name", "wht-bot2") ] in
   let code, text = call body in
   Alcotest.(check int) "список — 200" 200 code;
   Alcotest.(check bool) "задача в списке" true (has_sub text ref_)
@@ -228,8 +239,12 @@ let test_notify_delivers_pending () =
     поменялись местами, и задача уходила в несуществующий проект. *)
 let test_task_command_fields () =
   let a = mm_actor "fields" ~ref_:"mm-fields" in
-  (* Проект создаём сами: тест не должен зависеть от чужого состояния
-     в общей базе. *)
+  (* Проект и исполнитель — свои: тест не должен зависеть от чужих фикстур
+     в общей базе (иначе он зависит от порядка запуска тестов). *)
+  let assignee =
+    Support.ensure_actor conn ~prefix:"wht-" ~kind:Actor.Human ~handle:"assignee"
+      ~display_name:"Исполнитель"
+  in
   (* Ключ уникален в пределах секунды: два прогона подряд (чистый и после
      control'а) не должны столкнуться на одном проекте. *)
   let key =
@@ -248,28 +263,35 @@ let test_task_command_fields () =
       [
         ("token", "test-token");
         ("command", "/task");
-        ("text", "Задача с полями | " ^ key ^ " | api-petr | 2026-12-24");
+        ( "text",
+          "Задача с полями | " ^ key ^ " | " ^ assignee.Actor.handle ^ " | 2026-12-24" );
         ("user_id", a.Domain.Actor.id);
         ("user_name", "wht-fields");
-        ("trigger_id", "fields-1");
+        ("trigger_id", Printf.sprintf "fields-%d-%.6f" (Unix.getpid ())
+           (Unix.gettimeofday ()));
       ]
   in
   let code, text = call body in
   Alcotest.(check int) "команда — 200" 200 code;
-  Alcotest.(check bool) "задача создана" true (has_sub text "создано DSK-");
-  let code, text =
-    call
-      (form
-         [
-           ("token", "test-token");
-           ("command", "/tasks");
-           ("user_id", a.Domain.Actor.id);
-           ("user_name", "wht-fields");
-         ])
+  let ref_ = field "text" (Yojson.Safe.from_string text) |> task_ref_of in
+  Alcotest.(check bool) "в ответе номер задачи" true (has_sub ref_ "DSK-");
+  (* Позиции разбора: заголовок | проект | исполнитель | срок. Проверяем на самой
+     задаче — иначе проверка зависит от того, чьи задачи попали в список «мои». *)
+  let ref_ = field "text" (Yojson.Safe.from_string text) |> task_ref_of in
+  let task =
+    let request =
+      Dream.request ~method_:`GET ~target:("/api/v1/tasks/" ^ ref_)
+        ~headers:[ ("x-doska-actor", "wht-fields") ] ""
+    in
+    let response = client request in
+    let body = Support.run (Dream.body response) in
+    Yojson.Safe.Util.(member "task" (Yojson.Safe.from_string body))
   in
-  Alcotest.(check int) "список — 200" 200 code;
-  Alcotest.(check bool) "проект из команды виден в задаче" true
-    (has_sub text key)
+  Alcotest.(check (option string)) "проект — второй по счёту" (Some key)
+    (Yojson.Safe.Util.(member "project" task |> to_string_option));
+  Alcotest.(check (option string)) "исполнитель — третий по счёту"
+    (Some assignee.Actor.id)
+    (Yojson.Safe.Util.(member "assignee_id" task |> to_string_option))
 
 let () =
   let open Alcotest in
