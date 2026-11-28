@@ -263,7 +263,25 @@ let test_notify_delivers_pending () =
             (List.exists
                (fun (mm_user_id, text) ->
                  mm_user_id = "mm-user-4" && has_sub text "билинга")
-               !sent))
+               !sent);
+          (* Уведомление помечено отправленным: без отметки оно осталось бы
+             в очереди и ушло бы заново. *)
+          let state =
+            match
+              Support.run
+                (Db.Conn.query_strings conn
+                   (Printf.sprintf
+                      "SELECT delivery_state FROM notification \
+                       WHERE actor_id = %s AND kind = 'needs_input' \
+                       ORDER BY created_at DESC LIMIT 1"
+                      (Db.Conn.quote a.Domain.Actor.id)))
+            with
+            | Ok [ state ] -> state
+            | Ok [] -> "уведомления нет"
+            | Ok _ -> "уведомлений несколько"
+            | Error e -> Alcotest.fail ("состояние уведомления не прочитано: " ^ e)
+          in
+          Alcotest.(check string) "уведомление помечено отправленным" "sent" state)
 
 
 (** Позиции команды: заголовок | проект | исполнитель | срок.
